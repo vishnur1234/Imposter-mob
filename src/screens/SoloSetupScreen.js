@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import {
   View, StyleSheet, Text, TouchableOpacity, ScrollView,
   KeyboardAvoidingView, Platform, SafeAreaView, Alert, TextInput, ActivityIndicator,
+  Modal, FlatList,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { generateTopic } from "../services/generateTopic";
 import { useTheme } from "../context/ThemeContext";
+import topics from "../data/demoData";
 
 export default function SoloSetupScreen({ navigation }) {
   const { colors, typography } = useTheme();
@@ -14,6 +16,15 @@ export default function SoloSetupScreen({ navigation }) {
   const [playerCount, setPlayerCount] = useState(4);
   const [playerNames, setPlayerNames] = useState(Array(4).fill(""));
   const [loading, setLoading] = useState(false);
+
+  const [selectedTopic, setSelectedTopic] = useState(null); // null means default Course (Finance)
+  const [showCourseModal, setShowCourseModal] = useState(false);
+  const [showTopicModal, setShowTopicModal] = useState(false);
+
+  const handleCourseChange = (newCourse) => {
+    setCourse(newCourse);
+    setSelectedTopic(null);
+  };
 
   const handleCountChange = (n) => {
     setPlayerCount(n);
@@ -27,7 +38,11 @@ export default function SoloSetupScreen({ navigation }) {
   const handleStartGame = async () => {
     setLoading(true);
     try {
-      const topic = await generateTopic(course);
+      let topicCategory = course; // default ACCA or CMA
+      if (selectedTopic && selectedTopic.id !== "course_default") {
+        topicCategory = selectedTopic.category || selectedTopic.id.replace("random_", "");
+      }
+      const topic = await generateTopic(topicCategory);
       const players = playerNames.map((name, i) => ({
         uid: `solo-${i}`,
         name: name.trim() || `Player ${i + 1}`,
@@ -56,27 +71,38 @@ export default function SoloSetupScreen({ navigation }) {
 
           <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
 
-            {/* Course */}
+            {/* Select Course Dropdown */}
             <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.sectionLabelRow}>
                 <Ionicons name="school-outline" size={14} color={colors.primary} />
                 <Text style={[styles.sectionLabel, typography.sub2, { color: colors.primary }]}>SELECT COURSE</Text>
               </View>
-              <View style={styles.pillRow}>
-                {["ACCA", "CMA"].map((item) => (
-                  <TouchableOpacity key={item} onPress={() => setCourse(item)} activeOpacity={0.8} style={{ flex: 1 }}>
-                    {course === item ? (
-                      <LinearGradient colors={colors.gradientBtn} style={styles.pillActive}>
-                        <Text style={[styles.pillTextActive, typography.btn2]}>{item}</Text>
-                      </LinearGradient>
-                    ) : (
-                      <View style={[styles.pillInactive, { backgroundColor: colors.isDark ? "#000000" : "#F8FAFC", borderColor: colors.border }]}>
-                        <Text style={[styles.pillTextInactive, typography.btn2, { color: colors.textSecondary }]}>{item}</Text>
-                      </View>
-                    )}
-                  </TouchableOpacity>
-                ))}
+              <TouchableOpacity
+                onPress={() => setShowCourseModal(true)}
+                activeOpacity={0.8}
+                style={[styles.dropdownTrigger, { backgroundColor: colors.isDark ? "#000000" : "#F8FAFC", borderColor: colors.border }]}
+              >
+                <Text style={[styles.dropdownText, typography.body1, { color: colors.textPrimary }]}>{course}</Text>
+                <Ionicons name="chevron-down" size={18} color={colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+
+            {/* Select Game Category Dropdown */}
+            <View style={[styles.section, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={styles.sectionLabelRow}>
+                <Ionicons name="bulb-outline" size={14} color={colors.primary} />
+                <Text style={[styles.sectionLabel, typography.sub2, { color: colors.primary }]}>SELECT CATEGORY</Text>
               </View>
+              <TouchableOpacity
+                onPress={() => setShowTopicModal(true)}
+                activeOpacity={0.8}
+                style={[styles.dropdownTrigger, { backgroundColor: colors.isDark ? "#000000" : "#F8FAFC", borderColor: colors.border }]}
+              >
+                <Text style={[styles.dropdownText, typography.body1, { color: colors.textPrimary }]}>
+                  {selectedTopic ? selectedTopic.answer : `${course} (Finance)`}
+                </Text>
+                <Ionicons name="chevron-down" size={18} color={colors.textSecondary} />
+              </TouchableOpacity>
             </View>
 
             {/* Player count */}
@@ -150,6 +176,83 @@ export default function SoloSetupScreen({ navigation }) {
               </LinearGradient>
             </TouchableOpacity>
           </ScrollView>
+
+          {/* Modals for Dropdowns */}
+          <Modal visible={showCourseModal} transparent animationType="fade" onRequestClose={() => setShowCourseModal(false)}>
+            <View style={styles.modalOverlay}>
+              <View style={[styles.modalCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <View style={styles.modalHeader}>
+                  <Text style={[styles.modalTitle, typography.h5, { color: colors.textPrimary }]}>Select Course</Text>
+                  <TouchableOpacity onPress={() => setShowCourseModal(false)}>
+                    <Ionicons name="close" size={24} color={colors.textSecondary} />
+                  </TouchableOpacity>
+                </View>
+                <ScrollView style={styles.modalList}>
+                  {["ACCA", "CMA"].map((item) => (
+                    <TouchableOpacity
+                      key={item}
+                      onPress={() => {
+                        handleCourseChange(item);
+                        setShowCourseModal(false);
+                      }}
+                      style={[
+                        styles.modalItem,
+                        course === item && { backgroundColor: colors.primaryLight }
+                      ]}
+                    >
+                      <Text style={[styles.modalItemText, typography.body1, { color: course === item ? colors.primary : colors.textPrimary }]}>{item}</Text>
+                      {course === item && <Ionicons name="checkmark" size={18} color={colors.primary} />}
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            </View>
+          </Modal>
+
+          <Modal visible={showTopicModal} transparent animationType="fade" onRequestClose={() => setShowTopicModal(false)}>
+            <View style={styles.modalOverlay}>
+              <View style={[styles.modalCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <View style={styles.modalHeader}>
+                  <Text style={[styles.modalTitle, typography.h5, { color: colors.textPrimary }]}>Select Category</Text>
+                  <TouchableOpacity onPress={() => setShowTopicModal(false)}>
+                    <Ionicons name="close" size={24} color={colors.textSecondary} />
+                  </TouchableOpacity>
+                </View>
+                <ScrollView style={styles.modalList}>
+                  {[
+                    { id: "random_course", category: course === "CMA" ? "CMA" : "ACCA", answer: `${course} (Finance)` },
+                    { id: "random_general", category: "general", answer: "General" },
+                    { id: "random_bank", category: "bank", answer: "Bank" },
+                    { id: "random_movie", category: "movie", answer: "Movie" }
+                  ].map((item) => {
+                    const isSelected = (!selectedTopic && item.id === "random_course") || (selectedTopic && selectedTopic.id === item.id);
+                    return (
+                      <TouchableOpacity
+                        key={item.id}
+                        onPress={() => {
+                          if (item.id === "random_course") {
+                            setSelectedTopic(null);
+                          } else {
+                            setSelectedTopic(item);
+                          }
+                          setShowTopicModal(false);
+                        }}
+                        style={[
+                          styles.modalItem,
+                          isSelected && { backgroundColor: colors.primaryLight }
+                        ]}
+                      >
+                        <Text style={[styles.modalItemText, typography.body1, { color: isSelected ? colors.primary : colors.textPrimary }]}>
+                          {item.answer}
+                        </Text>
+                        {isSelected && <Ionicons name="checkmark" size={18} color={colors.primary} />}
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+            </View>
+          </Modal>
         </KeyboardAvoidingView>
       </SafeAreaView>
     </LinearGradient>
@@ -190,16 +293,43 @@ const styles = StyleSheet.create({
   sectionLabelRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 14 },
   sectionLabel: { fontSize: 10, fontWeight: "700", color: "#2563EB", letterSpacing: 1.5 },
 
-  pillRow: { flexDirection: "row", gap: 12 },
-  pillActive: { height: 48, borderRadius: 13, justifyContent: "center", alignItems: "center" },
-  pillInactive: {
-    height: 48, borderRadius: 13, borderWidth: 1,
-    borderColor: "#E2E8F0",
-    backgroundColor: "#F8FAFC",
-    justifyContent: "center", alignItems: "center",
+  dropdownTrigger: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between",
+    borderWidth: 1, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 16,
+    height: 52,
   },
-  pillTextActive: { color: "#FFF", fontWeight: "800", letterSpacing: 1 },
-  pillTextInactive: { color: "#64748B", fontWeight: "600" },
+  dropdownText: { fontSize: 15, fontWeight: "600" },
+  modalOverlay: {
+    flex: 1, backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center", alignItems: "center", padding: 20,
+  },
+  modalCard: {
+    width: "100%", maxHeight: "80%", borderRadius: 24, borderWidth: 1,
+    padding: 20, shadowColor: "#000", shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1, shadowRadius: 10, elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: "row", justifyContent: "space-between", alignItems: "center",
+    marginBottom: 16,
+  },
+  modalTitle: { fontSize: 18, fontWeight: "800" },
+  modalList: { marginTop: 8 },
+  modalItem: {
+    flexDirection: "row", justifyContent: "space-between", alignItems: "center",
+    paddingVertical: 14, paddingHorizontal: 16, borderRadius: 12, marginBottom: 4,
+  },
+  modalItemText: { fontSize: 15, fontWeight: "600" },
+  searchBar: {
+    flexDirection: "row", alignItems: "center", borderWidth: 1, borderRadius: 12,
+    paddingHorizontal: 12, height: 44, marginBottom: 12, gap: 8,
+  },
+  searchInput: { flex: 1, height: "100%", padding: 0 },
+  categoryBadge: {
+    paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, marginLeft: 8,
+  },
+  categoryBadgeText: {
+    fontSize: 10, fontWeight: "800", textTransform: "uppercase", letterSpacing: 0.5,
+  },
 
   countCircle: {
     width: 46, height: 46, borderRadius: 23,

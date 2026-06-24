@@ -31,6 +31,8 @@ export default function RoleRevealScreen({ route, navigation }) {
   const activePlayer = isSoloMode ? soloPlayer : myPlayer;
   const activeIsImposter = isSoloMode ? soloIsImposter : isImposter;
 
+  const clueList = topic?.clues ? topic.clues : (topic?.clue ? [topic.clue] : []);
+
   const goNext = () => {
     const nextParams = { roomCode, course, players: gamePlayers, topic, imposterIndex, isHost, isDemoMode, gameId };
     if (isSoloMode) {
@@ -115,17 +117,23 @@ export default function RoleRevealScreen({ route, navigation }) {
                   </View>
                   <Text style={[styles.youAre, typography.sub2, { color: colors.textSecondary }]}>YOU ARE THE</Text>
                   <Text style={[styles.roleTitleRed, typography.h1, { color: colors.error }]}>IMPOSTER</Text>
-                  <Text style={[styles.clueIntro, typography.body2, { color: colors.textSecondary }]}>Guess the topic using these clues:</Text>
-                  <View style={styles.clueList}>
-                    {topic?.clues?.map((clue, i) => (
-                      <View key={i} style={[styles.clueItem, { backgroundColor: colors.isDark ? "#000000" : "#FFFFFF", borderColor: colors.border }]}>
-                        <View style={[styles.clueNumber, { backgroundColor: colors.isDark ? "rgba(211,47,47,0.15)" : "#FEF2F2" }]}>
-                          <Text style={[styles.clueNumberText, typography.btn2, { color: colors.error }]}>{String(i + 1).padStart(2, "0")}</Text>
-                        </View>
-                        <Text style={[styles.clueText, typography.body1, { color: colors.textPrimary }]}>{clue}</Text>
+                  {clueList.length > 0 && (
+                    <>
+                      <Text style={[styles.clueIntro, typography.body2, { color: colors.textSecondary }]}>
+                        {clueList.length > 1 ? "Guess the topic using these clues:" : "Guess the topic using this clue:"}
+                      </Text>
+                      <View style={styles.clueList}>
+                        {clueList.map((clue, i) => (
+                          <View key={i} style={[styles.clueItem, { backgroundColor: colors.isDark ? "#000000" : "#FFFFFF", borderColor: colors.border }]}>
+                            <View style={[styles.clueNumber, { backgroundColor: colors.isDark ? "rgba(211,47,47,0.15)" : "#FEF2F2" }]}>
+                              <Text style={[styles.clueNumberText, typography.btn2, { color: colors.error }]}>{String(i + 1).padStart(2, "0")}</Text>
+                            </View>
+                            <Text style={[styles.clueText, typography.body1, { color: colors.textPrimary }]}>{clue}</Text>
+                          </View>
+                        ))}
                       </View>
-                    ))}
-                  </View>
+                    </>
+                  )}
                 </View>
               ) : (
                 <View style={styles.roleWrap}>

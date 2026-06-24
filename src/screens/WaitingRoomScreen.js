@@ -12,9 +12,10 @@ import { useTheme } from "../context/ThemeContext";
 
 export default function WaitingRoomScreen({ route, navigation }) {
   const { colors, typography } = useTheme();
-  const { roomCode, course, players, isHost, isDemoMode } = route.params || {};
+  const { roomCode, course, players, isHost, isDemoMode, selectedTopic: initialSelectedTopic } = route.params || {};
   const [joinedPlayers, setJoinedPlayers] = useState([]);
   const [starting, setStarting] = useState(false);
+  const [selectedTopic, setSelectedTopic] = useState(initialSelectedTopic || null);
 
   useEffect(() => {
     if (isDemoMode) {
@@ -30,6 +31,9 @@ export default function WaitingRoomScreen({ route, navigation }) {
       if (snap.exists()) {
         const data = snap.data();
         setJoinedPlayers(data.playerList || []);
+        if (data.selectedTopic !== undefined) {
+          setSelectedTopic(data.selectedTopic);
+        }
         if (data.started && data.topic) {
           navigation.navigate("RoleReveal", {
             roomCode, course: data.course || course,
@@ -49,7 +53,13 @@ export default function WaitingRoomScreen({ route, navigation }) {
   const handleStart = async () => {
     setStarting(true);
     try {
-      const topic = await generateTopic(course);
+      let topic = selectedTopic;
+      if (!topic) {
+        topic = await generateTopic(course);
+      } else if (topic.id && typeof topic.id === "string" && topic.id.startsWith("random_")) {
+        const category = topic.category || topic.id.replace("random_", "");
+        topic = await generateTopic(category);
+      }
       const imposterIndex = Math.floor(Math.random() * joinedPlayers.length);
       const gameId = Math.random().toString(36).substring(2, 8).toUpperCase();
       if (isDemoMode) {
