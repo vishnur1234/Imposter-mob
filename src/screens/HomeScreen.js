@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -14,7 +14,8 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import { signOut } from "firebase/auth";
-import { auth } from "../firebase/firebase";
+import { auth, db } from "../firebase/firebase";
+import { doc, onSnapshot } from "firebase/firestore";
 import { useTheme } from "../context/ThemeContext";
 
 const { width } = Dimensions.get("window");
@@ -23,6 +24,21 @@ export default function HomeScreen({ navigation }) {
   const { theme, toggleTheme, colors, typography } = useTheme();
   const rotateAnim = useRef(new Animated.Value(0)).current;
   const fadeIn = useRef(new Animated.Value(0)).current;
+
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    const myUid = auth.currentUser?.uid;
+    if (!myUid) return;
+
+    const unsub = onSnapshot(doc(db, "user_stats", myUid), (snap) => {
+      if (snap.exists()) {
+        setStats(snap.data());
+      }
+    });
+
+    return () => unsub();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -162,11 +178,23 @@ export default function HomeScreen({ navigation }) {
           </View>
 
           <View style={styles.headerRight}>
+            {/* Clickable Score Pill */}
+            <TouchableOpacity
+              onPress={() => navigation.navigate("GlobalRanking")}
+              activeOpacity={0.8}
+              style={[styles.tokenPill, { backgroundColor: colors.isDark ? "#121212" : "#F8FAFC", borderColor: colors.border, marginRight: 4 }]}
+            >
+              <Ionicons name="trophy" size={13} color="#FBBF24" />
+              <Text style={[styles.tokenText, typography.body4, { color: colors.textPrimary, fontWeight: "bold" }]}>
+                {stats?.highScore ?? 0}
+              </Text>
+            </TouchableOpacity>
+
             <TouchableOpacity onPress={toggleTheme} style={[styles.themeBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} activeOpacity={0.8}>
-              <Feather name={theme === "light" ? "moon" : "sun"} size={16} color={colors.textSecondary} />
+              <Feather name={theme === "light" ? "moon" : "sun"} size={14} color={colors.textSecondary} />
             </TouchableOpacity>
             <TouchableOpacity onPress={handleLogout} style={[styles.logoutBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} activeOpacity={0.8}>
-              <Feather name="log-out" size={16} color={colors.textSecondary} />
+              <Feather name="log-out" size={14} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -220,7 +248,7 @@ export default function HomeScreen({ navigation }) {
 
             <View style={styles.cardsSection}>
 
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 onPress={() => navigation.navigate("SoloSetup")}
                 activeOpacity={0.88}
                 style={[styles.modeCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
@@ -239,7 +267,7 @@ export default function HomeScreen({ navigation }) {
                     <Ionicons name="chevron-forward" size={18} color={colors.primary} />
                   </View>
                 </View>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
 
               <TouchableOpacity
@@ -272,14 +300,23 @@ export default function HomeScreen({ navigation }) {
                   { icon: "trophy-outline", label: "Boost Marks", color: colors.warning },
                   { icon: "trending-up-outline", label: "Score Higher", color: colors.success },
                   { icon: "ribbon-outline", label: "Top Rank", color: colors.primary },
-                ].map(({ icon, label, color }) => (
-                  <View key={label} style={[styles.statItem, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <View style={[styles.statIcon, { borderColor: `${color}22`, backgroundColor: `${color}11` }]}>
-                      <Ionicons name={icon} size={20} color={color} />
-                    </View>
-                    <Text style={[styles.statLabel, typography.sub8, { color: colors.textSecondary }]}>{label}</Text>
-                  </View>
-                ))}
+                ].map(({ icon, label, color }) => {
+                  const isTopRank = label === "Top Rank";
+                  const CardComponent = isTopRank ? TouchableOpacity : View;
+                  return (
+                    <CardComponent
+                      key={label}
+                      onPress={isTopRank ? () => navigation.navigate("GlobalRanking") : undefined}
+                      activeOpacity={isTopRank ? 0.8 : undefined}
+                      style={[styles.statItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                    >
+                      <View style={[styles.statIcon, { borderColor: `${color}22`, backgroundColor: `${color}11` }]}>
+                        <Ionicons name={icon} size={20} color={color} />
+                      </View>
+                      <Text style={[styles.statLabel, typography.sub8, { color: colors.textSecondary }]}>{label}</Text>
+                    </CardComponent>
+                  );
+                })}
               </View>
 
               
@@ -607,6 +644,101 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     justifyContent: "center",
     alignItems: "center",
+  },
+  scoreCard: {
+    width: "100%",
+    borderRadius: 22,
+    borderWidth: 1,
+    padding: 16,
+    marginTop: 12,
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 10,
+    elevation: 2,
+  },
+  scoreCardHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 14,
+  },
+  scoreCardTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    letterSpacing: 0.5,
+  },
+  scoreStatsRow: {
+    flexDirection: "row",
+    gap: 10,
+    width: "100%",
+    marginBottom: 12,
+  },
+  scoreStatBox: {
+    flex: 1,
+    borderRadius: 14,
+    borderWidth: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    alignItems: "center",
+  },
+  historySection: {
+    width: "100%",
+    marginTop: 6,
+  },
+  historyRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+  },
+  tokenRow: {
+    flexDirection: "row",
+    gap: 6,
+    alignItems: "center",
+  },
+  tokenPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    height: 28,
+    paddingHorizontal: 8,
+    borderRadius: 14,
+    borderWidth: 1,
+    justifyContent: "center",
+  },
+  tokenText: {
+    fontSize: 11,
+  },
+  liveCameraWrapper: {
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+    marginRight: 6,
+    width: 34,
+    height: 34,
+  },
+  liveCameraCircle: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    borderWidth: 1.5,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  liveCameraBadge: {
+    position: "absolute",
+    bottom: -2,
+    paddingHorizontal: 4,
+    paddingVertical: 1,
+    borderRadius: 4,
+  },
+  liveCameraBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 6,
+    fontWeight: "900",
+    letterSpacing: 0.5,
   },
 });
 

@@ -30,25 +30,32 @@ export default function JoinRoomScreen({ navigation }) {
       }
 
       const roomData = roomSnap.data();
+      const playersList = roomData.players || [];
+      const capacity = roomData.playersRequired || roomData.players || 4;
+      const myUid = auth.currentUser?.uid || "guest";
+      const alreadyInRoom = playersList.some((p) => p.uid === myUid);
 
-      if (roomData.playerList && roomData.playerList.length >= roomData.players) {
+      if (!alreadyInRoom && playersList.length >= capacity) {
         Alert.alert("Error", "This room is full.");
         setLoading(false);
         return;
       }
 
-      await updateDoc(roomRef, {
-        playerList: arrayUnion({
-          uid: auth.currentUser?.uid || "guest",
-          name: auth.currentUser?.email || "Guest Player",
-        }),
-      });
+      const emailPrefix = auth.currentUser?.email ? auth.currentUser.email.split("@")[0] : "Guest Player";
+      const playerObj = { uid: myUid, name: emailPrefix, score: 0 };
+
+      if (!alreadyInRoom) {
+        await updateDoc(roomRef, {
+          players: arrayUnion(playerObj),
+          playerList: arrayUnion({ uid: myUid, name: emailPrefix }), // compatibility
+        });
+      }
 
       navigation.navigate("WaitingRoom", {
         roomCode: code,
-        course: roomData.course,
-        players: roomData.players,
-        isHost: false,
+        course: roomData.category || roomData.course,
+        players: capacity,
+        isHost: roomData.hostId === myUid,
         isDemoMode: false,
       });
     } catch (error) {

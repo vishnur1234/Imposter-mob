@@ -13,6 +13,8 @@ import JoinRoomScreen from "../screens/JoinRoomScreen";
 import WaitingRoomScreen from "../screens/WaitingRoomScreen";
 import RoleRevealScreen from "../screens/RoleRevealScreen";
 import DiscussionScreen from "../screens/DiscussionScreen";
+import GamePlayScreen from "../screens/GamePlayScreen";
+import GlobalRankingScreen from "../screens/GlobalRankingScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -37,6 +39,8 @@ export default function AppNavigator() {
             <Stack.Screen name="WaitingRoom" component={WaitingRoomScreen} />
             <Stack.Screen name="RoleReveal" component={RoleRevealScreen} />
             <Stack.Screen name="Discussion" component={DiscussionScreen} />
+            <Stack.Screen name="GamePlay" component={GamePlayScreen} />
+            <Stack.Screen name="GlobalRanking" component={GlobalRankingScreen} />
           </>
         ) : (
           <>

@@ -20,7 +20,7 @@ export default function WaitingRoomScreen({ route, navigation }) {
   useEffect(() => {
     if (isDemoMode) {
       setJoinedPlayers([
-        { uid: auth.currentUser?.uid || "demo-0", name: auth.currentUser?.email || "Demo Host" },
+        { uid: auth.currentUser?.uid || "demo-0", name: auth.currentUser?.email ? auth.currentUser.email.split("@")[0] : "Demo Host" },
         { uid: "demo-1", name: "Alpha Player" },
         { uid: "demo-2", name: "Beta Player" },
       ]);
@@ -30,16 +30,17 @@ export default function WaitingRoomScreen({ route, navigation }) {
     const unsub = onSnapshot(doc(db, "rooms", roomCode), (snap) => {
       if (snap.exists()) {
         const data = snap.data();
-        setJoinedPlayers(data.playerList || []);
+        const playersList = data.players || data.playerList || [];
+        setJoinedPlayers(playersList);
         if (data.selectedTopic !== undefined) {
           setSelectedTopic(data.selectedTopic);
         }
-        if (data.started && data.topic) {
-          navigation.navigate("RoleReveal", {
-            roomCode, course: data.course || course,
-            players: Array.isArray(data.playerList) ? data.playerList : [],
-            topic: data.topic, imposterIndex: data.imposterIndex ?? 0,
-            isHost, isDemoMode: false, gameId: data.gameId || null,
+        if (data.gameStatus === "reveal" || data.gameStatus === "round" || (data.started && data.topic)) {
+          navigation.navigate("GamePlay", {
+            roomCode,
+            course: data.category || data.course || course,
+            isHost,
+            isDemoMode: false,
           });
         }
       } else {
@@ -51,6 +52,10 @@ export default function WaitingRoomScreen({ route, navigation }) {
   }, [roomCode, isDemoMode]);
 
   const handleStart = async () => {
+    if (joinedPlayers.length < 2 && !isDemoMode) {
+      Alert.alert("Error", "Need at least 2 players to start a multiplayer Imposter Game.");
+      return;
+    }
     setStarting(true);
     try {
       let topic = selectedTopic;
@@ -60,12 +65,47 @@ export default function WaitingRoomScreen({ route, navigation }) {
         const category = topic.category || topic.id.replace("random_", "");
         topic = await generateTopic(category);
       }
-      const imposterIndex = Math.floor(Math.random() * joinedPlayers.length);
+
+      if (!topic || !topic.answer) {
+        throw new Error("Failed to generate a valid topic.");
+      }
+
+      const imposterPlayer = joinedPlayers[Math.floor(Math.random() * joinedPlayers.length)];
+      if (!imposterPlayer) {
+        throw new Error("No players joined.");
+      }
+
       const gameId = Math.random().toString(36).substring(2, 8).toUpperCase();
+
       if (isDemoMode) {
-        navigation.navigate("RoleReveal", { roomCode, course, players: joinedPlayers, topic, imposterIndex, isHost: true, isDemoMode: true, gameId });
+        const imposterIndex = joinedPlayers.findIndex(p => p.uid === imposterPlayer.uid);
+        navigation.navigate("RoleReveal", {
+          roomCode,
+          course,
+          players: joinedPlayers,
+          topic,
+          imposterIndex: imposterIndex >= 0 ? imposterIndex : 0,
+          isHost: true,
+          isDemoMode: true,
+          gameId
+        });
       } else {
-        await updateDoc(doc(db, "rooms", roomCode), { started: true, topic, imposterIndex, gameId });
+        await updateDoc(doc(db, "rooms", roomCode), {
+          started: true,
+          gameStatus: "reveal",
+          readyPlayers: [],
+          votes: {},
+          hints: [],
+          currentRound: 1,
+          gameData: {
+            answer: topic.answer,
+            clue: topic.clue || "",
+            imposterId: imposterPlayer.uid
+          },
+          topic, // compatibility
+          imposterIndex: joinedPlayers.findIndex(p => p.uid === imposterPlayer.uid), // compatibility
+          gameId
+        });
       }
     } catch (e) {
       Alert.alert("Error", e.message);

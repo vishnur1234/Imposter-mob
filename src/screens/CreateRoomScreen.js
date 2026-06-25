@@ -14,6 +14,7 @@ export default function CreateRoomScreen({ navigation }) {
   const { colors, typography } = useTheme();
   const [course, setCourse] = useState("ACCA");
   const [players, setPlayers] = useState(4);
+  const [rounds, setRounds] = useState(3);
   const [loading, setLoading] = useState(false);
 
   const [selectedTopic, setSelectedTopic] = useState(null); // null means default Course (Finance)
@@ -28,11 +29,22 @@ export default function CreateRoomScreen({ navigation }) {
   const handleCreate = async () => {
     const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     setLoading(true);
+    const emailPrefix = auth.currentUser?.email ? auth.currentUser.email.split("@")[0] : "Host";
     try {
       await setDoc(doc(db, "rooms", roomCode), {
-        roomCode, course, players: Number(players),
-        started: false, createdAt: Date.now(),
-        playerList: [{ uid: auth.currentUser.uid, name: auth.currentUser.email || "Host" }],
+        roomCode,
+        hostId: auth.currentUser.uid,
+        category: course,
+        playersRequired: Number(players),
+        totalRounds: Number(rounds),
+        currentRound: 1,
+        gameStatus: "waiting",
+        createdAt: Date.now(),
+        players: [{ uid: auth.currentUser.uid, name: emailPrefix, score: 0 }],
+        votes: {},
+        hints: [],
+        readyPlayers: [],
+        gameData: {},
         selectedTopic: selectedTopic,
       });
       navigation.navigate("WaitingRoom", { roomCode, course, players: Number(players), isHost: true, isDemoMode: false, selectedTopic });
@@ -112,6 +124,28 @@ export default function CreateRoomScreen({ navigation }) {
                 ))}
               </View>
             </ScrollView>
+
+            {/* Rounds */}
+            <View style={[styles.sectionLabelRow, { marginTop: 24 }]}>
+              <Ionicons name="repeat-outline" size={14} color={colors.success} />
+              <Text style={[styles.sectionLabel, typography.sub2, { color: colors.success }]}>NUMBER OF ROUNDS</Text>
+            </View>
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              {[1, 2, 3, 4, 5].map((n) => (
+                <TouchableOpacity
+                  key={n}
+                  onPress={() => setRounds(n)}
+                  style={[
+                    styles.countCircle,
+                    rounds === n
+                      ? { backgroundColor: colors.success, borderColor: colors.success }
+                      : { backgroundColor: colors.isDark ? "#000000" : "#F8FAFC", borderColor: colors.border }
+                  ]}
+                >
+                  <Text style={[styles.countText, typography.h5, { color: rounds === n ? "#FFFFFF" : colors.textSecondary }]}>{n}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
 
             <TouchableOpacity onPress={handleCreate} disabled={loading} activeOpacity={0.85} style={styles.btnWrap}>
               <LinearGradient colors={loading ? [colors.textDisabled, colors.textDisabled] : colors.gradientSuccess} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.btn}>

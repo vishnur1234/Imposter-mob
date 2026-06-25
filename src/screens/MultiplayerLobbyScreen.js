@@ -28,11 +28,40 @@ export default function MultiplayerLobbyScreen({ navigation }) {
       const code = roomCode.toUpperCase();
       const roomRef = doc(db, "rooms", code);
       const snap = await getDoc(roomRef);
-      if (!snap.exists()) { Alert.alert("Error", "Room not found."); setLoading(false); return; }
+      if (!snap.exists()) {
+        Alert.alert("Error", "Room not found.");
+        setLoading(false);
+        return;
+      }
       const data = snap.data();
-      if (data.playerList?.length >= data.players) { Alert.alert("Error", "Room is full."); setLoading(false); return; }
-      await updateDoc(roomRef, { playerList: arrayUnion({ uid: auth.currentUser?.uid || "guest", name: auth.currentUser?.email || "Guest" }) });
-      navigation.navigate("WaitingRoom", { roomCode: code, course: data.course, players: data.players, isHost: false, isDemoMode: false });
+      const playersList = data.players || [];
+      const capacity = data.playersRequired || data.players || 4;
+      const myUid = auth.currentUser?.uid || "guest";
+      const alreadyInRoom = playersList.some((p) => p.uid === myUid);
+
+      if (!alreadyInRoom && playersList.length >= capacity) {
+        Alert.alert("Error", "Room is full.");
+        setLoading(false);
+        return;
+      }
+
+      const emailPrefix = auth.currentUser?.email ? auth.currentUser.email.split("@")[0] : "Guest";
+      const playerObj = { uid: myUid, name: emailPrefix, score: 0 };
+
+      if (!alreadyInRoom) {
+        await updateDoc(roomRef, {
+          players: arrayUnion(playerObj),
+          playerList: arrayUnion({ uid: myUid, name: emailPrefix }), // compatibility
+        });
+      }
+
+      navigation.navigate("WaitingRoom", {
+        roomCode: code,
+        course: data.category || data.course,
+        players: capacity,
+        isHost: data.hostId === myUid,
+        isDemoMode: false,
+      });
     } catch (e) {
       Alert.alert("Error", e.message);
     } finally {
