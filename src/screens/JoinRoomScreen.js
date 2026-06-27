@@ -33,6 +33,19 @@ export default function JoinRoomScreen({ navigation }) {
       const playersList = roomData.players || [];
       const capacity = roomData.playersRequired || roomData.players || 4;
       const myUid = auth.currentUser?.uid || "guest";
+
+      // Enforce coin balance entry check
+      const statsRef = doc(db, "user_stats", myUid);
+      const statsSnap = await getDoc(statsRef);
+      if (statsSnap.exists()) {
+        const scoreVal = statsSnap.data().highScore || 0;
+        if (scoreVal < 50) {
+          Alert.alert("Insufficient Coins", "You need at least 50 coins to play. Claim your Daily Reward or play again later.");
+          setLoading(false);
+          return;
+        }
+      }
+
       const alreadyInRoom = playersList.some((p) => p.uid === myUid);
 
       if (!alreadyInRoom && playersList.length >= capacity) {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View, StyleSheet, Text, TouchableOpacity, ScrollView,
   SafeAreaView, Alert, ActivityIndicator, Modal, FlatList, TextInput,
@@ -6,7 +6,7 @@ import {
 import topics from "../data/demoData";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, onSnapshot } from "firebase/firestore";
 import { db, auth } from "../firebase/firebase";
 import { useTheme } from "../context/ThemeContext";
 
@@ -15,11 +15,24 @@ export default function CreateRoomScreen({ navigation }) {
   const [course, setCourse] = useState("ACCA");
   const [players, setPlayers] = useState(4);
   const [rounds, setRounds] = useState(3);
+  const [clueTimer, setClueTimer] = useState(60);
   const [loading, setLoading] = useState(false);
 
   const [selectedTopic, setSelectedTopic] = useState(null); // null means default Course (Finance)
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [showTopicModal, setShowTopicModal] = useState(false);
+  const [userCoins, setUserCoins] = useState(0);
+
+  useEffect(() => {
+    const myUid = auth.currentUser?.uid;
+    if (!myUid) return;
+    const unsub = onSnapshot(doc(db, "user_stats", myUid), (snap) => {
+      if (snap.exists()) {
+        setUserCoins(snap.data().highScore || 0);
+      }
+    });
+    return () => unsub();
+  }, []);
 
   const handleCourseChange = (newCourse) => {
     setCourse(newCourse);
@@ -27,6 +40,10 @@ export default function CreateRoomScreen({ navigation }) {
   };
 
   const handleCreate = async () => {
+    if (userCoins < 50) {
+      Alert.alert("Insufficient Coins", "You need at least 50 coins to play. Claim your Daily Reward or play again later.");
+      return;
+    }
     const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     setLoading(true);
     const emailPrefix = auth.currentUser?.email ? auth.currentUser.email.split("@")[0] : "Host";
@@ -37,6 +54,7 @@ export default function CreateRoomScreen({ navigation }) {
         category: course,
         playersRequired: Number(players),
         totalRounds: Number(rounds),
+        clueTimer: Number(clueTimer),
         currentRound: 1,
         gameStatus: "waiting",
         createdAt: Date.now(),
@@ -47,11 +65,11 @@ export default function CreateRoomScreen({ navigation }) {
         gameData: {},
         selectedTopic: selectedTopic,
       });
-      navigation.navigate("WaitingRoom", { roomCode, course, players: Number(players), isHost: true, isDemoMode: false, selectedTopic });
+      navigation.navigate("WaitingRoom", { roomCode, course, players: Number(players), isHost: true, isDemoMode: false, selectedTopic, clueTimer: Number(clueTimer) });
     } catch (e) {
       Alert.alert("Offline Demo Mode", `Failed to create room: ${e.message}\n\nContinue in local demo mode?`, [
         { text: "Cancel", style: "cancel" },
-        { text: "Go Offline", onPress: () => navigation.navigate("WaitingRoom", { roomCode, course, players: Number(players), isHost: true, isDemoMode: true, selectedTopic }) },
+        { text: "Go Offline", onPress: () => navigation.navigate("WaitingRoom", { roomCode, course, players: Number(players), isHost: true, isDemoMode: true, selectedTopic, clueTimer: Number(clueTimer) }) },
       ]);
     } finally {
       setLoading(false);
@@ -143,6 +161,33 @@ export default function CreateRoomScreen({ navigation }) {
                   ]}
                 >
                   <Text style={[styles.countText, typography.h5, { color: rounds === n ? "#FFFFFF" : colors.textSecondary }]}>{n}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Clue Timer */}
+            <View style={[styles.sectionLabelRow, { marginTop: 24 }]}>
+              <Ionicons name="time-outline" size={14} color={colors.success} />
+              <Text style={[styles.sectionLabel, typography.sub2, { color: colors.success }]}>CLUE TIMER</Text>
+            </View>
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              {[
+                { label: "1 Min", val: 60 },
+                { label: "2 Min", val: 120 },
+                { label: "No Limit", val: 0 }
+              ].map((t) => (
+                <TouchableOpacity
+                  key={t.val}
+                  onPress={() => setClueTimer(t.val)}
+                  style={[
+                    styles.countCircle,
+                    { width: t.val === 0 ? 90 : 70 },
+                    clueTimer === t.val
+                      ? { backgroundColor: colors.success, borderColor: colors.success }
+                      : { backgroundColor: colors.isDark ? "#000000" : "#F8FAFC", borderColor: colors.border }
+                  ]}
+                >
+                  <Text style={[styles.countText, typography.h7, { color: clueTimer === t.val ? "#FFFFFF" : colors.textSecondary, fontWeight: "600" }]}>{t.label}</Text>
                 </TouchableOpacity>
               ))}
             </View>

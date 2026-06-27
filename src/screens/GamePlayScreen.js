@@ -12,7 +12,7 @@ import { useTheme } from "../context/ThemeContext";
 
 const { width } = Dimensions.get("window");
 
-const saveUserScoreToHistory = async (uid, name, roomCode, gameId, score) => {
+const saveUserScoreToHistory = async (uid, name, roomCode, gameId, score, isEntryFee = false) => {
   if (uid === "guest") return;
   try {
     const statsRef = doc(db, "user_stats", uid);
@@ -28,7 +28,7 @@ const saveUserScoreToHistory = async (uid, name, roomCode, gameId, score) => {
       totalMatches = statsData.totalMatches || 0;
     }
 
-    if (matchHistory.some(m => m.gameId === gameId)) {
+    if (matchHistory.some(m => m.gameId === gameId && (m.isEntryFee ?? false) === isEntryFee)) {
       return;
     }
 
@@ -36,12 +36,15 @@ const saveUserScoreToHistory = async (uid, name, roomCode, gameId, score) => {
       roomCode,
       gameId,
       score,
+      isEntryFee,
       timestamp: Date.now()
     };
 
     matchHistory.push(newMatch);
     highScore = matchHistory.reduce((sum, m) => sum + (m.score || 0), 0);
-    totalMatches = totalMatches + 1;
+    if (!isEntryFee) {
+      totalMatches = totalMatches + 1;
+    }
 
     await setDoc(statsRef, {
       uid,
@@ -62,6 +65,7 @@ export default function GamePlayScreen({ route, navigation }) {
   const [roomData, setRoomData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [secRemaining, setSecRemaining] = useState(60);
 
   // Phase-specific local states
   const [revealed, setRevealed] = useState(false);
@@ -71,6 +75,7 @@ export default function GamePlayScreen({ route, navigation }) {
 
   const myUid = auth.currentUser?.uid || "guest";
   const recordedGamesRef = useRef([]);
+  const paidGamesRef = useRef([]);
 
   // Firestore Snapshot Listener
   useEffect(() => {
@@ -121,6 +126,30 @@ export default function GamePlayScreen({ route, navigation }) {
             }
           }
         }
+
+        // 5. Entry Fee Deduction (-50 coins) when game transitions to reveal/round
+        if (data.gameStatus === "reveal" || data.gameStatus === "round") {
+          const gameId = data.gameId || roomCode;
+          if (!paidGamesRef.current.includes(gameId)) {
+            paidGamesRef.current.push(gameId);
+            const myPlayerObj = (data.players || []).find(p => p.uid === myUid) || { name: "Player" };
+            saveUserScoreToHistory(myUid, myPlayerObj.name, roomCode, gameId, -50, true);
+          }
+        }
+
+        // 4. Clue Turn Timing (Only host sets when turn changes and timer is enabled)
+        if (isHost && data.gameStatus === "round" && data.clueTimer > 0) {
+          const roundHints = (data.hints || []).filter(h => h.round === (data.currentRound || 1));
+          const currentTurnIndex = roundHints.length;
+          if (currentTurnIndex < (data.players || []).length) {
+            if (data.turnIndex !== currentTurnIndex) {
+              updateDoc(doc(db, "rooms", roomCode), {
+                turnIndex: currentTurnIndex,
+                turnStartedAt: Date.now()
+              }).catch(err => console.log("Failed to set turnIndex/turnStartedAt:", err));
+            }
+          }
+        }
       } else {
         Alert.alert("Error", "Room not found.");
         navigation.navigate("Home");
@@ -129,6 +158,60 @@ export default function GamePlayScreen({ route, navigation }) {
 
     return () => unsub();
   }, [roomCode, isHost]);
+
+  // Clue Turn Timer Ticker
+  useEffect(() => {
+    if (!roomData || roomData.gameStatus !== "round") return;
+
+    const roundHints = (roomData.hints || []).filter(h => h.round === (roomData.currentRound || 1));
+    const currentTurnIndex = roundHints.length;
+    const totalPlayersList = roomData.players || [];
+    if (currentTurnIndex >= totalPlayersList.length) return;
+
+    const limit = roomData.clueTimer !== undefined ? roomData.clueTimer : 60;
+    if (limit <= 0) {
+      setSecRemaining(0);
+      return;
+    }
+
+    const updateTimer = () => {
+      const now = Date.now();
+      const elapsed = Math.floor((now - (roomData.turnStartedAt || now)) / 1000);
+      const rem = Math.max(0, limit - elapsed);
+      setSecRemaining(rem);
+
+      if (rem === 0) {
+        const isMyTurn = totalPlayersList[currentTurnIndex]?.uid === myUid;
+        if (isMyTurn) {
+          const myPlayerName = totalPlayersList.find(p => p.uid === myUid)?.name || "You";
+          updateDoc(doc(db, "rooms", roomCode), {
+            hints: arrayUnion({
+              round: roomData.currentRound || 1,
+              uid: myUid,
+              name: myPlayerName,
+              hint: "PASS"
+            })
+          }).catch(err => console.log("Failed to auto-submit clue:", err));
+        } else if (isHost && elapsed >= limit + 3) {
+          const targetPlayer = totalPlayersList[currentTurnIndex];
+          if (targetPlayer) {
+            updateDoc(doc(db, "rooms", roomCode), {
+              hints: arrayUnion({
+                round: roomData.currentRound || 1,
+                uid: targetPlayer.uid,
+                name: targetPlayer.name,
+                hint: "PASS"
+              })
+            }).catch(err => console.log("Failed to force pass clue:", err));
+          }
+        }
+      }
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [roomData?.turnStartedAt, roomData?.turnIndex, roomData?.gameStatus, roomData?.currentRound, roomData?.hints?.length]);
 
   if (loading || !roomData) {
     return (
@@ -153,6 +236,8 @@ export default function GamePlayScreen({ route, navigation }) {
   const myPlayerObj = players.find(p => p.uid === myUid) || { name: "You", score: 0 };
   const isImposter = gameData.imposterId === myUid;
   const imposterPlayer = players.find(p => p.uid === gameData.imposterId);
+
+
 
   // 1. Confirm understanding of role
   const handleConfirmRole = async () => {
@@ -263,21 +348,55 @@ export default function GamePlayScreen({ route, navigation }) {
         }
       });
       const maxOtherVotes = Math.max(0, ...Object.values(otherVotesCount));
-      const imposterSurvives = imposterVotes <= maxOtherVotes; // survives on ties too
+      const imposterCaught = imposterVotes >= maxOtherVotes && imposterVotes > 0;
+      const imposterSurvives = !imposterCaught;
+
+      // Compute winners and losers
+      const winners = [];
+      const losers = [];
+
+      if (imposterSurvives) {
+        // Imposter survives: Imposter is the Winner. All students are Losers.
+        winners.push(imposterId);
+        players.forEach(p => {
+          if (p.uid !== imposterId) losers.push(p.uid);
+        });
+      } else {
+        // Imposter is caught:
+        // Winners are the students who voted for the Imposter correctly.
+        // Losers are the Imposter + the students who voted incorrectly.
+        players.forEach(p => {
+          if (p.uid === imposterId) {
+            losers.push(p.uid);
+          } else {
+            const votedForUid = votes[p.uid];
+            if (votedForUid === imposterId) {
+              winners.push(p.uid);
+            } else {
+              losers.push(p.uid);
+            }
+          }
+        });
+      }
+
+      // Calculate pot and payouts
+      const totalPlayersCount = players.length;
+      const entryFeePot = totalPlayersCount * 50;
+      const penaltyPot = losers.length * 50; // each loser pays an additional -50
+      const totalPot = entryFeePot + penaltyPot;
+
+      const winnerEarnedShare = winners.length > 0 ? Math.floor(totalPot / winners.length) : 0;
 
       const updatedPlayers = players.map(player => {
         let earned = 0;
-        if (player.uid === imposterId) {
-          // Imposter gets 50 if correct, 0 if wrong
-          earned = correct ? 50 : 0;
+        if (winners.includes(player.uid)) {
+          earned = winnerEarnedShare;
         } else {
-          // Regular player gets 100 if they voted for the imposter
-          const votedFor = votes[player.uid];
-          if (votedFor === imposterId) earned = 100;
+          earned = -50; // Losers lose an additional 50 points (making it -100 total)
         }
         return {
           ...player,
-          score: player.score + earned
+          score: earned
         };
       });
 
@@ -487,13 +606,47 @@ export default function GamePlayScreen({ route, navigation }) {
           {!roundHintsCompleted ? (
             <View style={styles.turnIndicator}>
               {isMyTurn ? (
-                <Text style={[typography.body1, { color: colors.success, fontWeight: "bold", textAlign: "center" }]}>
-                  ⚡ IT'S YOUR TURN! Submit a one-word hint.
-                </Text>
+                <View style={{ alignItems: "center" }}>
+                  <Text style={[typography.body1, { color: colors.success, fontWeight: "bold", textAlign: "center" }]}>
+                    ⚡ IT'S YOUR TURN! Submit a one-word hint.
+                  </Text>
+                  {roomData.clueTimer > 0 ? (
+                    <View style={[styles.timerPill, { backgroundColor: secRemaining <= 10 ? "rgba(239,68,68,0.1)" : "rgba(16,185,129,0.1)", borderColor: secRemaining <= 10 ? colors.error : colors.success }]}>
+                      <Ionicons name="time" size={14} color={secRemaining <= 10 ? colors.error : colors.success} />
+                      <Text style={[typography.body3, { color: secRemaining <= 10 ? colors.error : colors.success, fontWeight: "bold" }]}>
+                        Time Left: {secRemaining}s
+                      </Text>
+                    </View>
+                  ) : (
+                    <View style={[styles.timerPill, { backgroundColor: colors.isDark ? "#121212" : "#F1F5F9", borderColor: colors.border }]}>
+                      <Ionicons name="time-outline" size={14} color={colors.textSecondary} />
+                      <Text style={[typography.body3, { color: colors.textSecondary, fontWeight: "500" }]}>
+                        No Limit
+                      </Text>
+                    </View>
+                  )}
+                </View>
               ) : (
-                <Text style={[typography.body2, { color: colors.textSecondary, textAlign: "center" }]}>
-                  Waiting for <Text style={{ color: colors.primary, fontWeight: "bold" }}>{activeTurnPlayer?.name}</Text> to submit hint...
-                </Text>
+                <View style={{ alignItems: "center" }}>
+                  <Text style={[typography.body2, { color: colors.textSecondary, textAlign: "center" }]}>
+                    Waiting for <Text style={{ color: colors.primary, fontWeight: "bold" }}>{activeTurnPlayer?.name}</Text> to submit hint...
+                  </Text>
+                  {roomData.clueTimer > 0 ? (
+                    <View style={[styles.timerPill, { backgroundColor: colors.isDark ? "#121212" : "#F1F5F9", borderColor: colors.border }]}>
+                      <Ionicons name="time-outline" size={14} color={colors.textSecondary} />
+                      <Text style={[typography.body3, { color: colors.textSecondary, fontWeight: "500" }]}>
+                        Time Left: {secRemaining}s
+                      </Text>
+                    </View>
+                  ) : (
+                    <View style={[styles.timerPill, { backgroundColor: colors.isDark ? "#121212" : "#F1F5F9", borderColor: colors.border }]}>
+                      <Ionicons name="time-outline" size={14} color={colors.textSecondary} />
+                      <Text style={[typography.body3, { color: colors.textSecondary, fontWeight: "500" }]}>
+                        No Limit
+                      </Text>
+                    </View>
+                  )}
+                </View>
               )}
             </View>
           ) : (
@@ -1250,5 +1403,16 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 12,
     marginBottom: 16,
+  },
+  timerPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginTop: 10,
+    alignSelf: "center",
   },
 });

@@ -15,6 +15,9 @@ import RoleRevealScreen from "../screens/RoleRevealScreen";
 import DiscussionScreen from "../screens/DiscussionScreen";
 import GamePlayScreen from "../screens/GamePlayScreen";
 import GlobalRankingScreen from "../screens/GlobalRankingScreen";
+import DailyRewardScreen from "../screens/DailyRewardScreen";
+import StudyCenterScreen from "../screens/StudyCenterScreen";
+import GameRulesScreen from "../screens/GameRulesScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -41,6 +44,9 @@ export default function AppNavigator() {
             <Stack.Screen name="Discussion" component={DiscussionScreen} />
             <Stack.Screen name="GamePlay" component={GamePlayScreen} />
             <Stack.Screen name="GlobalRanking" component={GlobalRankingScreen} />
+            <Stack.Screen name="DailyReward" component={DailyRewardScreen} />
+            <Stack.Screen name="StudyCenter" component={StudyCenterScreen} />
+            <Stack.Screen name="GameRules" component={GameRulesScreen} />
           </>
         ) : (
           <>

@@ -10,12 +10,14 @@ import {
   ScrollView,
   Dimensions,
   Image,
+  Modal,
+  Alert,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../firebase/firebase";
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { useTheme } from "../context/ThemeContext";
 
 const { width } = Dimensions.get("window");
@@ -26,6 +28,7 @@ export default function HomeScreen({ navigation }) {
   const fadeIn = useRef(new Animated.Value(0)).current;
 
   const [stats, setStats] = useState(null);
+  const [historyModalVisible, setHistoryModalVisible] = useState(false);
 
   useEffect(() => {
     const myUid = auth.currentUser?.uid;
@@ -47,6 +50,7 @@ export default function HomeScreen({ navigation }) {
       console.log(e);
     }
   };
+
 
   useEffect(() => {
     Animated.timing(fadeIn, {
@@ -93,21 +97,20 @@ export default function HomeScreen({ navigation }) {
   });
 
   const outerItems = [
-    { isAvatar: false, source: require("../../assets/store.png"), w: 84, h: 68 },
-    { isAvatar: true, source: require("../../assets/avatarbottom.png") },
-    // { isAvatar: true, source: require("../../assets/avatarbottom.png") },
-    { isAvatar: true, source: require("../../assets/cricketavatar.png") },
-    { isAvatar: true, source: require("../../assets/girltopleft.png") },
+    { name: "trophy", color: "#FBBF24", size: 24, itemSize: 52 },
+    { name: "people", color: "#10B981", size: 24, itemSize: 52 },
+    { name: "book", color: "#3B82F6", size: 24, itemSize: 52 },
+    { name: "ribbon", color: "#EC4899", size: 24, itemSize: 52 },
   ];
 
   const middleItems = [
-    { isAvatar: false, source: require("../../assets/war.png"), w: 81, h: 71 },
-    { isAvatar: false, source: require("../../assets/msg.png"), w: 87, h: 58 },
+    { name: "game-controller", color: "#8B5CF6", size: 20, itemSize: 44 },
+    { name: "chatbubble-ellipses", color: "#EF4444", size: 20, itemSize: 44 },
   ];
 
   const innerItems = [
-    { isAvatar: false, source: require("../../assets/image 8.png"), w: 65, h: 74 },
-    { isAvatar: false, source: require("../../assets/image 10.png"), w: 71, h: 65 },
+    { name: "shield-checkmark", color: "#06B6D4", size: 18, itemSize: 38 },
+    { name: "help-circle", color: "#F59E0B", size: 18, itemSize: 38 },
   ];
 
   const renderOrbitalRing = (radius, items, rotation, rotationInverse) => {
@@ -128,7 +131,7 @@ export default function HomeScreen({ navigation }) {
           const angle = (index * 2 * Math.PI) / items.length - Math.PI / 2;
           const x = radius + radius * Math.cos(angle);
           const y = radius + radius * Math.sin(angle);
-          const itemSize = item.isAvatar ? 64 : 92;
+          const itemSize = item.itemSize;
 
           return (
             <Animated.View
@@ -144,15 +147,22 @@ export default function HomeScreen({ navigation }) {
                 },
               ]}
             >
-              {item.isAvatar ? (
-                <View style={[styles.avatarBubble, { borderColor: colors.isDark ? "#FFFFFF" : "#000000" }]}>
-                  <Image source={item.source} style={styles.orbitalImageAvatar} resizeMode="cover" />
-                </View>
-              ) : (
-                <View style={styles.iconBubble}>
-                  <Image source={item.source} style={{ width: item.w, height: item.h }} resizeMode="contain" />
-                </View>
-              )}
+              <View
+                style={[
+                  styles.iconBubble,
+                  {
+                    backgroundColor: colors.surface,
+                    borderColor: colors.border,
+                    borderRadius: itemSize / 2,
+                    shadowColor: item.color,
+                    shadowOpacity: 0.15,
+                    shadowRadius: 5,
+                    elevation: 3,
+                  },
+                ]}
+              >
+                <Ionicons name={item.name} size={item.size} color={item.color} />
+              </View>
             </Animated.View>
           );
         })}
@@ -180,7 +190,7 @@ export default function HomeScreen({ navigation }) {
           <View style={styles.headerRight}>
             {/* Clickable Score Pill */}
             <TouchableOpacity
-              onPress={() => navigation.navigate("GlobalRanking")}
+              onPress={() => setHistoryModalVisible(true)}
               activeOpacity={0.8}
               style={[styles.tokenPill, { backgroundColor: colors.isDark ? "#121212" : "#F8FAFC", borderColor: colors.border, marginRight: 4 }]}
             >
@@ -204,9 +214,9 @@ export default function HomeScreen({ navigation }) {
           showsVerticalScrollIndicator={false}
         >
           <Animated.View style={{ opacity: fadeIn, flex: 1, width: "100%", justifyContent: "space-between", alignItems: "center" }}>
-            
+
             <View style={styles.topGroup}>
-           
+
               <View style={styles.titleBlock}>
                 <Text style={[styles.mainTitle, typography.h1, { color: colors.textPrimary }]}>IMPOSTER</Text>
                 <View style={styles.tagRow}>
@@ -215,32 +225,44 @@ export default function HomeScreen({ navigation }) {
                     <Text style={[styles.tagText, typography.sub2, { color: colors.primary }]}>ACCA • CMA REVISION</Text>
                   </View>
 
-                  <View style={[styles.liveBadge, { backgroundColor: colors.isDark ? "rgba(0,185,111,0.15)" : "#ECFDF5", borderColor: colors.isDark ? "rgba(0,185,111,0.2)" : "rgba(16,185,129,0.15)" }]}>
+                  {/* <View style={[styles.liveBadge, { backgroundColor: colors.isDark ? "rgba(0,185,111,0.15)" : "#ECFDF5", borderColor: colors.isDark ? "rgba(0,185,111,0.2)" : "rgba(16,185,129,0.15)" }]}>
                     <View style={[styles.liveDot, { backgroundColor: colors.success }]} />
                     <Text style={[styles.liveText, typography.sub8, { color: colors.success }]}>2,841 online</Text>
-                  </View>
+                  </View> */}
                 </View>
               </View>
 
-            
+
               <View style={styles.orbitalWrap}>
-  
+
                 <View style={[styles.orbitTrack, { width: 300, height: 300, borderRadius: 150, borderColor: colors.isDark ? "rgba(255,255,255,0.08)" : "rgba(37,99,235,0.06)" }]} />
                 <View style={[styles.orbitTrack, { width: 220, height: 220, borderRadius: 110, borderColor: colors.isDark ? "rgba(255,255,255,0.08)" : "rgba(37,99,235,0.06)" }]} />
                 <View style={[styles.orbitTrack, { width: 140, height: 140, borderRadius: 70, borderColor: colors.isDark ? "rgba(255,255,255,0.08)" : "rgba(37,99,235,0.06)" }]} />
 
-               
+
                 {renderOrbitalRing(150, outerItems, spinOuter, spinOuterInverse)}
                 {renderOrbitalRing(110, middleItems, spinMiddle, spinMiddleInverse)}
                 {renderOrbitalRing(70, innerItems, spinInner, spinInnerInverse)}
 
-            
-                <View style={styles.radarCenter}>
-                  <View style={styles.logoNodeContainer}>
-                    <View style={[styles.logoNodeMain, { backgroundColor: colors.textPrimary }]} />
-                    <View style={[styles.logoNodeSub1, { backgroundColor: colors.textPrimary }]} />
-                    <View style={[styles.logoNodeSub2, { backgroundColor: colors.textPrimary }]} />
-                  </View>
+
+                <View
+                  style={[
+                    styles.radarCenter,
+                    {
+                      width: 56,
+                      height: 56,
+                      borderRadius: 28,
+                      backgroundColor: colors.surface,
+                      borderColor: colors.border,
+                      borderWidth: 1.5,
+                      shadowColor: colors.primary,
+                      shadowOpacity: 0.15,
+                      shadowRadius: 8,
+                      elevation: 4,
+                    },
+                  ]}
+                >
+                  <MaterialCommunityIcons name="gamepad-variant" size={32} color={colors.primary} />
                 </View>
               </View>
             </View>
@@ -292,22 +314,32 @@ export default function HomeScreen({ navigation }) {
               </TouchableOpacity>
             </View>
 
-            
+
             <View style={styles.bottomGroup}>
-            
+
               <View style={styles.statsStrip}>
                 {[
-                  { icon: "trophy-outline", label: "Boost Marks", color: colors.warning },
-                  { icon: "trending-up-outline", label: "Score Higher", color: colors.success },
+                  { icon: "gift-outline", label: "Daily Reward", color: colors.warning },
+                  { icon: "information-circle-outline", label: "Game Rules", color: colors.success },
                   { icon: "ribbon-outline", label: "Top Rank", color: colors.primary },
                 ].map(({ icon, label, color }) => {
                   const isTopRank = label === "Top Rank";
-                  const CardComponent = isTopRank ? TouchableOpacity : View;
+                  const isDailyReward = label === "Daily Reward";
+                  const isGameRules = label === "Game Rules";
+                  const CardComponent = (isTopRank || isDailyReward || isGameRules) ? TouchableOpacity : View;
+
+                  const getPressAction = () => {
+                    if (isTopRank) return () => navigation.navigate("GlobalRanking");
+                    if (isDailyReward) return () => navigation.navigate("DailyReward");
+                    if (isGameRules) return () => navigation.navigate("GameRules");
+                    return undefined;
+                  };
+
                   return (
                     <CardComponent
                       key={label}
-                      onPress={isTopRank ? () => navigation.navigate("GlobalRanking") : undefined}
-                      activeOpacity={isTopRank ? 0.8 : undefined}
+                      onPress={getPressAction()}
+                      activeOpacity={(isTopRank || isDailyReward || isGameRules) ? 0.8 : undefined}
                       style={[styles.statItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
                     >
                       <View style={[styles.statIcon, { borderColor: `${color}22`, backgroundColor: `${color}11` }]}>
@@ -319,7 +351,7 @@ export default function HomeScreen({ navigation }) {
                 })}
               </View>
 
-              
+
               <View style={styles.footerRow}>
                 <Ionicons name="book-outline" size={12} color={colors.textDisabled} />
                 <Text style={[styles.footerText, typography.sub2, { color: colors.textSecondary }]}>Study • Play • Compete</Text>
@@ -328,6 +360,80 @@ export default function HomeScreen({ navigation }) {
             </View>
           </Animated.View>
         </ScrollView>
+
+        {/* Coin History Modal */}
+        <Modal
+          visible={historyModalVisible}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setHistoryModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              {/* Header */}
+              <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <View style={[styles.modalIconBox, { backgroundColor: colors.isDark ? "rgba(245,158,11,0.15)" : "#FEF3C7" }]}>
+                    <Ionicons name="trophy" size={20} color="#FBBF24" />
+                  </View>
+                  <View>
+                    <Text style={[typography.h4, { color: colors.textPrimary, fontWeight: "bold" }]}>Coin History</Text>
+                    <Text style={[typography.body3, { color: colors.textSecondary }]}>Your match records</Text>
+                  </View>
+                </View>
+                <TouchableOpacity onPress={() => setHistoryModalVisible(false)} style={[styles.closeBtn, { backgroundColor: colors.isDark ? "#121212" : "#F1F5F9" }]}>
+                  <Ionicons name="close" size={20} color={colors.textSecondary} />
+                </TouchableOpacity>
+              </View>
+
+              {/* Total Balance */}
+              <View style={[styles.balanceSection, { backgroundColor: colors.isDark ? "#0A0A0A" : "#F8FAFC", borderColor: colors.border }]}>
+                <Text style={[typography.sub7, { color: colors.textSecondary }]}>TOTAL COINS ACCUMULATED</Text>
+                <Text style={[typography.h1, { color: colors.textPrimary, marginTop: 4, fontWeight: "900" }]}>
+                  {stats?.highScore ?? 0} <Text style={[typography.body2, { color: colors.textSecondary }]}>coins</Text>
+                </Text>
+              </View>
+
+              {/* History List */}
+              <ScrollView style={styles.historyList} contentContainerStyle={{ paddingBottom: 24, gap: 10 }}>
+                {stats?.matchHistory && stats.matchHistory.length > 0 ? (
+                  [...stats.matchHistory]
+                    .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
+                    .map((item, idx) => {
+                      const dateStr = item.timestamp
+                        ? new Date(item.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
+                        : "Unknown Date";
+                      const earned = item.score ?? 0;
+                      return (
+                        <View key={item.gameId || idx} style={[styles.historyRowItem, { borderColor: colors.border, backgroundColor: colors.isDark ? "#080808" : "#FFFFFF" }]}>
+                          <View style={{ flex: 1 }}>
+                            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                              <Text style={[typography.body1, { color: colors.textPrimary, fontWeight: "bold" }]}>Room: {item.roomCode || "N/A"}</Text>
+                              <View style={[styles.gameIdBadge, { backgroundColor: colors.isDark ? "#1E1E1E" : "#F1F5F9" }]}>
+                                <Text style={[typography.sub8, { color: colors.textSecondary, fontSize: 8 }]}>ID: {item.gameId || "N/A"}</Text>
+                              </View>
+                            </View>
+                            <Text style={[typography.body3, { color: colors.textSecondary, marginTop: 2 }]}>{dateStr}</Text>
+                          </View>
+                          <View style={styles.earnedPointsWrap}>
+                            <Text style={[typography.body1, { color: earned > 0 ? colors.success : colors.textSecondary, fontWeight: "bold" }]}>
+                              {earned > 0 ? `+${earned}` : `+0`}
+                            </Text>
+                            <Ionicons name="logo-bitcoin" size={14} color={earned > 0 ? colors.success : colors.textDisabled} />
+                          </View>
+                        </View>
+                      );
+                    })
+                ) : (
+                  <View style={styles.emptyState}>
+                    <Ionicons name="receipt-outline" size={48} color={colors.textDisabled} style={{ marginBottom: 12 }} />
+                    <Text style={[typography.body2, { color: colors.textSecondary, textAlign: "center" }]}>No matches played yet.</Text>
+                  </View>
+                )}
+              </ScrollView>
+            </View>
+          </View>
+        </Modal>
       </SafeAreaView>
     </LinearGradient>
   );
@@ -516,7 +622,7 @@ const styles = StyleSheet.create({
   },
   liveText: { fontSize: 9, color: "#059669", fontWeight: "600" },
 
-  
+
   cardsSection: { width: "100%", gap: 8 },
   modeCard: {
     width: "100%",
@@ -580,13 +686,13 @@ const styles = StyleSheet.create({
     borderColor: "#E2E8F0",
   },
 
-  
+
   statsStrip: {
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
     gap: 10,
-    marginTop:4
+    marginTop: 4
   },
   statItem: {
     flex: 1,
@@ -739,6 +845,72 @@ const styles = StyleSheet.create({
     fontSize: 6,
     fontWeight: "900",
     letterSpacing: 0.5,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.6)",
+    justifyContent: "flex-end",
+  },
+  modalContainer: {
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 24,
+    paddingTop: 20,
+    borderWidth: 1,
+    height: "70%",
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+  },
+  modalIconBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  closeBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  balanceSection: {
+    borderRadius: 16,
+    padding: 16,
+    marginVertical: 16,
+    borderWidth: 1,
+  },
+  historyList: {
+    flex: 1,
+  },
+  historyRowItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  gameIdBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  earnedPointsWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  emptyState: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 60,
   },
 });
 
