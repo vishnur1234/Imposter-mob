@@ -35,9 +35,9 @@ const RULES_STEPS = [
     borderColor: "rgba(14,165,233,0.25)",
     details: [
       "Each player takes a turn to give exactly ONE WORD as a clue about the topic.",
-      "Students must describe the topic well enough for others, but not too obvious.",
-      "The Imposter must bluff — give a convincing word without knowing the real topic.",
-      "📢 Do NOT say the actual topic word out loud. Doing so disqualifies your round.",
+      "⏱️ Clue Timer: Active turns are limited to 1 Min (60s) or 2 Min (120s), set by the host.",
+      "⚠️ Turn Timeout: If the timer runs out, your turn is passed ('PASS') automatically.",
+      "Students describe the topic subtly. Imposters must bluff to blend in without knowing the topic.",
     ],
   },
   {
@@ -49,10 +49,9 @@ const RULES_STEPS = [
     bgColor: "rgba(245,158,11,0.08)",
     borderColor: "rgba(245,158,11,0.25)",
     details: [
-      "After all clues are given, a short open discussion begins.",
-      "Players debate and try to identify who gave suspicious or vague clues.",
-      "Each player then votes on who they believe is the Imposter.",
-      "The player with the most votes is eliminated and revealed as Student or Imposter.",
+      "After all clues are given, players debate and vote on who they believe is the Imposter.",
+      "👮 Caught on Ties: In a voting tie (e.g. 1-1 in 2-player mode), the Imposter is caught!",
+      "If the Imposter receives the most (or tied most) votes, they are caught and must play the Bonus Round.",
     ],
   },
   {
@@ -66,23 +65,23 @@ const RULES_STEPS = [
     details: [
       "If the Imposter is caught, they get ONE final chance to save themselves.",
       "They must guess the secret topic that the students were describing.",
-      "✅ Correct guess: Imposter steals 50 points and survives the round!",
-      "❌ Wrong guess: Students earn their full points, Imposter is eliminated.",
+      "Correct guess: The Imposter escapes and survives the round, stealing the pot!",
     ],
   },
   {
     id: 5,
     emoji: "🏆",
-    title: "Scoring System",
-    subtitle: "How points are earned",
+    title: "Scoring & Betting System",
+    subtitle: "How coins are wagered and won",
     accentColor: "#10B981",
     bgColor: "rgba(16,185,129,0.08)",
     borderColor: "rgba(16,185,129,0.25)",
     details: [
-      "✅ Students successfully vote out the Imposter → +100 points each.",
-      "🎯 Imposter guesses the topic correctly → +50 bonus points.",
-      "🛡️ Imposter survives without being caught → +100 points (Imposter wins).",
-      "🌟 Daily Rewards add +500 free coins to your total balance once per day.",
+      "🎟️ Entry Fee: Starting a match costs 50 coins, deducted at the start.",
+      "🛡️ Imposter Escapes: Imposter wins the entire pot (Players * 50 coins). Students lose their fee.",
+      "🎯 Imposter Caught: Correct voting students divide the total pot equally.",
+      "💰 The Pot: Pot = Everyone's entry fee + an additional 50-coin penalty from losers.",
+      "❌ Loser Penalty: Incorrect voters and caught Imposter lose an extra 50 coins (-100 total).",
     ],
   },
 ];
@@ -210,13 +209,13 @@ export default function GameRulesScreen({ navigation }) {
             <View style={styles.introStats}>
               {[
                 { icon: "people", val: "3–8", label: "Players" },
-                { icon: "time", val: "~10", label: "Minutes" },
+                { icon: "time", val: "Adjustable", label: "Turn Timer" },
                 { icon: "star", val: "100", label: "Max Points" },
               ].map((s, i) => (
                 <View key={i} style={[styles.introStat, { backgroundColor: colors.isDark ? "rgba(255,255,255,0.07)" : "rgba(99,102,241,0.08)", borderColor: "rgba(99,102,241,0.2)" }]}>
                   <Ionicons name={s.icon} size={18} color="#6366F1" />
-                  <Text style={[typography.h4, { color: colors.isDark ? "#E0E7FF" : "#312E81", fontWeight: "900" }]}>{s.val}</Text>
-                  <Text style={[typography.sub8, { color: colors.isDark ? "#A5B4FC" : "#6366F1" }]}>{s.label}</Text>
+                  <Text numberOfLines={1} adjustsFontSizeToFit style={[{ color: colors.isDark ? "#E0E7FF" : "#312E81", fontWeight: "900", textAlign: "center", fontSize: 11, width: "100%" }]}>{s.val}</Text>
+                  <Text numberOfLines={1} adjustsFontSizeToFit style={[{ color: colors.isDark ? "#A5B4FC" : "#6366F1", textAlign: "center", fontSize: 8.5, width: "100%" }]}>{s.label}</Text>
                 </View>
               ))}
             </View>
@@ -300,7 +299,7 @@ const styles = StyleSheet.create({
   introStats: { flexDirection: "row", gap: 10, marginTop: 18, width: "100%" },
   introStat: {
     flex: 1, borderRadius: 12, borderWidth: 1,
-    padding: 12, alignItems: "center", gap: 4,
+    padding: 12, alignItems: "center", justifyContent: "center", gap: 4,
   },
 
   sectionLabel: {

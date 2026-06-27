@@ -18,6 +18,7 @@ import GlobalRankingScreen from "../screens/GlobalRankingScreen";
 import DailyRewardScreen from "../screens/DailyRewardScreen";
 import StudyCenterScreen from "../screens/StudyCenterScreen";
 import GameRulesScreen from "../screens/GameRulesScreen";
+import ProfileScreen from "../screens/ProfileScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -47,6 +48,7 @@ export default function AppNavigator() {
             <Stack.Screen name="DailyReward" component={DailyRewardScreen} />
             <Stack.Screen name="StudyCenter" component={StudyCenterScreen} />
             <Stack.Screen name="GameRules" component={GameRulesScreen} />
+            <Stack.Screen name="Profile" component={ProfileScreen} />
           </>
         ) : (
           <>

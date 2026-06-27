@@ -12,6 +12,7 @@ import {
   Image,
   Modal,
   Alert,
+  TextInput,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialCommunityIcons, Feather } from "@expo/vector-icons";
@@ -29,6 +30,8 @@ export default function HomeScreen({ navigation }) {
 
   const [stats, setStats] = useState(null);
   const [historyModalVisible, setHistoryModalVisible] = useState(false);
+  const [showNameModal, setShowNameModal] = useState(false);
+  const [gamingName, setGamingName] = useState("");
 
   useEffect(() => {
     const myUid = auth.currentUser?.uid;
@@ -36,7 +39,17 @@ export default function HomeScreen({ navigation }) {
 
     const unsub = onSnapshot(doc(db, "user_stats", myUid), (snap) => {
       if (snap.exists()) {
-        setStats(snap.data());
+        const data = snap.data();
+        setStats(data);
+        if (!data.playerName) {
+          setGamingName(auth.currentUser?.email ? auth.currentUser.email.split("@")[0] : "Player");
+          setShowNameModal(true);
+        } else {
+          setShowNameModal(false);
+        }
+      } else {
+        setGamingName(auth.currentUser?.email ? auth.currentUser.email.split("@")[0] : "Player");
+        setShowNameModal(true);
       }
     });
 
@@ -200,6 +213,9 @@ export default function HomeScreen({ navigation }) {
               </Text>
             </TouchableOpacity>
 
+            <TouchableOpacity onPress={() => navigation.navigate("Profile")} style={[styles.themeBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} activeOpacity={0.8}>
+              <Feather name="user" size={14} color={colors.textSecondary} />
+            </TouchableOpacity>
             <TouchableOpacity onPress={toggleTheme} style={[styles.themeBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} activeOpacity={0.8}>
               <Feather name={theme === "light" ? "moon" : "sun"} size={14} color={colors.textSecondary} />
             </TouchableOpacity>
@@ -431,6 +447,88 @@ export default function HomeScreen({ navigation }) {
                   </View>
                 )}
               </ScrollView>
+            </View>
+          </View>
+        </Modal>
+
+        {/* Gaming Name Setup Modal */}
+        <Modal
+          visible={showNameModal}
+          animationType="fade"
+          transparent={true}
+          onRequestClose={() => {}} // Non-dismissable
+        >
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalContainer, { backgroundColor: colors.surface, borderColor: colors.border, maxHeight: 320 }]}>
+              {/* Header */}
+              <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <View style={[styles.modalIconBox, { backgroundColor: colors.isDark ? "rgba(139,92,246,0.15)" : "#F5F3FF" }]}>
+                    <Ionicons name="game-controller" size={20} color={colors.primary} />
+                  </View>
+                  <View>
+                    <Text style={[typography.h4, { color: colors.textPrimary, fontWeight: "bold" }]}>Choose Gaming Tag</Text>
+                    <Text style={[typography.body3, { color: colors.textSecondary }]}>Set your display name</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Form Content */}
+              <View style={{ padding: 20, gap: 16 }}>
+                <Text style={[typography.body3, { color: colors.textSecondary }]}>
+                  Please choose a gaming name before you play. Other players will see this name.
+                </Text>
+                
+                <View style={{ width: "100%", marginBottom: 16 }}>
+                  <TextInput
+                    value={gamingName}
+                    onChangeText={setGamingName}
+                    placeholder="Enter gaming tag..."
+                    placeholderTextColor={colors.textDisabled}
+                    maxLength={18}
+                    style={[
+                      typography.body1,
+                      {
+                        backgroundColor: colors.isDark ? "#000000" : "#F8FAFC",
+                        borderColor: colors.border,
+                        color: colors.textPrimary,
+                        height: 48,
+                        borderWidth: 1,
+                        borderRadius: 10,
+                        paddingHorizontal: 16,
+                      }
+                    ]}
+                  />
+                </View>
+
+                <TouchableOpacity
+                  onPress={async () => {
+                    const cleanName = gamingName.trim();
+                    if (!cleanName) {
+                      Alert.alert("Input Required", "Please enter a valid gaming name.");
+                      return;
+                    }
+                    try {
+                      const myUid = auth.currentUser?.uid;
+                      if (!myUid) return;
+                      
+                      const statsRef = doc(db, "user_stats", myUid);
+                      await setDoc(statsRef, {
+                        playerName: cleanName,
+                        name: cleanName // for standard compatibility
+                      }, { merge: true });
+                      
+                      setShowNameModal(false);
+                    } catch (e) {
+                      Alert.alert("Error", `Failed to save name: ${e.message}`);
+                    }
+                  }}
+                  style={{ backgroundColor: colors.primary, height: 48, borderRadius: 10, justifyContent: "center", alignItems: "center" }}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[typography.btn1, { color: "#FFF", fontWeight: "bold" }]}>SAVE AND CONTINUE</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </Modal>

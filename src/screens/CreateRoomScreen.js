@@ -18,21 +18,28 @@ export default function CreateRoomScreen({ navigation }) {
   const [clueTimer, setClueTimer] = useState(60);
   const [loading, setLoading] = useState(false);
 
-  const [selectedTopic, setSelectedTopic] = useState(null); // null means default Course (Finance)
+  const [selectedTopic, setSelectedTopic] = useState(null); 
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [showTopicModal, setShowTopicModal] = useState(false);
   const [userCoins, setUserCoins] = useState(0);
+  const [hostPlayerName, setHostPlayerName] = useState("");
 
   useEffect(() => {
     const myUid = auth.currentUser?.uid;
     if (!myUid) return;
     const unsub = onSnapshot(doc(db, "user_stats", myUid), (snap) => {
       if (snap.exists()) {
-        setUserCoins(snap.data().highScore || 0);
+        const data = snap.data();
+        setUserCoins(data.highScore || 0);
+        setHostPlayerName(data.playerName || data.name || (auth.currentUser?.email ? auth.currentUser.email.split("@")[0] : "Host"));
+      } else {
+        setHostPlayerName(auth.currentUser?.email ? auth.currentUser.email.split("@")[0] : "Host");
       }
     });
     return () => unsub();
   }, []);
+
+
 
   const handleCourseChange = (newCourse) => {
     setCourse(newCourse);
@@ -58,7 +65,7 @@ export default function CreateRoomScreen({ navigation }) {
         currentRound: 1,
         gameStatus: "waiting",
         createdAt: Date.now(),
-        players: [{ uid: auth.currentUser.uid, name: emailPrefix, score: 0 }],
+        players: [{ uid: auth.currentUser.uid, name: hostPlayerName || emailPrefix, score: 0 }],
         votes: {},
         hints: [],
         readyPlayers: [],

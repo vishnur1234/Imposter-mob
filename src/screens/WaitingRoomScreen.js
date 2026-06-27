@@ -5,7 +5,7 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { doc, onSnapshot, updateDoc } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc, getDoc } from "firebase/firestore";
 import { db, auth } from "../firebase/firebase";
 import { generateTopic } from "../services/generateTopic";
 import { useTheme } from "../context/ThemeContext";
@@ -21,17 +21,31 @@ export default function WaitingRoomScreen({ route, navigation }) {
     if (isDemoMode) {
       setJoinedPlayers([
         { uid: auth.currentUser?.uid || "demo-0", name: auth.currentUser?.email ? auth.currentUser.email.split("@")[0] : "Demo Host" },
-        { uid: "demo-1", name: "Alpha Player" },
-        { uid: "demo-2", name: "Beta Player" },
       ]);
       return;
     }
     if (!roomCode) return;
-    const unsub = onSnapshot(doc(db, "rooms", roomCode), (snap) => {
+    const unsub = onSnapshot(doc(db, "rooms", roomCode), async (snap) => {
       if (snap.exists()) {
         const data = snap.data();
         const playersList = data.players || data.playerList || [];
-        setJoinedPlayers(playersList);
+
+        // Enrich each player's name from user_stats so gaming tags always show
+        const enriched = await Promise.all(
+          playersList.map(async (p) => {
+            try {
+              const statSnap = await getDoc(doc(db, "user_stats", p.uid));
+              if (statSnap.exists()) {
+                const sd = statSnap.data();
+                const gTag = sd.playerName || sd.name;
+                if (gTag) return { ...p, name: gTag };
+              }
+            } catch (_) {}
+            return p;
+          })
+        );
+
+        setJoinedPlayers(enriched);
         if (data.selectedTopic !== undefined) {
           setSelectedTopic(data.selectedTopic);
         }
@@ -90,6 +104,21 @@ export default function WaitingRoomScreen({ route, navigation }) {
           gameId
         });
       } else {
+        // Resolve each player's gaming name from user_stats so it always shows correctly
+        const enrichedPlayers = await Promise.all(
+          joinedPlayers.map(async (p) => {
+            try {
+              const snap = await getDoc(doc(db, "user_stats", p.uid));
+              if (snap.exists()) {
+                const data = snap.data();
+                const gamingName = data.playerName || data.name;
+                if (gamingName) return { ...p, name: gamingName };
+              }
+            } catch (_) {}
+            return p;
+          })
+        );
+
         await updateDoc(doc(db, "rooms", roomCode), {
           started: true,
           gameStatus: "reveal",
@@ -97,13 +126,14 @@ export default function WaitingRoomScreen({ route, navigation }) {
           votes: {},
           hints: [],
           currentRound: 1,
+          players: enrichedPlayers,
           gameData: {
             answer: topic.answer,
             clue: topic.clue || "",
             imposterId: imposterPlayer.uid
           },
           topic, // compatibility
-          imposterIndex: joinedPlayers.findIndex(p => p.uid === imposterPlayer.uid), // compatibility
+          imposterIndex: enrichedPlayers.findIndex(p => p.uid === imposterPlayer.uid), // compatibility
           gameId
         });
       }
