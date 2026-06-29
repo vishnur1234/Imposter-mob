@@ -14,6 +14,13 @@ import {
   Alert,
   TextInput,
 } from "react-native";
+
+import {
+  KeyboardAvoidingView,
+  Platform,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import { signOut } from "firebase/auth";
@@ -189,15 +196,18 @@ export default function HomeScreen({ navigation }) {
       locations={[0, 0.4, 1]}
       style={styles.container}
     >
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView style={[styles.safe, { backgroundColor: colors.isDark ? "#0A0A0A" : "#FFFFFF" }]}>
 
         <View style={[styles.navBar, { borderBottomColor: colors.border, backgroundColor: colors.isDark ? "#0A0A0A" : "#FFFFFF" }]}>
           <View style={styles.navBrand}>
             <Image
-              source={require("../../assets/elance.png")}
-              style={[styles.logoImage, colors.isDark && { tintColor: "#FFFFFF" }]}
+              source={require("../../assets/elanceIcon.png")}
+              style={styles.brandIcon}
               resizeMode="contain"
             />
+            <Text style={[styles.brandText, { color: colors.isDark ? "#FFFFFF" : "#0F172A" }]}>
+              ELANCE
+            </Text>
           </View>
 
           <View style={styles.headerRight}>
@@ -435,7 +445,6 @@ export default function HomeScreen({ navigation }) {
                             <Text style={[typography.body1, { color: earned > 0 ? colors.success : colors.textSecondary, fontWeight: "bold" }]}>
                               {earned > 0 ? `+${earned}` : `+0`}
                             </Text>
-                            <Ionicons name="logo-bitcoin" size={14} color={earned > 0 ? colors.success : colors.textDisabled} />
                           </View>
                         </View>
                       );
@@ -451,86 +460,92 @@ export default function HomeScreen({ navigation }) {
           </View>
         </Modal>
 
-        {/* Gaming Name Setup Modal */}
         <Modal
           visible={showNameModal}
           animationType="fade"
           transparent={true}
-          onRequestClose={() => {}} // Non-dismissable
+          onRequestClose={() => { }} // Non-dismissable
         >
-          <View style={styles.modalOverlay}>
-            <View style={[styles.modalContainer, { backgroundColor: colors.surface, borderColor: colors.border, maxHeight: 320 }]}>
-              {/* Header */}
-              <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                  <View style={[styles.modalIconBox, { backgroundColor: colors.isDark ? "rgba(139,92,246,0.15)" : "#F5F3FF" }]}>
-                    <Ionicons name="game-controller" size={20} color={colors.primary} />
+          <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+          >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <View style={styles.modalOverlay}>
+                <View style={[styles.modalContainer, { backgroundColor: colors.surface, borderColor: colors.border, maxHeight: 320 }]}>
+                  {/* Header */}
+                  <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                      <View style={[styles.modalIconBox, { backgroundColor: colors.isDark ? "rgba(139,92,246,0.15)" : "#F5F3FF" }]}>
+                        <Ionicons name="game-controller" size={20} color={colors.primary} />
+                      </View>
+                      <View>
+                        <Text style={[typography.h4, { color: colors.textPrimary, fontWeight: "bold" }]}>Choose Gaming Tag</Text>
+                        <Text style={[typography.body3, { color: colors.textSecondary }]}>Set your display name</Text>
+                      </View>
+                    </View>
                   </View>
-                  <View>
-                    <Text style={[typography.h4, { color: colors.textPrimary, fontWeight: "bold" }]}>Choose Gaming Tag</Text>
-                    <Text style={[typography.body3, { color: colors.textSecondary }]}>Set your display name</Text>
+
+                  {/* Form Content */}
+                  <View style={{ padding: 20, gap: 16 }}>
+                    <Text style={[typography.body3, { color: colors.textSecondary }]}>
+                      Please choose a gaming name before you play. Other players will see this name.
+                    </Text>
+
+                    <View style={{ width: "100%", marginBottom: 16 }}>
+                      <TextInput
+                        value={gamingName}
+                        onChangeText={setGamingName}
+                        placeholder="Enter gaming tag..."
+                        placeholderTextColor={colors.textDisabled}
+                        maxLength={18}
+                        style={[
+                          typography.body1,
+                          {
+                            backgroundColor: colors.isDark ? "#000000" : "#F8FAFC",
+                            borderColor: colors.border,
+                            color: colors.textPrimary,
+                            height: 48,
+                            borderWidth: 1,
+                            borderRadius: 10,
+                            paddingHorizontal: 16,
+                          }
+                        ]}
+                      />
+                    </View>
+
+                    <TouchableOpacity
+                      onPress={async () => {
+                        const cleanName = gamingName.trim();
+                        if (!cleanName) {
+                          Alert.alert("Input Required", "Please enter a valid gaming name.");
+                          return;
+                        }
+                        try {
+                          const myUid = auth.currentUser?.uid;
+                          if (!myUid) return;
+
+                          const statsRef = doc(db, "user_stats", myUid);
+                          await setDoc(statsRef, {
+                            playerName: cleanName,
+                            name: cleanName // for standard compatibility
+                          }, { merge: true });
+
+                          setShowNameModal(false);
+                        } catch (e) {
+                          Alert.alert("Error", `Failed to save name: ${e.message}`);
+                        }
+                      }}
+                      style={{ backgroundColor: colors.primary, height: 48, borderRadius: 10, justifyContent: "center", alignItems: "center" }}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={[typography.btn1, { color: "#FFF", fontWeight: "bold" }]}>SAVE AND CONTINUE</Text>
+                    </TouchableOpacity>
                   </View>
                 </View>
               </View>
-
-              {/* Form Content */}
-              <View style={{ padding: 20, gap: 16 }}>
-                <Text style={[typography.body3, { color: colors.textSecondary }]}>
-                  Please choose a gaming name before you play. Other players will see this name.
-                </Text>
-                
-                <View style={{ width: "100%", marginBottom: 16 }}>
-                  <TextInput
-                    value={gamingName}
-                    onChangeText={setGamingName}
-                    placeholder="Enter gaming tag..."
-                    placeholderTextColor={colors.textDisabled}
-                    maxLength={18}
-                    style={[
-                      typography.body1,
-                      {
-                        backgroundColor: colors.isDark ? "#000000" : "#F8FAFC",
-                        borderColor: colors.border,
-                        color: colors.textPrimary,
-                        height: 48,
-                        borderWidth: 1,
-                        borderRadius: 10,
-                        paddingHorizontal: 16,
-                      }
-                    ]}
-                  />
-                </View>
-
-                <TouchableOpacity
-                  onPress={async () => {
-                    const cleanName = gamingName.trim();
-                    if (!cleanName) {
-                      Alert.alert("Input Required", "Please enter a valid gaming name.");
-                      return;
-                    }
-                    try {
-                      const myUid = auth.currentUser?.uid;
-                      if (!myUid) return;
-                      
-                      const statsRef = doc(db, "user_stats", myUid);
-                      await setDoc(statsRef, {
-                        playerName: cleanName,
-                        name: cleanName // for standard compatibility
-                      }, { merge: true });
-                      
-                      setShowNameModal(false);
-                    } catch (e) {
-                      Alert.alert("Error", `Failed to save name: ${e.message}`);
-                    }
-                  }}
-                  style={{ backgroundColor: colors.primary, height: 48, borderRadius: 10, justifyContent: "center", alignItems: "center" }}
-                  activeOpacity={0.8}
-                >
-                  <Text style={[typography.btn1, { color: "#FFF", fontWeight: "bold" }]}>SAVE AND CONTINUE</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
+            </TouchableWithoutFeedback>
+          </KeyboardAvoidingView>
         </Modal>
       </SafeAreaView>
     </LinearGradient>
@@ -554,7 +569,17 @@ const styles = StyleSheet.create({
     borderColor: "#E2E8F0",
     backgroundColor: "#FFFFFF",
   },
-  navBrand: { flexDirection: "row", alignItems: "center" },
+  navBrand: { flexDirection: "row", alignItems: "center", gap: 6 },
+  brandIcon: {
+    width: 20,
+    height: 20,
+  },
+  brandText: {
+    fontSize: 13,
+    fontWeight: "800",
+    letterSpacing: 1.5,
+    color: "#0F172A",
+  },
   logoImage: {
     width: 90,
     height: 24,

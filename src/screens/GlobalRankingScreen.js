@@ -26,8 +26,8 @@ export default function GlobalRankingScreen({ navigation }) {
   };
 
   useEffect(() => {
-    let unsubUser = () => {};
-    let unsubRankings = () => {};
+    let unsubUser = () => { };
+    let unsubRankings = () => { };
 
     // 1. Listen to current user stats in real-time
     if (myUid !== "guest") {
@@ -46,7 +46,8 @@ export default function GlobalRankingScreen({ navigation }) {
         const data = doc.data();
         firestoreRankings.push({
           ...data,
-          avatarColor: getAvatarColor(data.uid, data.name)
+          uid: data.uid || doc.id,
+          avatarColor: getAvatarColor(data.uid || doc.id, data.name)
         });
       });
       setRankings(firestoreRankings);
@@ -74,7 +75,7 @@ export default function GlobalRankingScreen({ navigation }) {
   return (
     <LinearGradient colors={colors.gradientBg} locations={[0, 0.4, 1]} style={styles.bg}>
       <SafeAreaView style={{ flex: 1 }}>
-        
+
         {/* Banner Header */}
         <LinearGradient colors={["#1E40AF", "#3B82F6"]} style={styles.bannerHeader}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} activeOpacity={0.8}>
@@ -109,6 +110,7 @@ export default function GlobalRankingScreen({ navigation }) {
             const isRank2 = rank === 2;
             const isRank3 = rank === 3;
             const isTopRank = isRank1 || isRank2 || isRank3;
+            const isMe = player.uid === myUid;
 
             // Determine badge color/style
             let badgeBg = "transparent";
@@ -128,7 +130,27 @@ export default function GlobalRankingScreen({ navigation }) {
             const avatarBg = player.avatarColor || colors.primaryLight;
 
             return (
-              <View key={player.uid || index} style={[styles.rankingRow, { borderBottomColor: colors.border }]}>
+              <View
+                key={player.uid || index}
+                style={[
+                  styles.rankingRow,
+                  {
+                    backgroundColor: isMe
+                      ? (colors.isDark ? "rgba(20, 101, 241, 0.15)" : "#E3F0FF")
+                      : (colors.isDark ? "rgba(255, 255, 255, 0.03)" : "#FFFFFF"),
+                    borderColor: isMe ? colors.primary : (colors.isDark ? "rgba(255,255,255,0.06)" : "#E2E8F0"),
+                    borderWidth: 1.2,
+                    borderRadius: 16,
+                    marginVertical: 4,
+                    paddingHorizontal: 14,
+                    paddingVertical: 12,
+                    shadowColor: isMe ? colors.primary : "#000",
+                    shadowOpacity: isMe ? 0.15 : 0.02,
+                    shadowRadius: isMe ? 8 : 4,
+                    elevation: isMe ? 3 : 1,
+                  }
+                ]}
+              >
                 {/* Rank Badge */}
                 <View style={styles.rankWrapper}>
                   {isTopRank ? (
@@ -155,12 +177,29 @@ export default function GlobalRankingScreen({ navigation }) {
                 </View>
 
                 {/* Name */}
-                <Text style={[styles.playerName, typography.body1, { color: colors.textPrimary }]} numberOfLines={1}>
-                  {player.name}
-                </Text>
+                <View style={styles.nameContainer}>
+                  <Text
+                    style={[
+                      styles.playerName,
+                      typography.body1,
+                      {
+                        color: isMe ? colors.primary : colors.textPrimary,
+                        fontWeight: isMe ? "900" : "700"
+                      }
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {player.name || "Player"}
+                  </Text>
+                  {isMe && (
+                    <View style={[styles.youBadge, { backgroundColor: colors.primary }]}>
+                      <Text style={styles.youBadgeText}>YOU</Text>
+                    </View>
+                  )}
+                </View>
 
                 {/* Score */}
-                <Text style={[styles.playerScore, typography.h5, { color: colors.textSecondary }]}>
+                <Text style={[styles.playerScore, typography.h5, { color: isMe ? colors.primary : colors.textSecondary }]}>
                   {scoreStr}
                 </Text>
               </View>
@@ -176,8 +215,8 @@ export default function GlobalRankingScreen({ navigation }) {
                 {auth.currentUser?.email?.[0]?.toUpperCase() || "?"}
               </Text>
             </View>
-            <Text style={[styles.currentUserName, typography.body1, { color: colors.textPrimary }]}>
-              You
+            <Text style={[styles.currentUserName, typography.body1, { color: colors.textPrimary }]} numberOfLines={1}>
+              {userStats?.playerName || userStats?.name || "Player"} (You)
             </Text>
           </View>
           <Text style={[styles.currentUserScore, typography.h3, { color: colors.textPrimary }]}>
@@ -327,6 +366,23 @@ const styles = StyleSheet.create({
   playerName: {
     flex: 1,
     fontWeight: "700",
+  },
+  nameContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  youBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2.5,
+    borderRadius: 6,
+  },
+  youBadgeText: {
+    color: "#FFFFFF",
+    fontSize: 9,
+    fontWeight: "900",
+    letterSpacing: 0.5,
   },
   playerScore: {
     fontWeight: "bold",

@@ -51,7 +51,7 @@ export default function ProfileScreen({ navigation }) {
       const statsRef = doc(db, "user_stats", myUid);
       await setDoc(statsRef, {
         playerName: cleanName,
-        name: cleanName // Keep compatibility with standard name field
+        name: cleanName 
       }, { merge: true });
 
       Alert.alert("Success", "Gaming name updated successfully!");
@@ -114,7 +114,7 @@ export default function ProfileScreen({ navigation }) {
             {/* Statistics Row Grid */}
             <View style={styles.statsRow}>
               <View style={[styles.statBox, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <Ionicons name="logo-bitcoin" size={24} color="#F59E0B" />
+                <Ionicons name="trophy" size={24} color="#FBBF24" />
                 <Text style={[typography.h3, { color: colors.textPrimary, fontWeight: "900", marginTop: 8 }]}>
                   {stats?.highScore ?? 0}
                 </Text>

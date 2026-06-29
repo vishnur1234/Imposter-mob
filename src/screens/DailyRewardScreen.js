@@ -39,11 +39,11 @@ export default function DailyRewardScreen({ navigation }) {
     return () => unsub();
   }, [myUid]);
 
-  // 2. Compute claimable state
+
   const lastClaimed = stats?.lastDailyRewardClaimed || 0;
   const isClaimable = Date.now() - lastClaimed >= dayInMs;
 
-  // 3. Pulse animation loop when claimable
+
   useEffect(() => {
     let pulse;
     if (isClaimable && !loading) {
@@ -81,12 +81,12 @@ export default function DailyRewardScreen({ navigation }) {
       }
     };
 
-    updateTicker(); // initial run
+    updateTicker(); 
     const interval = setInterval(updateTicker, 1000);
     return () => clearInterval(interval);
   }, [lastClaimed]);
 
-  // 5. Animations trigger
+
   const triggerShake = () => {
     shakeAnim.setValue(0);
     Animated.sequence([
