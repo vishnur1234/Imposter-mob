@@ -167,6 +167,14 @@ export default function WaitingRoomScreen({ route, navigation }) {
               </View>
             </View>
 
+            {/* Room Code Share Warning / Info Banner */}
+            <View style={[styles.shareBanner, { backgroundColor: colors.isDark ? "rgba(20,101,241,0.1)" : "#EFF6FF", borderColor: colors.isDark ? "rgba(20,101,241,0.25)" : "rgba(37,99,235,0.15)" }]}>
+              <Ionicons name="information-circle-outline" size={16} color={colors.primary} />
+              <Text style={[styles.shareBannerText, typography.body3, { color: colors.primary }]}>
+                Share this room code with your friends to join your waiting team!
+              </Text>
+            </View>
+
             {isDemoMode && (
               <View style={[styles.demoBanner, { backgroundColor: colors.isDark ? "rgba(245,158,11,0.15)" : "#FEF3C7", borderColor: "rgba(245,158,11,0.25)" }]}>
                 <Ionicons name="warning-outline" size={14} color={colors.warning} />
@@ -322,4 +330,19 @@ const styles = StyleSheet.create({
     borderRadius: 14, padding: 14,
   },
   waitingText: { color: "#2563EB", fontSize: 12 },
+  shareBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 20,
+  },
+  shareBannerText: {
+    flex: 1,
+    fontWeight: "700",
+    lineHeight: 18,
+    fontSize: 12,
+  },
 });
