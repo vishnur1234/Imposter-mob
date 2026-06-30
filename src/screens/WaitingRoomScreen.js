@@ -40,7 +40,7 @@ export default function WaitingRoomScreen({ route, navigation }) {
                 const gTag = sd.playerName || sd.name;
                 if (gTag) return { ...p, name: gTag };
               }
-            } catch (_) {}
+            } catch (_) { }
             return p;
           })
         );
@@ -114,7 +114,7 @@ export default function WaitingRoomScreen({ route, navigation }) {
                 const gamingName = data.playerName || data.name;
                 if (gamingName) return { ...p, name: gamingName };
               }
-            } catch (_) {}
+            } catch (_) { }
             return p;
           })
         );
@@ -147,7 +147,7 @@ export default function WaitingRoomScreen({ route, navigation }) {
   return (
     <LinearGradient colors={colors.gradientBg} locations={[0, 0.4, 1]} style={styles.bg}>
       <SafeAreaView style={{ flex: 1 }}>
-        <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: colors.isDark ? "#0A0A0A" : "#FFFFFF" }]}>
+        <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: "transparent" }]}>
           <TouchableOpacity onPress={() => navigation.navigate("Home")} style={[styles.backBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Ionicons name="chevron-back" size={20} color={colors.textSecondary} />
           </TouchableOpacity>

@@ -61,7 +61,7 @@ export default function SoloSetupScreen({ navigation }) {
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
           {/* Header */}
-          <View style={[styles.header, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={[styles.header, { backgroundColor: "transparent", borderBottomColor: colors.border }]}>
             <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.backBtn, { backgroundColor: colors.isDark ? "#121212" : "#F1F5F9", borderColor: colors.border }]}>
               <Ionicons name="chevron-back" size={20} color={colors.textSecondary} />
             </TouchableOpacity>

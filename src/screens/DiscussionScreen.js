@@ -65,7 +65,7 @@ export default function DiscussionScreen({ route, navigation }) {
   return (
     <LinearGradient colors={colors.gradientBg} locations={[0, 0.4, 1]} style={styles.bg}>
       <SafeAreaView style={{ flex: 1 }}>
-        <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: colors.isDark ? "#0A0A0A" : "#FFFFFF" }]}>
+        <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: "transparent" }]}>
           <Ionicons name="search-outline" size={18} color={colors.primary} />
           <Text style={[styles.headerTitle, typography.sub2, { color: colors.textPrimary }]}>DISCUSSION</Text>
         </View>

@@ -73,7 +73,7 @@ export default function MultiplayerLobbyScreen({ navigation }) {
     <LinearGradient colors={colors.gradientBg} locations={[0, 0.4, 1]} style={styles.bg}>
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
-          <View style={[styles.header, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={[styles.header, { backgroundColor: "transparent", borderBottomColor: colors.border }]}>
             <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.backBtn, { backgroundColor: colors.isDark ? "#121212" : "#F1F5F9", borderColor: colors.border }]}>
               <Ionicons name="chevron-back" size={20} color={colors.textSecondary} />
             </TouchableOpacity>

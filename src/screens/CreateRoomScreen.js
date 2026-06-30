@@ -18,7 +18,7 @@ export default function CreateRoomScreen({ navigation }) {
   const [clueTimer, setClueTimer] = useState(60);
   const [loading, setLoading] = useState(false);
 
-  const [selectedTopic, setSelectedTopic] = useState(null); 
+  const [selectedTopic, setSelectedTopic] = useState(null);
   const [showCourseModal, setShowCourseModal] = useState(false);
   const [showTopicModal, setShowTopicModal] = useState(false);
   const [userCoins, setUserCoins] = useState(0);
@@ -86,7 +86,7 @@ export default function CreateRoomScreen({ navigation }) {
   return (
     <LinearGradient colors={colors.gradientBg} locations={[0, 0.4, 1]} style={styles.bg}>
       <SafeAreaView style={{ flex: 1 }}>
-        <View style={[styles.header, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View style={[styles.header, { backgroundColor: "transparent", borderBottomColor: colors.border }]}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={[styles.backBtn, { backgroundColor: colors.isDark ? "#121212" : "#F1F5F9", borderColor: colors.border }]}>
             <Ionicons name="chevron-back" size={20} color={colors.textSecondary} />
           </TouchableOpacity>

@@ -36,7 +36,6 @@ export default function HomeScreen({ navigation }) {
   const fadeIn = useRef(new Animated.Value(0)).current;
 
   const [stats, setStats] = useState(null);
-  const [historyModalVisible, setHistoryModalVisible] = useState(false);
   const [showNameModal, setShowNameModal] = useState(false);
   const [gamingName, setGamingName] = useState("");
 
@@ -117,20 +116,21 @@ export default function HomeScreen({ navigation }) {
   });
 
   const outerItems = [
-    { name: "trophy", color: "#FBBF24", size: 24, itemSize: 52 },
-    { name: "people", color: "#10B981", size: 24, itemSize: 52 },
-    { name: "book", color: "#3B82F6", size: 24, itemSize: 52 },
-    { name: "ribbon", color: "#EC4899", size: 24, itemSize: 52 },
+    { source: require("../../assets/new-img/Goal Achievement - blue_glass - target with trophy - small.png"), color: "#FBBF24", itemSize: 76 },
+    { source: require("../../assets/new-img/Business Strategy - blue_glass - chess knight on paper plan - small.png"), color: "#3B82F6", itemSize: 76 },
+    { source: require("../../assets/new-img/AI Analytics - blue_glass - brain with circuit lines - small.png"), color: "#06B6D4", itemSize: 76 },
+    { source: require("../../assets/new-img/search.png"), color: "#10B981", itemSize: 76 },
   ];
 
   const middleItems = [
-    { name: "game-controller", color: "#8B5CF6", size: 20, itemSize: 44 },
-    { name: "chatbubble-ellipses", color: "#EF4444", size: 20, itemSize: 44 },
+    { source: require("../../assets/new-img/Financial Milestone - blue_glass - flag on stacked coins - small.png"), color: "#10B981", itemSize: 64 },
+    { source: require("../../assets/new-img/Employee Bonus 2 - blue_glass - gift box beside employee badge - small.png"), color: "#EC4899", itemSize: 64 },
+   
   ];
 
   const innerItems = [
-    { name: "shield-checkmark", color: "#06B6D4", size: 18, itemSize: 38 },
-    { name: "help-circle", color: "#F59E0B", size: 18, itemSize: 38 },
+    { source: require("../../assets/new-img/Accounting Ledger 2 - blue_glass - open ledger showing transaction columns - small.png"), color: "#8B5CF6", itemSize: 52 },
+    { source: require("../../assets/new-img/Wrap (2).png"), color: "#FBBF24", itemSize: 52 },
   ];
 
   const renderOrbitalRing = (radius, items, rotation, rotationInverse) => {
@@ -171,17 +171,25 @@ export default function HomeScreen({ navigation }) {
                 style={[
                   styles.iconBubble,
                   {
-                    backgroundColor: colors.surface,
-                    borderColor: colors.border,
+                    backgroundColor: item.source ? "transparent" : colors.surface,
+                    borderColor: item.source ? "transparent" : colors.border,
                     borderRadius: itemSize / 2,
                     shadowColor: item.color,
-                    shadowOpacity: 0.15,
-                    shadowRadius: 5,
-                    elevation: 3,
+                    shadowOpacity: item.source ? 0.35 : 0.15,
+                    shadowRadius: item.source ? 8 : 5,
+                    elevation: item.source ? 0 : 3,
                   },
                 ]}
               >
-                <Ionicons name={item.name} size={item.size} color={item.color} />
+                {item.source ? (
+                  <Image
+                    source={item.source}
+                    style={{ width: "100%", height: "100%" }}
+                    resizeMode="contain"
+                  />
+                ) : (
+                  <Ionicons name={item.name} size={item.size} color={item.color} />
+                )}
               </View>
             </Animated.View>
           );
@@ -196,9 +204,9 @@ export default function HomeScreen({ navigation }) {
       locations={[0, 0.4, 1]}
       style={styles.container}
     >
-      <SafeAreaView style={[styles.safe, { backgroundColor: colors.isDark ? "#0A0A0A" : "#FFFFFF" }]}>
+      <SafeAreaView style={styles.safe}>
 
-        <View style={[styles.navBar, { borderBottomColor: colors.border, backgroundColor: colors.isDark ? "#0A0A0A" : "#FFFFFF" }]}>
+        <View style={[styles.navBar, { borderBottomColor: colors.border, backgroundColor: "transparent" }]}>
           <View style={styles.navBrand}>
             <Image
               source={require("../../assets/elanceIcon.png")}
@@ -213,7 +221,7 @@ export default function HomeScreen({ navigation }) {
           <View style={styles.headerRight}>
             {/* Clickable Score Pill */}
             <TouchableOpacity
-              onPress={() => setHistoryModalVisible(true)}
+              onPress={() => navigation.navigate("CoinHistory")}
               activeOpacity={0.8}
               style={[styles.tokenPill, { backgroundColor: colors.isDark ? "#121212" : "#F8FAFC", borderColor: colors.border, marginRight: 4 }]}
             >
@@ -386,79 +394,7 @@ export default function HomeScreen({ navigation }) {
             </View>
           </Animated.View>
         </ScrollView>
-
-        {/* Coin History Modal */}
-        <Modal
-          visible={historyModalVisible}
-          animationType="slide"
-          transparent={true}
-          onRequestClose={() => setHistoryModalVisible(false)}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={[styles.modalContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              {/* Header */}
-              <View style={[styles.modalHeader, { borderBottomColor: colors.border }]}>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                  <View style={[styles.modalIconBox, { backgroundColor: colors.isDark ? "rgba(245,158,11,0.15)" : "#FEF3C7" }]}>
-                    <Ionicons name="trophy" size={20} color="#FBBF24" />
-                  </View>
-                  <View>
-                    <Text style={[typography.h4, { color: colors.textPrimary, fontWeight: "bold" }]}>Coin History</Text>
-                    <Text style={[typography.body3, { color: colors.textSecondary }]}>Your match records</Text>
-                  </View>
-                </View>
-                <TouchableOpacity onPress={() => setHistoryModalVisible(false)} style={[styles.closeBtn, { backgroundColor: colors.isDark ? "#121212" : "#F1F5F9" }]}>
-                  <Ionicons name="close" size={20} color={colors.textSecondary} />
-                </TouchableOpacity>
-              </View>
-
-              {/* Total Balance */}
-              <View style={[styles.balanceSection, { backgroundColor: colors.isDark ? "#0A0A0A" : "#F8FAFC", borderColor: colors.border }]}>
-                <Text style={[typography.sub7, { color: colors.textSecondary }]}>TOTAL COINS ACCUMULATED</Text>
-                <Text style={[typography.h1, { color: colors.textPrimary, marginTop: 4, fontWeight: "900" }]}>
-                  {stats?.highScore ?? 0} <Text style={[typography.body2, { color: colors.textSecondary }]}>coins</Text>
-                </Text>
-              </View>
-
-              {/* History List */}
-              <ScrollView style={styles.historyList} contentContainerStyle={{ paddingBottom: 24, gap: 10 }}>
-                {stats?.matchHistory && stats.matchHistory.length > 0 ? (
-                  [...stats.matchHistory]
-                    .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
-                    .map((item, idx) => {
-                      const dateStr = item.timestamp
-                        ? new Date(item.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })
-                        : "Unknown Date";
-                      const earned = item.score ?? 0;
-                      return (
-                        <View key={item.gameId || idx} style={[styles.historyRowItem, { borderColor: colors.border, backgroundColor: colors.isDark ? "#080808" : "#FFFFFF" }]}>
-                          <View style={{ flex: 1 }}>
-                            <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                              <Text style={[typography.body1, { color: colors.textPrimary, fontWeight: "bold" }]}>Room: {item.roomCode || "N/A"}</Text>
-                              <View style={[styles.gameIdBadge, { backgroundColor: colors.isDark ? "#1E1E1E" : "#F1F5F9" }]}>
-                                <Text style={[typography.sub8, { color: colors.textSecondary, fontSize: 8 }]}>ID: {item.gameId || "N/A"}</Text>
-                              </View>
-                            </View>
-                            <Text style={[typography.body3, { color: colors.textSecondary, marginTop: 2 }]}>{dateStr}</Text>
-                          </View>
-                          <View style={styles.earnedPointsWrap}>
-                            <Text style={[typography.body1, { color: earned > 0 ? colors.success : colors.textSecondary, fontWeight: "bold" }]}>
-                              {earned > 0 ? `+${earned}` : `+0`}
-                            </Text>
-                          </View>
-                        </View>
-                      );
-                    })
-                ) : (
-                  <View style={styles.emptyState}>
-                    <Ionicons name="receipt-outline" size={48} color={colors.textDisabled} style={{ marginBottom: 12 }} />
-                    <Text style={[typography.body2, { color: colors.textSecondary, textAlign: "center" }]}>No matches played yet.</Text>
-                  </View>
-                )}
-              </ScrollView>
-            </View>
-          </View>
-        </Modal>
+        {/* Gaming Name Setup Modal */}
 
         <Modal
           visible={showNameModal}
@@ -485,6 +421,8 @@ export default function HomeScreen({ navigation }) {
                       </View>
                     </View>
                   </View>
+
+
 
                   {/* Form Content */}
                   <View style={{ padding: 20, gap: 16 }}>

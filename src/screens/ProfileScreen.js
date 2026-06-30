@@ -79,7 +79,7 @@ export default function ProfileScreen({ navigation }) {
     <LinearGradient colors={colors.gradientBg} style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
         {/* Header navigation bar */}
-        <View style={[styles.header, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View style={[styles.header, { backgroundColor: "transparent", borderBottomColor: colors.border }]}>
           <TouchableOpacity
             onPress={() => navigation.goBack()}
             style={[styles.backBtn, { backgroundColor: colors.isDark ? "#121212" : "#F1F5F9", borderColor: colors.border }]}
