@@ -11,9 +11,9 @@ import { generateTopic } from "../services/generateTopic";
 import { useTheme } from "../context/ThemeContext";
 
 const AVATAR_COLORS = [
-  "#F59E0B","#10B981","#3B82F6","#EC4899",
-  "#8B5CF6","#EF4444","#06B6D4","#84CC16",
-  "#F97316","#6366F1",
+  "#F59E0B", "#10B981", "#3B82F6", "#EC4899",
+  "#8B5CF6", "#EF4444", "#06B6D4", "#84CC16",
+  "#F97316", "#6366F1",
 ];
 
 function circlePositions(count, radius) {
@@ -50,7 +50,7 @@ export default function OfflineWaitingLobbyScreen({ route, navigation }) {
           try {
             const statSnap = await getDoc(doc(db, "user_stats", p.uid));
             if (statSnap.exists()) { const sd = statSnap.data(); const gTag = sd.playerName || sd.name; if (gTag) return { ...p, name: gTag }; }
-          } catch (_) {}
+          } catch (_) { }
           return p;
         })
       );
@@ -189,7 +189,7 @@ export default function OfflineWaitingLobbyScreen({ route, navigation }) {
           {/* Start / Waiting */}
           {isHost ? (
             <TouchableOpacity onPress={handleStart} disabled={!canStart || starting} activeOpacity={0.85} style={[styles.startBtnWrap, (!canStart || starting) && { opacity: 0.5 }]}>
-              <LinearGradient colors={canStart ? ["#10B981","#059669"] : [colors.textDisabled, colors.textDisabled]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.startBtn}>
+              <LinearGradient colors={canStart ? ["#10B981", "#059669"] : [colors.textDisabled, colors.textDisabled]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.startBtn}>
                 {starting ? <ActivityIndicator size="small" color="#FFF" /> :
                   <><Ionicons name="play-circle-outline" size={22} color="#FFF" />
                     <Text style={[styles.startBtnText, typography.btn1]}>{canStart ? "START GAME" : `Need ${3 - joinedPlayers.length} more player(s)`}</Text></>}

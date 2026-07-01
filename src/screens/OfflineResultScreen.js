@@ -7,11 +7,11 @@ import { db, auth } from "../firebase/firebase";
 import { useTheme } from "../context/ThemeContext";
 
 const AVATAR_COLORS = [
-  "#F59E0B","#10B981","#3B82F6","#EC4899",
-  "#8B5CF6","#EF4444","#06B6D4","#84CC16",
+  "#F59E0B", "#10B981", "#3B82F6", "#EC4899",
+  "#8B5CF6", "#EF4444", "#06B6D4", "#84CC16",
 ];
 
-const RANK_ICONS = ["🥇","🥈","🥉"];
+const RANK_ICONS = ["🥇", "🥈", "🥉"];
 
 export default function OfflineResultScreen({ route, navigation }) {
   const { colors, typography } = useTheme();
@@ -91,8 +91,8 @@ export default function OfflineResultScreen({ route, navigation }) {
           <Animated.View style={{ opacity: revealAnim, transform: [{ scale: scaleAnim }] }}>
             <LinearGradient
               colors={finalImposterCaught
-                ? (colors.isDark ? ["rgba(0,185,111,0.15)","rgba(0,185,111,0.05)"] : ["#ECFDF5","#F0FDF4"])
-                : (colors.isDark ? ["rgba(211,47,47,0.15)","rgba(211,47,47,0.05)"] : ["#FEF2F2","#FFF1F2"])}
+                ? (colors.isDark ? ["rgba(0,185,111,0.15)", "rgba(0,185,111,0.05)"] : ["#ECFDF5", "#F0FDF4"])
+                : (colors.isDark ? ["rgba(211,47,47,0.15)", "rgba(211,47,47,0.05)"] : ["#FEF2F2", "#FFF1F2"])}
               style={[styles.resultBanner, {
                 borderColor: finalImposterCaught
                   ? (colors.isDark ? "rgba(0,185,111,0.3)" : "rgba(16,185,129,0.3)")
@@ -229,7 +229,7 @@ export default function OfflineResultScreen({ route, navigation }) {
                   style={[styles.actionBtn, { backgroundColor: colors.surface, borderColor: colors.error, borderWidth: 1, flex: 1 }]}
                 >
                   <Ionicons name="exit-outline" size={20} color={colors.error} />
-                  <Text style={[typography.btn2, { color: colors.error }]}>QUIT GAME</Text>
+                  <Text style={[typography.btn2, { color: colors.error }]}>QUIT</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={handlePlayAgain}

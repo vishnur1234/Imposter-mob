@@ -14,14 +14,12 @@ export default function CreateRoomScreen({ navigation }) {
   const { colors, typography } = useTheme();
   const [gameMode, setGameMode] = useState("Multiplayer"); // "Multiplayer" | "Offline"
   const [showModeModal, setShowModeModal] = useState(false);
-  const [course, setCourse] = useState("ACCA");
   const [players, setPlayers] = useState(4);
   const [rounds, setRounds] = useState(3);
   const [clueTimer, setClueTimer] = useState(60);
   const [loading, setLoading] = useState(false);
 
   const [selectedTopic, setSelectedTopic] = useState(null);
-  const [showCourseModal, setShowCourseModal] = useState(false);
   const [showTopicModal, setShowTopicModal] = useState(false);
   const [userCoins, setUserCoins] = useState(0);
   const [hostPlayerName, setHostPlayerName] = useState("");
@@ -43,11 +41,6 @@ export default function CreateRoomScreen({ navigation }) {
 
 
 
-  const handleCourseChange = (newCourse) => {
-    setCourse(newCourse);
-    setSelectedTopic(null);
-  };
-
   const handleCreate = async () => {
     if (userCoins < 50) {
       Alert.alert("Insufficient Coins", "You need at least 50 coins to play. Claim your Daily Reward or play again later.");
@@ -56,11 +49,13 @@ export default function CreateRoomScreen({ navigation }) {
     const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     setLoading(true);
     const emailPrefix = auth.currentUser?.email ? auth.currentUser.email.split("@")[0] : "Host";
+    const courseCategory = selectedTopic ? selectedTopic.category : "ACCA";
+    const finalTopic = selectedTopic || { id: "random_acca", category: "ACCA", answer: "ACCA (Finance)" };
     try {
       await setDoc(doc(db, "rooms", roomCode), {
         roomCode,
         hostId: auth.currentUser.uid,
-        category: course,
+        category: courseCategory,
         playersRequired: Number(players),
         totalRounds: Number(rounds),
         clueTimer: gameMode === "Multiplayer" ? Number(clueTimer) : 0,
@@ -73,19 +68,19 @@ export default function CreateRoomScreen({ navigation }) {
         hints: [],
         readyPlayers: [],
         gameData: {},
-        selectedTopic: selectedTopic,
+        selectedTopic: finalTopic,
       });
       if (gameMode === "Offline") {
         navigation.navigate("OfflineWaitingLobby", {
           roomCode,
-          course,
+          course: courseCategory,
           players: Number(players),
           rounds: Number(rounds),
-          selectedTopic,
+          selectedTopic: finalTopic,
           isHost: true,
         });
       } else {
-        navigation.navigate("WaitingRoom", { roomCode, course, players: Number(players), isHost: true, isDemoMode: false, selectedTopic, clueTimer: Number(clueTimer) });
+        navigation.navigate("WaitingRoom", { roomCode, course: courseCategory, players: Number(players), isHost: true, isDemoMode: false, selectedTopic: finalTopic, clueTimer: Number(clueTimer) });
       }
     } catch (e) {
       Alert.alert("Error", `Failed to create room: ${e.message}`);
@@ -151,7 +146,7 @@ export default function CreateRoomScreen({ navigation }) {
               }]}>
                 <Ionicons name="people-circle-outline" size={16} color={colors.warning} />
                 <Text style={[typography.body3, { color: colors.warning, flex: 1, lineHeight: 18 }]}>
-                  Players join via room code using their own phones. No names needed — gaming tags auto-loaded.
+                  Players join via room code using their own phones.
                 </Text>
               </View>
             )}
@@ -159,24 +154,10 @@ export default function CreateRoomScreen({ navigation }) {
             {/* ── DIVIDER ── */}
             <View style={[styles.modeDivider, { backgroundColor: colors.border }]} />
 
-            {/* Select Course Dropdown */}
-            <View style={styles.sectionLabelRow}>
-              <Ionicons name="school-outline" size={14} color={colors.success} />
-              <Text style={[styles.sectionLabel, typography.sub2, { color: colors.success }]}>COURSE</Text>
-            </View>
-            <TouchableOpacity
-              onPress={() => setShowCourseModal(true)}
-              activeOpacity={0.8}
-              style={[styles.dropdownTrigger, { backgroundColor: colors.isDark ? "#000000" : "#F8FAFC", borderColor: colors.border }]}
-            >
-              <Text style={[styles.dropdownText, typography.body1, { color: colors.textPrimary }]}>{course}</Text>
-              <Ionicons name="chevron-down" size={18} color={colors.textSecondary} />
-            </TouchableOpacity>
-
             {/* Select Game Category Dropdown */}
             <View style={[styles.sectionLabelRow, { marginTop: 12 }]}>
               <Ionicons name="bulb-outline" size={14} color={colors.success} />
-              <Text style={[styles.sectionLabel, typography.sub2, { color: colors.success }]}>SPECIFIC TOPIC (OPTIONAL)</Text>
+              <Text style={[styles.sectionLabel, typography.sub2, { color: colors.success }]}>SELECT TOPIC</Text>
             </View>
             <TouchableOpacity
               onPress={() => setShowTopicModal(true)}
@@ -184,7 +165,7 @@ export default function CreateRoomScreen({ navigation }) {
               style={[styles.dropdownTrigger, { backgroundColor: colors.isDark ? "#000000" : "#F8FAFC", borderColor: colors.border }]}
             >
               <Text style={[styles.dropdownText, typography.body1, { color: colors.textPrimary }]}>
-                {selectedTopic ? selectedTopic.answer : `${course} (Finance)`}
+                {selectedTopic ? selectedTopic.answer : "ACCA (Finance)"}
               </Text>
               <Ionicons name="chevron-down" size={18} color={colors.textSecondary} />
             </TouchableOpacity>
@@ -273,11 +254,11 @@ export default function CreateRoomScreen({ navigation }) {
                 {loading
                   ? <ActivityIndicator size="small" color="#FFF" />
                   : <>
-                      <Ionicons name={gameMode === "Offline" ? "phone-portrait-outline" : "add-circle-outline"} size={20} color="#FFF" />
-                      <Text style={[styles.btnText, typography.btn1]}>
-                        {gameMode === "Offline" ? "CREATE OFFLINE ROOM" : "CREATE ROOM"}
-                      </Text>
-                    </>
+                    <Ionicons name={gameMode === "Offline" ? "phone-portrait-outline" : "add-circle-outline"} size={20} color="#FFF" />
+                    <Text style={[styles.btnText, typography.btn1]}>
+                      {gameMode === "Offline" ? "CREATE OFFLINE ROOM" : "CREATE ROOM"}
+                    </Text>
+                  </>
                 }
               </LinearGradient>
             </TouchableOpacity>
@@ -296,7 +277,7 @@ export default function CreateRoomScreen({ navigation }) {
               </View>
               {[
                 { value: "Multiplayer", icon: "wifi-outline", label: "Multiplayer", sub: "Online • Real-time • Each player on own phone", color: colors.success },
-                { value: "Offline", icon: "phone-portrait-outline", label: "Offline", sub: "Pass & Play • One shared device • No internet needed", color: colors.warning },
+                { value: "Offline", icon: "phone-portrait-outline", label: "Offline", sub: "Pass & Play ", color: colors.warning },
               ].map((m) => (
                 <TouchableOpacity
                   key={m.value}
@@ -330,64 +311,29 @@ export default function CreateRoomScreen({ navigation }) {
           </View>
         </Modal>
 
-        {/* Modals for Dropdowns */}
-        <Modal visible={showCourseModal} transparent animationType="fade" onRequestClose={() => setShowCourseModal(false)}>
-          <View style={styles.modalOverlay}>
-            <View style={[styles.modalCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <View style={styles.modalHeader}>
-                <Text style={[styles.modalTitle, typography.h5, { color: colors.textPrimary }]}>Select Course</Text>
-                <TouchableOpacity onPress={() => setShowCourseModal(false)}>
-                  <Ionicons name="close" size={24} color={colors.textSecondary} />
-                </TouchableOpacity>
-              </View>
-              <ScrollView style={styles.modalList}>
-                {["ACCA", "CMA"].map((item) => (
-                  <TouchableOpacity
-                    key={item}
-                    onPress={() => {
-                      handleCourseChange(item);
-                      setShowCourseModal(false);
-                    }}
-                    style={[
-                      styles.modalItem,
-                      course === item && { backgroundColor: colors.isDark ? "rgba(16,185,129,0.15)" : "#ECFDF5" }
-                    ]}
-                  >
-                    <Text style={[styles.modalItemText, typography.body1, { color: course === item ? colors.success : colors.textPrimary }]}>{item}</Text>
-                    {course === item && <Ionicons name="checkmark" size={18} color={colors.success} />}
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          </View>
-        </Modal>
-
         <Modal visible={showTopicModal} transparent animationType="fade" onRequestClose={() => setShowTopicModal(false)}>
           <View style={styles.modalOverlay}>
             <View style={[styles.modalCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
               <View style={styles.modalHeader}>
-                <Text style={[styles.modalTitle, typography.h5, { color: colors.textPrimary }]}>Select Category</Text>
+                <Text style={[styles.modalTitle, typography.h5, { color: colors.textPrimary }]}>Select Topic</Text>
                 <TouchableOpacity onPress={() => setShowTopicModal(false)}>
                   <Ionicons name="close" size={24} color={colors.textSecondary} />
                 </TouchableOpacity>
               </View>
               <ScrollView style={styles.modalList}>
                 {[
-                  { id: "random_course", category: course === "CMA" ? "CMA" : "ACCA", answer: `${course} (Finance)` },
+                  { id: "random_acca", category: "ACCA", answer: "ACCA (Finance)" },
+                  { id: "random_cma", category: "CMA", answer: "CMA (Finance)" },
                   { id: "random_general", category: "general", answer: "General" },
                   { id: "random_bank", category: "bank", answer: "Bank" },
                   { id: "random_movie", category: "movie", answer: "Movie" }
                 ].map((item) => {
-                  const isSelected = (!selectedTopic && item.id === "random_course") || (selectedTopic && selectedTopic.id === item.id);
+                  const isSelected = (!selectedTopic && item.id === "random_acca") || (selectedTopic && selectedTopic.id === item.id);
                   return (
                     <TouchableOpacity
                       key={item.id}
                       onPress={() => {
-                        if (item.id === "random_course") {
-                          setSelectedTopic(null);
-                        } else {
-                          setSelectedTopic(item);
-                        }
+                        setSelectedTopic(item);
                         setShowTopicModal(false);
                       }}
                       style={[

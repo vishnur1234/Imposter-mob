@@ -36,7 +36,7 @@ export default function CoinHistoryScreen({ navigation }) {
     return () => unsub();
   }, [myUid]);
 
-  console.log(stats?.matchHistory,"helloooo guyssscccccccc");
+
 
   return (
     <LinearGradient colors={colors.gradientBg} style={styles.container}>
@@ -64,17 +64,17 @@ export default function CoinHistoryScreen({ navigation }) {
           {/* History List */}
           <View style={styles.historyList}>
             {stats?.matchHistory && stats.matchHistory.length > 0 ? (
-             
+
               [...stats.matchHistory]
                 .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
                 .map((item, idx) => {
                   const dateStr = item.timestamp
                     ? new Date(item.timestamp).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
                     : "Unknown Date";
                   const earned = item.score ?? 0;
                   const isEntryFee = item.isEntryFee || earned < 0;
@@ -95,8 +95,8 @@ export default function CoinHistoryScreen({ navigation }) {
                             {item.roomCode === "DAILY"
                               ? "Daily Reward"
                               : isEntryFee
-                              ? `Entry Fee: Room ${item.roomCode || "N/A"}`
-                              : `Match Score: Room ${item.roomCode || "N/A"}`}
+                                ? `Entry Fee: Room ${item.roomCode || "N/A"}`
+                                : `Match Score: Room ${item.roomCode || "N/A"}`}
                           </Text>
                           {item.roomCode !== "DAILY" && !isEntryFee && (
                             <View style={[styles.gameIdBadge, { backgroundColor: colors.isDark ? "#1E1E1E" : "#F1F5F9" }]}>
