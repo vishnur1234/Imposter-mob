@@ -125,7 +125,7 @@ export default function HomeScreen({ navigation }) {
   const middleItems = [
     { source: require("../../assets/new-img/Financial Milestone - blue_glass - flag on stacked coins - small.png"), color: "#10B981", itemSize: 64 },
     { source: require("../../assets/new-img/Employee Bonus 2 - blue_glass - gift box beside employee badge - small.png"), color: "#EC4899", itemSize: 64 },
-   
+
   ];
 
   const innerItems = [
@@ -269,35 +269,26 @@ export default function HomeScreen({ navigation }) {
 
               <View style={styles.orbitalWrap}>
 
-                <View style={[styles.orbitTrack, { width: 300, height: 300, borderRadius: 150, borderColor: colors.isDark ? "rgba(255,255,255,0.08)" : "rgba(37,99,235,0.06)" }]} />
-                <View style={[styles.orbitTrack, { width: 220, height: 220, borderRadius: 110, borderColor: colors.isDark ? "rgba(255,255,255,0.08)" : "rgba(37,99,235,0.06)" }]} />
-                <View style={[styles.orbitTrack, { width: 140, height: 140, borderRadius: 70, borderColor: colors.isDark ? "rgba(255,255,255,0.08)" : "rgba(37,99,235,0.06)" }]} />
+                <View style={[styles.orbitTrack, { width: 360, height: 360, borderRadius: 180, borderColor: colors.isDark ? "rgba(255,255,255,0.08)" : "rgba(37,99,235,0.06)" }]} />
+                <View style={[styles.orbitTrack, { width: 265, height: 265, borderRadius: 132, borderColor: colors.isDark ? "rgba(255,255,255,0.08)" : "rgba(37,99,235,0.06)" }]} />
+                <View style={[styles.orbitTrack, { width: 170, height: 170, borderRadius: 85, borderColor: colors.isDark ? "rgba(255,255,255,0.08)" : "rgba(37,99,235,0.06)" }]} />
 
 
-                {renderOrbitalRing(150, outerItems, spinOuter, spinOuterInverse)}
-                {renderOrbitalRing(110, middleItems, spinMiddle, spinMiddleInverse)}
-                {renderOrbitalRing(70, innerItems, spinInner, spinInnerInverse)}
+                {renderOrbitalRing(180, outerItems, spinOuter, spinOuterInverse)}
+                {renderOrbitalRing(132, middleItems, spinMiddle, spinMiddleInverse)}
+                {renderOrbitalRing(85, innerItems, spinInner, spinInnerInverse)}
 
 
-                <View
-                  style={[
-                    styles.radarCenter,
-                    {
-                      width: 56,
-                      height: 56,
-                      borderRadius: 28,
-                      backgroundColor: colors.surface,
-                      borderColor: colors.border,
-                      borderWidth: 1.5,
-                      shadowColor: colors.primary,
-                      shadowOpacity: 0.15,
-                      shadowRadius: 8,
-                      elevation: 4,
-                    },
-                  ]}
-                >
-                  <MaterialCommunityIcons name="gamepad-variant" size={32} color={colors.primary} />
-                </View>
+                <Image
+                  source={require("../../assets/crazyboy.png")}
+                  style={{
+                    position: "absolute",
+                    width: 420,
+                    height: 420,
+                    resizeMode: "contain",
+                    marginTop: 16,
+                  }}
+                />
               </View>
             </View>
 
@@ -337,7 +328,7 @@ export default function HomeScreen({ navigation }) {
                   </View>
 
                   <View style={styles.modeTextWrap}>
-                    <Text style={[styles.modeTitle, typography.h5, { color: colors.textPrimary }]}>Online</Text>
+                    <Text style={[styles.modeTitle, typography.h5, { color: colors.textPrimary }]}>Start Game</Text>
                     <Text style={[styles.modeSub, typography.body2, { color: colors.textSecondary }]}>Online • Real-Time • Challenge Friends</Text>
                   </View>
 
@@ -554,8 +545,8 @@ const styles = StyleSheet.create({
 
   /* Orbital Animation */
   orbitalWrap: {
-    width: 340,
-    height: 340,
+    width: 400,
+    height: 400,
     justifyContent: "center",
     alignItems: "center",
     marginVertical: 10,

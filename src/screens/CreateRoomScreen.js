@@ -12,6 +12,8 @@ import { useTheme } from "../context/ThemeContext";
 
 export default function CreateRoomScreen({ navigation }) {
   const { colors, typography } = useTheme();
+  const [gameMode, setGameMode] = useState("Multiplayer"); // "Multiplayer" | "Offline"
+  const [showModeModal, setShowModeModal] = useState(false);
   const [course, setCourse] = useState("ACCA");
   const [players, setPlayers] = useState(4);
   const [rounds, setRounds] = useState(3);
@@ -61,9 +63,10 @@ export default function CreateRoomScreen({ navigation }) {
         category: course,
         playersRequired: Number(players),
         totalRounds: Number(rounds),
-        clueTimer: Number(clueTimer),
+        clueTimer: gameMode === "Multiplayer" ? Number(clueTimer) : 0,
         currentRound: 1,
         gameStatus: "waiting",
+        gameMode,
         createdAt: Date.now(),
         players: [{ uid: auth.currentUser.uid, name: hostPlayerName || emailPrefix, score: 0 }],
         votes: {},
@@ -72,12 +75,20 @@ export default function CreateRoomScreen({ navigation }) {
         gameData: {},
         selectedTopic: selectedTopic,
       });
-      navigation.navigate("WaitingRoom", { roomCode, course, players: Number(players), isHost: true, isDemoMode: false, selectedTopic, clueTimer: Number(clueTimer) });
+      if (gameMode === "Offline") {
+        navigation.navigate("OfflineWaitingLobby", {
+          roomCode,
+          course,
+          players: Number(players),
+          rounds: Number(rounds),
+          selectedTopic,
+          isHost: true,
+        });
+      } else {
+        navigation.navigate("WaitingRoom", { roomCode, course, players: Number(players), isHost: true, isDemoMode: false, selectedTopic, clueTimer: Number(clueTimer) });
+      }
     } catch (e) {
-      Alert.alert("Offline Demo Mode", `Failed to create room: ${e.message}\n\nContinue in local demo mode?`, [
-        { text: "Cancel", style: "cancel" },
-        { text: "Go Offline", onPress: () => navigation.navigate("WaitingRoom", { roomCode, course, players: Number(players), isHost: true, isDemoMode: true, selectedTopic, clueTimer: Number(clueTimer) }) },
-      ]);
+      Alert.alert("Error", `Failed to create room: ${e.message}`);
     } finally {
       setLoading(false);
     }
@@ -96,6 +107,58 @@ export default function CreateRoomScreen({ navigation }) {
 
         <ScrollView contentContainerStyle={styles.scroll}>
           <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+
+            {/* ── GAME MODE DROPDOWN ── */}
+            <View style={styles.sectionLabelRow}>
+              <Ionicons name="game-controller-outline" size={14} color={colors.primary} />
+              <Text style={[styles.sectionLabel, typography.sub2, { color: colors.primary }]}>GAME MODE</Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => setShowModeModal(true)}
+              activeOpacity={0.8}
+              style={[
+                styles.dropdownTrigger,
+                {
+                  backgroundColor: gameMode === "Offline"
+                    ? (colors.isDark ? "rgba(251,191,36,0.08)" : "#FFFBEB")
+                    : (colors.isDark ? "rgba(0,185,111,0.08)" : "#ECFDF5"),
+                  borderColor: gameMode === "Offline"
+                    ? (colors.isDark ? "rgba(251,191,36,0.35)" : "#FDE68A")
+                    : (colors.isDark ? "rgba(0,185,111,0.35)" : "rgba(16,185,129,0.3)"),
+                },
+              ]}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <Ionicons
+                  name={gameMode === "Offline" ? "phone-portrait-outline" : "wifi-outline"}
+                  size={18}
+                  color={gameMode === "Offline" ? colors.warning : colors.success}
+                />
+                <Text style={[styles.dropdownText, typography.body1, {
+                  color: gameMode === "Offline" ? colors.warning : colors.success,
+                  fontWeight: "800",
+                }]}>
+                  {gameMode}
+                </Text>
+              </View>
+              <Ionicons name="chevron-down" size={18} color={colors.textSecondary} />
+            </TouchableOpacity>
+
+            {gameMode === "Offline" && (
+              <View style={[styles.offlineBanner, {
+                backgroundColor: colors.isDark ? "rgba(251,191,36,0.1)" : "#FFFBEB",
+                borderColor: colors.isDark ? "rgba(251,191,36,0.25)" : "#FDE68A",
+              }]}>
+                <Ionicons name="people-circle-outline" size={16} color={colors.warning} />
+                <Text style={[typography.body3, { color: colors.warning, flex: 1, lineHeight: 18 }]}>
+                  Players join via room code using their own phones. No names needed — gaming tags auto-loaded.
+                </Text>
+              </View>
+            )}
+
+            {/* ── DIVIDER ── */}
+            <View style={[styles.modeDivider, { backgroundColor: colors.border }]} />
+
             {/* Select Course Dropdown */}
             <View style={styles.sectionLabelRow}>
               <Ionicons name="school-outline" size={14} color={colors.success} />
@@ -111,7 +174,7 @@ export default function CreateRoomScreen({ navigation }) {
             </TouchableOpacity>
 
             {/* Select Game Category Dropdown */}
-            <View style={[styles.sectionLabelRow, { marginTop: 20 }]}>
+            <View style={[styles.sectionLabelRow, { marginTop: 12 }]}>
               <Ionicons name="bulb-outline" size={14} color={colors.success} />
               <Text style={[styles.sectionLabel, typography.sub2, { color: colors.success }]}>SPECIFIC TOPIC (OPTIONAL)</Text>
             </View>
@@ -127,7 +190,7 @@ export default function CreateRoomScreen({ navigation }) {
             </TouchableOpacity>
 
             {/* Players */}
-            <View style={[styles.sectionLabelRow, { marginTop: 24 }]}>
+            <View style={[styles.sectionLabelRow, { marginTop: 14 }]}>
               <Ionicons name="people-outline" size={14} color={colors.success} />
               <Text style={[styles.sectionLabel, typography.sub2, { color: colors.success }]}>MAX PLAYERS</Text>
             </View>
@@ -151,7 +214,7 @@ export default function CreateRoomScreen({ navigation }) {
             </ScrollView>
 
             {/* Rounds */}
-            <View style={[styles.sectionLabelRow, { marginTop: 24 }]}>
+            <View style={[styles.sectionLabelRow, { marginTop: 14 }]}>
               <Ionicons name="repeat-outline" size={14} color={colors.success} />
               <Text style={[styles.sectionLabel, typography.sub2, { color: colors.success }]}>NUMBER OF ROUNDS</Text>
             </View>
@@ -172,43 +235,100 @@ export default function CreateRoomScreen({ navigation }) {
               ))}
             </View>
 
-            {/* Clue Timer */}
-            <View style={[styles.sectionLabelRow, { marginTop: 24 }]}>
-              <Ionicons name="time-outline" size={14} color={colors.success} />
-              <Text style={[styles.sectionLabel, typography.sub2, { color: colors.success }]}>CLUE TIMER</Text>
-            </View>
-            <View style={{ flexDirection: "row", gap: 10 }}>
-              {[
-                { label: "1 Min", val: 60 },
-                { label: "2 Min", val: 120 },
-                { label: "No Limit", val: 0 }
-              ].map((t) => (
-                <TouchableOpacity
-                  key={t.val}
-                  onPress={() => setClueTimer(t.val)}
-                  style={[
-                    styles.countCircle,
-                    { width: t.val === 0 ? 90 : 70 },
-                    clueTimer === t.val
-                      ? { backgroundColor: colors.success, borderColor: colors.success }
-                      : { backgroundColor: colors.isDark ? "#000000" : "#F8FAFC", borderColor: colors.border }
-                  ]}
-                >
-                  <Text style={[styles.countText, typography.h7, { color: clueTimer === t.val ? "#FFFFFF" : colors.textSecondary, fontWeight: "600" }]}>{t.label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
+            {/* Clue Timer — only for Multiplayer */}
+            {gameMode === "Multiplayer" && (
+              <>
+                <View style={[styles.sectionLabelRow, { marginTop: 14 }]}>
+                  <Ionicons name="time-outline" size={14} color={colors.success} />
+                  <Text style={[styles.sectionLabel, typography.sub2, { color: colors.success }]}>CLUE TIMER</Text>
+                </View>
+                <View style={{ flexDirection: "row", gap: 10 }}>
+                  {[
+                    { label: "1 Min", val: 60 },
+                    { label: "2 Min", val: 120 },
+                    { label: "No Limit", val: 0 }
+                  ].map((t) => (
+                    <TouchableOpacity
+                      key={t.val}
+                      onPress={() => setClueTimer(t.val)}
+                      style={[
+                        styles.countCircle,
+                        { width: t.val === 0 ? 90 : 70 },
+                        clueTimer === t.val
+                          ? { backgroundColor: colors.success, borderColor: colors.success }
+                          : { backgroundColor: colors.isDark ? "#000000" : "#F8FAFC", borderColor: colors.border }
+                      ]}
+                    >
+                      <Text style={[styles.countText, typography.h7, { color: clueTimer === t.val ? "#FFFFFF" : colors.textSecondary, fontWeight: "600" }]}>{t.label}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </>
+            )}
 
             <TouchableOpacity onPress={handleCreate} disabled={loading} activeOpacity={0.85} style={styles.btnWrap}>
-              <LinearGradient colors={loading ? [colors.textDisabled, colors.textDisabled] : colors.gradientSuccess} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.btn}>
+              <LinearGradient
+                colors={loading ? [colors.textDisabled, colors.textDisabled] : (gameMode === "Offline" ? ["#F59E0B", "#D97706"] : colors.gradientSuccess)}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.btn}>
                 {loading
                   ? <ActivityIndicator size="small" color="#FFF" />
-                  : <><Ionicons name="add-circle-outline" size={20} color="#FFF" /><Text style={[styles.btnText, typography.btn1]}>CREATE ROOM</Text></>
+                  : <>
+                      <Ionicons name={gameMode === "Offline" ? "phone-portrait-outline" : "add-circle-outline"} size={20} color="#FFF" />
+                      <Text style={[styles.btnText, typography.btn1]}>
+                        {gameMode === "Offline" ? "CREATE OFFLINE ROOM" : "CREATE ROOM"}
+                      </Text>
+                    </>
                 }
               </LinearGradient>
             </TouchableOpacity>
           </View>
         </ScrollView>
+
+        {/* ── GAME MODE MODAL ── */}
+        <Modal visible={showModeModal} transparent animationType="fade" onRequestClose={() => setShowModeModal(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              <View style={styles.modalHeader}>
+                <Text style={[styles.modalTitle, typography.h5, { color: colors.textPrimary }]}>Select Game Mode</Text>
+                <TouchableOpacity onPress={() => setShowModeModal(false)}>
+                  <Ionicons name="close" size={24} color={colors.textSecondary} />
+                </TouchableOpacity>
+              </View>
+              {[
+                { value: "Multiplayer", icon: "wifi-outline", label: "Multiplayer", sub: "Online • Real-time • Each player on own phone", color: colors.success },
+                { value: "Offline", icon: "phone-portrait-outline", label: "Offline", sub: "Pass & Play • One shared device • No internet needed", color: colors.warning },
+              ].map((m) => (
+                <TouchableOpacity
+                  key={m.value}
+                  onPress={() => { setGameMode(m.value); setShowModeModal(false); }}
+                  style={[
+                    styles.modeOption,
+                    gameMode === m.value && {
+                      backgroundColor: m.value === "Offline"
+                        ? (colors.isDark ? "rgba(251,191,36,0.12)" : "#FFFBEB")
+                        : (colors.isDark ? "rgba(0,185,111,0.12)" : "#ECFDF5"),
+                      borderColor: m.color,
+                    },
+                    { borderColor: gameMode === m.value ? m.color : colors.border },
+                  ]}
+                >
+                  <View style={[styles.modeOptionIcon, {
+                    backgroundColor: m.value === "Offline"
+                      ? (colors.isDark ? "rgba(251,191,36,0.15)" : "#FEF3C7")
+                      : (colors.isDark ? "rgba(0,185,111,0.15)" : "#D1FAE5"),
+                  }]}>
+                    <Ionicons name={m.icon} size={22} color={m.color} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[typography.h6, { color: m.color }]}>{m.label}</Text>
+                    <Text style={[typography.body3, { color: colors.textSecondary }]}>{m.sub}</Text>
+                  </View>
+                  {gameMode === m.value && <Ionicons name="checkmark-circle" size={22} color={m.color} />}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </Modal>
 
         {/* Modals for Dropdowns */}
         <Modal visible={showCourseModal} transparent animationType="fade" onRequestClose={() => setShowCourseModal(false)}>
@@ -306,7 +426,7 @@ const styles = StyleSheet.create({
     justifyContent: "center", alignItems: "center",
   },
   headerTitle: { fontSize: 15, fontWeight: "900", color: "#0F172A", letterSpacing: 2.5 },
-  scroll: { padding: 20 },
+  scroll: { padding: 20, paddingBottom: 80 },
   card: {
     backgroundColor: "#FFFFFF",
     borderWidth: 1, borderColor: "#E2E8F0",
@@ -319,6 +439,10 @@ const styles = StyleSheet.create({
   },
   sectionLabelRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 14 },
   sectionLabel: { fontSize: 10, fontWeight: "700", color: "#059669", letterSpacing: 1.5 },
+  offlineBanner: { flexDirection: "row", alignItems: "flex-start", gap: 10, borderWidth: 1, borderRadius: 12, padding: 12, marginTop: 10 },
+  modeDivider: { height: 1, marginVertical: 14 },
+  modeOption: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1.5, borderRadius: 16, padding: 16, marginBottom: 10 },
+  modeOptionIcon: { width: 44, height: 44, borderRadius: 12, justifyContent: "center", alignItems: "center" },
   dropdownTrigger: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
     borderWidth: 1, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 16,
@@ -365,7 +489,7 @@ const styles = StyleSheet.create({
   countCircleActive: { backgroundColor: "#059669", borderColor: "#10B981" },
   countText: { color: "#64748B", fontSize: 15, fontWeight: "700" },
   countTextActive: { color: "#FFF" },
-  btnWrap: { borderRadius: 16, overflow: "hidden", marginTop: 28 },
+  btnWrap: { borderRadius: 16, overflow: "hidden", marginTop: 20 },
   btn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 12, paddingVertical: 17 },
   btnText: { color: "#FFF", fontSize: 15, fontWeight: "900", letterSpacing: 1.5 },
 });

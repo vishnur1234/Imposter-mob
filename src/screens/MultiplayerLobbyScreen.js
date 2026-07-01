@@ -51,17 +51,29 @@ export default function MultiplayerLobbyScreen({ navigation }) {
       if (!alreadyInRoom) {
         await updateDoc(roomRef, {
           players: arrayUnion(playerObj),
-          playerList: arrayUnion({ uid: myUid, name: emailPrefix }), // compatibility
+          playerList: arrayUnion({ uid: myUid, name: emailPrefix }),
         });
       }
 
-      navigation.navigate("WaitingRoom", {
-        roomCode: code,
-        course: data.category || data.course,
-        players: capacity,
-        isHost: data.hostId === myUid,
-        isDemoMode: false,
-      });
+      // Route offline rooms to OfflineWaitingLobby
+      if (data.gameMode === "Offline") {
+        navigation.navigate("OfflineWaitingLobby", {
+          roomCode: code,
+          course: data.category || data.course,
+          players: capacity,
+          rounds: data.totalRounds || 3,
+          selectedTopic: data.selectedTopic || null,
+          isHost: data.hostId === myUid,
+        });
+      } else {
+        navigation.navigate("WaitingRoom", {
+          roomCode: code,
+          course: data.category || data.course,
+          players: capacity,
+          isHost: data.hostId === myUid,
+          isDemoMode: false,
+        });
+      }
     } catch (e) {
       Alert.alert("Error", e.message);
     } finally {

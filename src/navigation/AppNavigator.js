@@ -21,6 +21,14 @@ import GameRulesScreen from "../screens/GameRulesScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import CoinHistoryScreen from "../screens/CoinHistoryScreen";
 
+// Offline screens
+import OfflineWaitingLobbyScreen from "../screens/OfflineWaitingLobbyScreen";
+import OfflineRoleRevealScreen from "../screens/OfflineRoleRevealScreen";
+import OfflineTurnScreen from "../screens/OfflineTurnScreen";
+import OfflineRoundEndScreen from "../screens/OfflineRoundEndScreen";
+import OfflineVotingScreen from "../screens/OfflineVotingScreen";
+import OfflineResultScreen from "../screens/OfflineResultScreen";
+
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigator() {
@@ -51,6 +59,14 @@ export default function AppNavigator() {
             <Stack.Screen name="GameRules" component={GameRulesScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
             <Stack.Screen name="CoinHistory" component={CoinHistoryScreen} />
+
+            {/* ── Offline Mode Screens ── */}
+            <Stack.Screen name="OfflineWaitingLobby" component={OfflineWaitingLobbyScreen} />
+            <Stack.Screen name="OfflineRoleReveal" component={OfflineRoleRevealScreen} />
+            <Stack.Screen name="OfflineTurn" component={OfflineTurnScreen} />
+            <Stack.Screen name="OfflineRoundEnd" component={OfflineRoundEndScreen} />
+            <Stack.Screen name="OfflineVoting" component={OfflineVotingScreen} />
+            <Stack.Screen name="OfflineResult" component={OfflineResultScreen} />
           </>
         ) : (
           <>
