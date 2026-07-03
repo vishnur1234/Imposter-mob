@@ -12,7 +12,7 @@ import { useTheme } from "../context/ThemeContext";
 
 export default function CreateRoomScreen({ navigation }) {
   const { colors, typography } = useTheme();
-  const [gameMode, setGameMode] = useState("Multiplayer"); // "Multiplayer" | "Offline"
+  const [gameMode, setGameMode] = useState("Offline"); // "Multiplayer" | "Offline"
   const [showModeModal, setShowModeModal] = useState(false);
   const [players, setPlayers] = useState(4);
   const [rounds, setRounds] = useState(3);
@@ -52,6 +52,7 @@ export default function CreateRoomScreen({ navigation }) {
     const courseCategory = selectedTopic ? selectedTopic.category : "ACCA";
     const finalTopic = selectedTopic || { id: "random_acca", category: "ACCA", answer: "ACCA (Finance)" };
     try {
+
       await setDoc(doc(db, "rooms", roomCode), {
         roomCode,
         hostId: auth.currentUser.uid,

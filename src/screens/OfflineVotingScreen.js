@@ -70,33 +70,28 @@ export default function OfflineVotingScreen({ route, navigation }) {
           const imposterUid = totalPlayers[imposterIndex]?.uid;
           const imposterCaught = mostVotedUids.includes(imposterUid);
 
-          // Compute winners and losers (same logic as multiplayer game score)
+          // Compute winners and losers
           const winners = [];
           const losers = [];
 
+          // The Imposter is a Winner if they survived (not caught); otherwise a Loser
           if (!imposterCaught) {
-            // Imposter survives: Imposter is the Winner. All students are Losers.
             winners.push(imposterUid);
-            totalPlayers.forEach(p => {
-              if (p.uid !== imposterUid) losers.push(p.uid);
-            });
           } else {
-            // Imposter is caught:
-            // Winners are the students who voted for the Imposter correctly.
-            // Losers are the Imposter + the students who voted incorrectly.
-            totalPlayers.forEach(p => {
-              if (p.uid === imposterUid) {
-                losers.push(p.uid);
-              } else {
-                const votedForUid = currentVotes[p.uid];
-                if (votedForUid === imposterUid) {
-                  winners.push(p.uid);
-                } else {
-                  losers.push(p.uid);
-                }
-              }
-            });
+            losers.push(imposterUid);
           }
+
+          // Each student is a Winner if they correct voted for the Imposter; otherwise a Loser
+          totalPlayers.forEach(p => {
+            if (p.uid !== imposterUid) {
+              const votedForUid = currentVotes[p.uid];
+              if (votedForUid === imposterUid) {
+                winners.push(p.uid);
+              } else {
+                losers.push(p.uid);
+              }
+            }
+          });
 
           // Calculate pot and payouts (matches GamePlayScreen's pot system)
           const entryFeePot = totalPlayers.length * 50;

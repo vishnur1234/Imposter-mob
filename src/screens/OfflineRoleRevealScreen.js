@@ -8,7 +8,7 @@ import { useTheme } from "../context/ThemeContext";
 
 export default function OfflineRoleRevealScreen({ route, navigation }) {
   const { colors, typography } = useTheme();
-  const { course, players, topic, imposterIndex, rounds, roomCode, isHost } = route.params || {};
+  const { course, players, topic, imposterIndex, rounds, roomCode, isHost, clueTimer } = route.params || {};
 
   const [dbRoom, setDbRoom] = useState(null);
   const [revealed, setRevealed] = useState(false);
@@ -49,6 +49,7 @@ export default function OfflineRoleRevealScreen({ route, navigation }) {
           rounds: data.totalRounds || rounds || 3,
           roomCode,
           isHost,
+          clueTimer: data.clueTimer !== undefined ? data.clueTimer : (clueTimer || 0),
         });
       }
     });
@@ -70,6 +71,7 @@ export default function OfflineRoleRevealScreen({ route, navigation }) {
             turnOrder: shuffledUids,
             currentTurnIndex: 0,
             roundNumber: 1,
+            turnStartedAt: Date.now(),
           });
         } catch (e) {
           console.log("Failed to start turn round automatically:", e.message);

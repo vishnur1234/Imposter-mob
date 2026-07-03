@@ -8,10 +8,13 @@ import { useTheme } from "../context/ThemeContext";
 
 export default function OfflineTurnScreen({ route, navigation }) {
   const { colors, typography } = useTheme();
-  const { course, players, topic, imposterIndex, turnOrder: initialTurnOrder, roundNumber: initialRoundNumber, rounds, roomCode, isHost } = route.params || {};
+  const { course, players, topic, imposterIndex, turnOrder: initialTurnOrder, roundNumber: initialRoundNumber, rounds, roomCode, isHost, clueTimer } = route.params || {};
 
   const [dbRoom, setDbRoom] = useState(null);
   const [passing, setPassing] = useState(false);
+
+  const limit = dbRoom?.clueTimer !== undefined ? dbRoom.clueTimer : (clueTimer || 0);
+  const [secRemaining, setSecRemaining] = useState(limit > 0 ? limit : 0);
 
   const playerList = Array.isArray(players) ? players : [];
   const currentUid = auth.currentUser?.uid;
@@ -30,11 +33,12 @@ export default function OfflineTurnScreen({ route, navigation }) {
           players: playerList,
           topic: data.topic || topic,
           imposterIndex: data.imposterIndex ?? imposterIndex,
-          roundNumber: data.currentRound || initialRoundNumber || 1,
-          rounds: data.totalRounds || rounds || 3,
+          roundNumber: data.currentRound || 1,
+          rounds: data.totalRounds || rounds,
           roomCode,
           isHost,
           scores: data.scores || {},
+          clueTimer: data.clueTimer !== undefined ? data.clueTimer : (clueTimer || 0),
         });
       }
     });
@@ -47,10 +51,10 @@ export default function OfflineTurnScreen({ route, navigation }) {
 
   // Identify active player
   const activePlayerUid = turnOrder[turnIndex];
-  const activePlayer = playerList.find((p) => p.uid === activePlayerUid) || { name: "Player" };
+  const activePlayer = playerList.find((p) => p.uid === activePlayerUid) || playerList[0] || { name: "Player" };
   const isMyTurn = currentUid === activePlayerUid;
-  const isLast = turnIndex === turnOrder.length - 1;
-  const progress = (turnIndex / turnOrder.length) * 100;
+  const isLast = turnIndex >= turnOrder.length - 1;
+  const progress = ((turnIndex + 1) / turnOrder.length) * 100;
 
   const handlePass = async () => {
     if (passing) return;
@@ -65,6 +69,7 @@ export default function OfflineTurnScreen({ route, navigation }) {
         // Move to next player in Firestore
         await updateDoc(doc(db, "rooms", roomCode), {
           currentTurnIndex: turnIndex + 1,
+          turnStartedAt: Date.now(),
         });
       }
     } catch (e) {
@@ -72,6 +77,73 @@ export default function OfflineTurnScreen({ route, navigation }) {
     } finally {
       setPassing(false);
     }
+  };
+
+  const handleForcePass = async () => {
+    if (passing) return;
+    try {
+      if (isLast) {
+        await updateDoc(doc(db, "rooms", roomCode), {
+          gameStatus: "offline_round_end",
+        });
+      } else {
+        await updateDoc(doc(db, "rooms", roomCode), {
+          currentTurnIndex: turnIndex + 1,
+          turnStartedAt: Date.now(),
+        });
+      }
+    } catch (e) {
+      console.log("Failed to force pass turn:", e.message);
+    }
+  };
+
+  // Clue Turn Timer Ticker
+  useEffect(() => {
+    if (!dbRoom || dbRoom.gameStatus !== "offline_turn") return;
+
+    const limit = dbRoom.clueTimer !== undefined ? dbRoom.clueTimer : (clueTimer || 0);
+    if (limit <= 0) {
+      setSecRemaining(0);
+      return;
+    }
+
+    const updateTimer = () => {
+      const now = Date.now();
+      const elapsed = Math.floor((now - (dbRoom.turnStartedAt || now)) / 1000);
+      const rem = Math.max(0, limit - elapsed);
+      setSecRemaining(rem);
+
+      if (rem === 0) {
+        if (isMyTurn) {
+          handlePass();
+        } else if (isHost && elapsed >= limit + 3) {
+          handleForcePass();
+        }
+      }
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [dbRoom?.turnStartedAt, turnIndex, dbRoom?.gameStatus, isMyTurn]);
+
+  const renderClueTimer = () => {
+    if (limit <= 0) return null;
+    return (
+      <View style={[
+        styles.timerPill,
+        {
+          backgroundColor: secRemaining <= 10 ? "rgba(239,68,68,0.1)" : "rgba(16,185,129,0.1)",
+          borderColor: secRemaining <= 10 ? colors.error : colors.success,
+          marginBottom: 20,
+        }
+      ]}>
+        <Ionicons name="time" size={14} color={secRemaining <= 10 ? colors.error : colors.success} />
+        <Text style={[typography.body3, { color: secRemaining <= 10 ? colors.error : colors.success, fontWeight: "bold" }]}>
+          Time Left: {secRemaining}s
+        </Text>
+      </View>
+    );
   };
 
   return (
@@ -98,6 +170,8 @@ export default function OfflineTurnScreen({ route, navigation }) {
                   <Ionicons name="arrow-forward-circle-outline" size={14} color={colors.primary} />
                   <Text style={[typography.sub2, { color: colors.primary }]}>IT'S YOUR TURN</Text>
                 </View>
+
+                {renderClueTimer()}
 
                 <View style={[styles.avatar, { backgroundColor: colors.primaryLight }]}>
                   <Text style={[typography.h2, { color: colors.primary }]}>
@@ -128,6 +202,8 @@ export default function OfflineTurnScreen({ route, navigation }) {
                   <Ionicons name="time-outline" size={14} color={colors.warning} />
                   <Text style={[typography.sub2, { color: colors.warning }]}>WAITING FOR {activePlayer?.name?.toUpperCase()}</Text>
                 </View>
+
+                {renderClueTimer()}
 
                 <View style={[styles.avatar, { backgroundColor: colors.isDark ? "#2a2a2a" : "#F1F5F9" }]}>
                   <Text style={[typography.h2, { color: colors.textSecondary }]}>
@@ -195,4 +271,14 @@ const styles = StyleSheet.create({
   queueRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10 },
   queueNum: { width: 28, height: 28, borderRadius: 8, borderWidth: 1, justifyContent: "center", alignItems: "center" },
   activeDot: { width: 8, height: 8, borderRadius: 4 },
+  timerPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 14,
+    borderWidth: 1,
+    alignSelf: "center",
+  },
 });

@@ -25,7 +25,7 @@ function circlePositions(count, radius) {
 
 export default function OfflineWaitingLobbyScreen({ route, navigation }) {
   const { colors, typography } = useTheme();
-  const { roomCode, course, players: maxPlayers, rounds, selectedTopic, isHost } = route.params || {};
+  const { roomCode, course, players: maxPlayers, rounds, selectedTopic, isHost, clueTimer } = route.params || {};
   const [joinedPlayers, setJoinedPlayers] = useState([]);
   const [starting, setStarting] = useState(false);
   const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -65,6 +65,7 @@ export default function OfflineWaitingLobbyScreen({ route, navigation }) {
           scores: {},
           roomCode,
           isHost,
+          clueTimer: data.clueTimer !== undefined ? data.clueTimer : (clueTimer || 0),
         });
       }
     });

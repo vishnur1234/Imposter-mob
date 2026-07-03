@@ -355,29 +355,24 @@ export default function GamePlayScreen({ route, navigation }) {
       const winners = [];
       const losers = [];
 
+      // The Imposter is a Winner if they survived; otherwise a Loser
       if (imposterSurvives) {
-        // Imposter survives: Imposter is the Winner. All students are Losers.
         winners.push(imposterId);
-        players.forEach(p => {
-          if (p.uid !== imposterId) losers.push(p.uid);
-        });
       } else {
-        // Imposter is caught:
-        // Winners are the students who voted for the Imposter correctly.
-        // Losers are the Imposter + the students who voted incorrectly.
-        players.forEach(p => {
-          if (p.uid === imposterId) {
-            losers.push(p.uid);
-          } else {
-            const votedForUid = votes[p.uid];
-            if (votedForUid === imposterId) {
-              winners.push(p.uid);
-            } else {
-              losers.push(p.uid);
-            }
-          }
-        });
+        losers.push(imposterId);
       }
+
+      // Each student is a Winner if they correct voted for the Imposter; otherwise a Loser
+      players.forEach(p => {
+        if (p.uid !== imposterId) {
+          const votedForUid = votes[p.uid];
+          if (votedForUid === imposterId) {
+            winners.push(p.uid);
+          } else {
+            losers.push(p.uid);
+          }
+        }
+      });
 
       // Calculate pot and payouts
       const totalPlayersCount = players.length;

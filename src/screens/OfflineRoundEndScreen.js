@@ -8,7 +8,7 @@ import { useTheme } from "../context/ThemeContext";
 
 export default function OfflineRoundEndScreen({ route, navigation }) {
   const { colors, typography } = useTheme();
-  const { course, players, topic, imposterIndex, roundNumber: initialRoundNumber, rounds, scores, roomCode, isHost } = route.params || {};
+  const { course, players, topic, imposterIndex, roundNumber: initialRoundNumber, rounds, scores, roomCode, isHost, clueTimer } = route.params || {};
 
   const [dbRoom, setDbRoom] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -35,6 +35,7 @@ export default function OfflineRoundEndScreen({ route, navigation }) {
           rounds: data.totalRounds || totalRounds,
           roomCode,
           isHost,
+          clueTimer: data.clueTimer !== undefined ? data.clueTimer : (clueTimer || 0),
         });
       } else if (data.gameStatus === "offline_voting") {
         navigation.navigate("OfflineVoting", {
@@ -66,6 +67,7 @@ export default function OfflineRoundEndScreen({ route, navigation }) {
         currentRound: roundNumber + 1,
         currentTurnIndex: 0,
         turnOrder: shuffledUids,
+        turnStartedAt: Date.now(),
       });
     } catch (e) {
       Alert.alert("Error", `Failed to start next round: ${e.message}`);
