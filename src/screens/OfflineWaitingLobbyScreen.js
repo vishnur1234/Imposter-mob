@@ -28,6 +28,7 @@ export default function OfflineWaitingLobbyScreen({ route, navigation }) {
   const { roomCode, course, players: maxPlayers, rounds, selectedTopic, isHost, clueTimer } = route.params || {};
   const [joinedPlayers, setJoinedPlayers] = useState([]);
   const [starting, setStarting] = useState(false);
+  const [dbRoom, setDbRoom] = useState(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -44,6 +45,7 @@ export default function OfflineWaitingLobbyScreen({ route, navigation }) {
     const unsub = onSnapshot(doc(db, "rooms", roomCode), async (snap) => {
       if (!snap.exists()) { Alert.alert("Room Closed", "The room was closed."); navigation.navigate("Home"); return; }
       const data = snap.data();
+      setDbRoom(data);
       const playersList = data.players || [];
       const enriched = await Promise.all(
         playersList.map(async (p) => {
@@ -185,6 +187,17 @@ export default function OfflineWaitingLobbyScreen({ route, navigation }) {
                 ))}
               </View>
             )}
+          </View>
+
+          {/* Betting amount info row */}
+          <View style={[styles.waitBanner, { backgroundColor: colors.surface, borderColor: colors.border, marginTop: 4, paddingVertical: 12, justifyContent: "space-between", marginBottom: 12 }]}>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <Ionicons name="cash-outline" size={16} color={colors.textSecondary} />
+              <Text style={[typography.body2, { color: colors.textSecondary }]}>Betting Amount</Text>
+            </View>
+            <Text style={[typography.sub7, { color: colors.success }]}>
+              {dbRoom?.bettingAmount || route.params?.bettingAmount || 50} coins
+            </Text>
           </View>
 
           {/* Start / Waiting */}

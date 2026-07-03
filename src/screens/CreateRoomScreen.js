@@ -24,6 +24,10 @@ export default function CreateRoomScreen({ navigation }) {
   const [userCoins, setUserCoins] = useState(0);
   const [hostPlayerName, setHostPlayerName] = useState("");
 
+  const [bettingAmount, setBettingAmount] = useState(50);
+  const [customBettingAmount, setCustomBettingAmount] = useState("");
+  const [isCustomBetting, setIsCustomBetting] = useState(false);
+
   useEffect(() => {
     const myUid = auth.currentUser?.uid;
     if (!myUid) return;
@@ -42,8 +46,13 @@ export default function CreateRoomScreen({ navigation }) {
 
 
   const handleCreate = async () => {
-    if (userCoins < 50) {
-      Alert.alert("Insufficient Coins", "You need at least 50 coins to play. Claim your Daily Reward or play again later.");
+    const finalBettingAmount = isCustomBetting ? Number(customBettingAmount) : bettingAmount;
+    if (isNaN(finalBettingAmount) || finalBettingAmount <= 0) {
+      Alert.alert("Invalid Betting Amount", "Please enter a valid betting amount greater than 0.");
+      return;
+    }
+    if (userCoins < finalBettingAmount) {
+      Alert.alert("Insufficient Coins", `You need at least ${finalBettingAmount} coins to create this room. You currently have ${userCoins} coins.`);
       return;
     }
     const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -70,6 +79,7 @@ export default function CreateRoomScreen({ navigation }) {
         readyPlayers: [],
         gameData: {},
         selectedTopic: finalTopic,
+        bettingAmount: finalBettingAmount,
       });
       if (gameMode === "Offline") {
         navigation.navigate("OfflineWaitingLobby", {
@@ -79,9 +89,19 @@ export default function CreateRoomScreen({ navigation }) {
           rounds: Number(rounds),
           selectedTopic: finalTopic,
           isHost: true,
+          bettingAmount: finalBettingAmount,
         });
       } else {
-        navigation.navigate("WaitingRoom", { roomCode, course: courseCategory, players: Number(players), isHost: true, isDemoMode: false, selectedTopic: finalTopic, clueTimer: Number(clueTimer) });
+        navigation.navigate("WaitingRoom", { 
+          roomCode, 
+          course: courseCategory, 
+          players: Number(players), 
+          isHost: true, 
+          isDemoMode: false, 
+          selectedTopic: finalTopic, 
+          clueTimer: Number(clueTimer),
+          bettingAmount: finalBettingAmount,
+        });
       }
     } catch (e) {
       Alert.alert("Error", `Failed to create room: ${e.message}`);
@@ -246,6 +266,77 @@ export default function CreateRoomScreen({ navigation }) {
                   ))}
                 </View>
               </>
+            )}
+
+            {/* Betting Amount */}
+            <View style={[styles.sectionLabelRow, { marginTop: 14 }]}>
+              <Ionicons name="cash-outline" size={14} color={colors.success} />
+              <Text style={[styles.sectionLabel, typography.sub2, { color: colors.success }]}>BETTING AMOUNT</Text>
+            </View>
+            <View style={{ flexDirection: "row", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
+              {[50, 100, 250, 500].map((amt) => (
+                <TouchableOpacity
+                  key={amt}
+                  onPress={() => {
+                    setBettingAmount(amt);
+                    setCustomBettingAmount("");
+                    setIsCustomBetting(false);
+                  }}
+                  style={[
+                    styles.countCircle,
+                    { width: 65 },
+                    bettingAmount === amt && !isCustomBetting
+                      ? { backgroundColor: colors.success, borderColor: colors.success }
+                      : { backgroundColor: colors.isDark ? "#000000" : "#F8FAFC", borderColor: colors.border }
+                  ]}
+                >
+                  <Text style={[styles.countText, typography.h7, { color: bettingAmount === amt && !isCustomBetting ? "#FFFFFF" : colors.textSecondary }]}>
+                    {amt}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+              <TouchableOpacity
+                onPress={() => {
+                  setIsCustomBetting(true);
+                  if (customBettingAmount) {
+                    setBettingAmount(Number(customBettingAmount));
+                  } else {
+                    setBettingAmount(0);
+                  }
+                }}
+                style={[
+                  styles.countCircle,
+                  { width: 85 },
+                  isCustomBetting
+                    ? { backgroundColor: colors.success, borderColor: colors.success }
+                    : { backgroundColor: colors.isDark ? "#000000" : "#F8FAFC", borderColor: colors.border }
+                ]}
+              >
+                <Text style={[styles.countText, typography.h7, { color: isCustomBetting ? "#FFFFFF" : colors.textSecondary }]}>
+                  Custom
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {isCustomBetting && (
+              <View style={[styles.customInputContainer, { borderColor: colors.border, backgroundColor: colors.isDark ? "#000000" : "#F8FAFC" }]}>
+                <TextInput
+                  style={[styles.customInput, { color: colors.textPrimary }]}
+                  placeholder="Enter custom amount..."
+                  placeholderTextColor={colors.textDisabled}
+                  keyboardType="numeric"
+                  value={customBettingAmount}
+                  onChangeText={(val) => {
+                    const cleaned = val.replace(/[^0-9]/g, "");
+                    setCustomBettingAmount(cleaned);
+                    if (cleaned) {
+                      setBettingAmount(Number(cleaned));
+                    } else {
+                      setBettingAmount(0);
+                    }
+                  }}
+                />
+              </View>
             )}
 
             <TouchableOpacity onPress={handleCreate} disabled={loading} activeOpacity={0.85} style={styles.btnWrap}>
@@ -439,4 +530,14 @@ const styles = StyleSheet.create({
   btnWrap: { borderRadius: 16, overflow: "hidden", marginTop: 20 },
   btn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 12, paddingVertical: 17 },
   btnText: { color: "#FFF", fontSize: 15, fontWeight: "900", letterSpacing: 1.5 },
+  customInputContainer: {
+    borderWidth: 1, borderRadius: 12,
+    paddingHorizontal: 12, height: 44, marginTop: 4, marginBottom: 14,
+    justifyContent: "center",
+  },
+  customInput: {
+    fontSize: 14,
+    height: "100%",
+    padding: 0,
+  },
 });

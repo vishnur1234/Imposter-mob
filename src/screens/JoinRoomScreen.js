@@ -42,8 +42,9 @@ export default function JoinRoomScreen({ navigation }) {
       if (statsSnap.exists()) {
         const statsData = statsSnap.data();
         const scoreVal = statsData.highScore || 0;
-        if (scoreVal < 50) {
-          Alert.alert("Insufficient Coins", "You need at least 50 coins to play. Claim your Daily Reward or play again later.");
+        const requiredCoins = roomData.bettingAmount !== undefined ? roomData.bettingAmount : 50;
+        if (scoreVal < requiredCoins) {
+          Alert.alert("Insufficient Coins", `You need at least ${requiredCoins} coins to join this room. Claim your Daily Reward or play again later.`);
           setLoading(false);
           return;
         }

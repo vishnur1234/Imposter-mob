@@ -16,6 +16,7 @@ export default function WaitingRoomScreen({ route, navigation }) {
   const [joinedPlayers, setJoinedPlayers] = useState([]);
   const [starting, setStarting] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState(initialSelectedTopic || null);
+  const [roomData, setRoomData] = useState(null);
 
   useEffect(() => {
     if (isDemoMode) {
@@ -28,6 +29,7 @@ export default function WaitingRoomScreen({ route, navigation }) {
     const unsub = onSnapshot(doc(db, "rooms", roomCode), async (snap) => {
       if (snap.exists()) {
         const data = snap.data();
+        setRoomData(data);
         const playersList = data.players || data.playerList || [];
 
         // Enrich each player's name from user_stats so gaming tags always show
@@ -212,6 +214,15 @@ export default function WaitingRoomScreen({ route, navigation }) {
               <Ionicons name="school-outline" size={14} color={colors.textSecondary} />
               <Text style={[styles.infoLabel, typography.body2, { color: colors.textSecondary }]}>Course</Text>
               <Text style={[styles.infoValue, typography.sub7, { color: colors.primary }]}>{course}</Text>
+            </View>
+
+            {/* Betting amount info row */}
+            <View style={[styles.infoRow, { backgroundColor: colors.isDark ? "#000000" : "#F8FAFC", borderColor: colors.border, marginTop: 8 }]}>
+              <Ionicons name="cash-outline" size={14} color={colors.textSecondary} />
+              <Text style={[styles.infoLabel, typography.body2, { color: colors.textSecondary }]}>Betting Amount</Text>
+              <Text style={[styles.infoValue, typography.sub7, { color: colors.success }]}>
+                {roomData?.bettingAmount || route.params?.bettingAmount || 50} coins
+              </Text>
             </View>
 
             {/* Actions */}

@@ -94,9 +94,8 @@ export default function OfflineVotingScreen({ route, navigation }) {
           });
 
           // Calculate pot and payouts (matches GamePlayScreen's pot system)
-          const entryFeePot = totalPlayers.length * 50;
-          const penaltyPot = losers.length * 50;
-          const totalPot = entryFeePot + penaltyPot;
+          const entryFee = Number(dbRoom.bettingAmount || 50);
+          const totalPot = totalPlayers.length * entryFee;
           const winnerEarnedShare = winners.length > 0 ? Math.floor(totalPot / winners.length) : 0;
 
           const prevScores = dbRoom.scores || scores || {};
@@ -105,9 +104,9 @@ export default function OfflineVotingScreen({ route, navigation }) {
           totalPlayers.forEach((p) => {
             let earned = 0;
             if (winners.includes(p.uid)) {
-              earned = winnerEarnedShare - 50; // Winner Net Score
+              earned = winnerEarnedShare - entryFee; // Winner Net Score
             } else {
-              earned = -100; // Loser Net Score
+              earned = -entryFee; // Loser Net Score
             }
             updatedScores[p.uid] = (prevScores[p.uid] || 0) + earned;
           });

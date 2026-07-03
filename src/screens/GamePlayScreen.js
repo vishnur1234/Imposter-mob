@@ -127,13 +127,14 @@ export default function GamePlayScreen({ route, navigation }) {
           }
         }
 
-        // 5. Entry Fee Deduction (-50 coins) when game transitions to reveal/round
+        // 5. Entry Fee Deduction when game transitions to reveal/round
         if (data.gameStatus === "reveal" || data.gameStatus === "round") {
           const gameId = data.gameId || roomCode;
           if (!paidGamesRef.current.includes(gameId)) {
             paidGamesRef.current.push(gameId);
             const myPlayerObj = (data.players || []).find(p => p.uid === myUid) || { name: "Player" };
-            saveUserScoreToHistory(myUid, myPlayerObj.name, roomCode, gameId, -50, true);
+            const entryFee = Number(data.bettingAmount || 50);
+            saveUserScoreToHistory(myUid, myPlayerObj.name, roomCode, gameId, -entryFee, true);
           }
         }
 
@@ -375,10 +376,9 @@ export default function GamePlayScreen({ route, navigation }) {
       });
 
       // Calculate pot and payouts
+      const entryFee = Number(roomData?.bettingAmount || 50);
       const totalPlayersCount = players.length;
-      const entryFeePot = totalPlayersCount * 50;
-      const penaltyPot = losers.length * 50; // each loser pays an additional -50
-      const totalPot = entryFeePot + penaltyPot;
+      const totalPot = totalPlayersCount * entryFee;
 
       const winnerEarnedShare = winners.length > 0 ? Math.floor(totalPot / winners.length) : 0;
 
@@ -387,7 +387,10 @@ export default function GamePlayScreen({ route, navigation }) {
         if (winners.includes(player.uid)) {
           earned = winnerEarnedShare;
         } else {
-          earned = -50; // Losers lose an additional 50 points (making it -100 total)
+          earned = 0;
+        }
+        if (player.uid === imposterId && correct) {
+          earned += entryFee;
         }
         return {
           ...player,
@@ -937,7 +940,7 @@ export default function GamePlayScreen({ route, navigation }) {
             {isImposter ? (
               <View style={{ width: "100%" }}>
                 <Text style={[typography.body2, { color: colors.textSecondary, marginBottom: 12 }]}>
-                  You survived or got caught! You have a chance to steal <Text style={{ color: colors.success, fontWeight: "bold" }}>+50 bonus points</Text> by guessing the secret topic.
+                  You survived or got caught! You have a chance to steal <Text style={{ color: colors.success, fontWeight: "bold" }}>+{roomData?.bettingAmount || 50} bonus points</Text> by guessing the secret topic.
                 </Text>
                 <TextInput
                   value={bonusGuess}
@@ -1015,7 +1018,7 @@ export default function GamePlayScreen({ route, navigation }) {
                   color={roomData.imposterGuessCorrect ? colors.success : colors.error}
                 />
                 <Text style={[typography.sub7, { color: roomData.imposterGuessCorrect ? colors.success : colors.error }]}>
-                  {roomData.imposterGuessCorrect ? "CORRECT GUESS (+50 pts)" : "INCORRECT GUESS (0 pts)"}
+                  {roomData.imposterGuessCorrect ? `CORRECT GUESS (+${roomData.bettingAmount || 50} pts)` : "INCORRECT GUESS (0 pts)"}
                 </Text>
               </View>
               {roomData.imposterSurvives ? (
