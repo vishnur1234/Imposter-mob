@@ -20,6 +20,8 @@ import {
   limit,
   orderBy,
   onSnapshot,
+  where,
+  getCountFromServer,
 } from "firebase/firestore";
 import { db, auth } from "../firebase/firebase";
 import { useTheme } from "../context/ThemeContext";
@@ -305,6 +307,8 @@ export default function GlobalRankingScreen({ navigation }) {
   const [loading, setLoading] = useState(true);
   const [userStats, setUserStats] = useState(null);
   const [rankings, setRankings] = useState([]);
+  const [myPreciseRank, setMyPreciseRank] = useState(0);
+  const [totalUsers, setTotalUsers] = useState(0);
 
   const myUid = auth.currentUser?.uid || "guest";
   const listFadeAnim = useRef(new Animated.Value(0)).current;
@@ -339,6 +343,13 @@ export default function GlobalRankingScreen({ navigation }) {
       });
     }
 
+    // Fetch total number of users competing
+    getCountFromServer(collection(db, "user_stats"))
+      .then((countSnap) => {
+        setTotalUsers(countSnap.data().count);
+      })
+      .catch((err) => console.log("Failed to count total users:", err));
+
     const q = query(collection(db, "user_stats"), orderBy("highScore", "desc"), limit(50));
     unsubRankings = onSnapshot(
       q,
@@ -367,6 +378,35 @@ export default function GlobalRankingScreen({ navigation }) {
       unsubRankings();
     };
   }, [myUid]);
+
+  // Dynamically calculate precise global rank
+  useEffect(() => {
+    if (myUid === "guest") {
+      setMyPreciseRank(0);
+      return;
+    }
+
+    const myRankIndex = rankings.findIndex((p) => p.uid === myUid);
+    if (myRankIndex !== -1) {
+      setMyPreciseRank(myRankIndex + 1);
+    } else if (userStats) {
+      const myScore = userStats.highScore || 0;
+      const rankQuery = query(
+        collection(db, "user_stats"),
+        where("highScore", ">", myScore)
+      );
+      getCountFromServer(rankQuery)
+        .then((countSnap) => {
+          setMyPreciseRank(countSnap.data().count + 1);
+        })
+        .catch((err) => {
+          console.error("Failed to query exact rank count:", err);
+          setMyPreciseRank(0);
+        });
+    } else {
+      setMyPreciseRank(0);
+    }
+  }, [rankings, userStats, myUid]);
 
   const t = useMemo(() => {
     const isDark = colors.isDark;
@@ -433,8 +473,6 @@ export default function GlobalRankingScreen({ navigation }) {
   const top3 = rankings.slice(0, 3);
   const rest = rankings.slice(3);
   const podiumOrder = [top3[1], top3[0], top3[2]];
-  const myRankIndex = rankings.findIndex((p) => p.uid === myUid);
-  const myRank = myRankIndex + 1;
 
   const headerTranslate = headerEnter.interpolate({ inputRange: [0, 1], outputRange: [-12, 0] });
   const scanTranslate = scanAnim.interpolate({ inputRange: [0, 1], outputRange: [-40, 320] });
@@ -466,11 +504,11 @@ export default function GlobalRankingScreen({ navigation }) {
           <View style={styles.hudStrip}>
             <View style={[styles.hudPill, { backgroundColor: t.headerBg, borderColor: t.headerBorder }]}>
               <Ionicons name="people" size={12} color={t.hudPillTextColor} />
-              <Text style={[styles.hudPillText, { color: t.hudPillTextColor }]}>{rankings.length} COMPETING</Text>
+              <Text style={[styles.hudPillText, { color: t.hudPillTextColor }]}>{(totalUsers || rankings.length)} COMPETING</Text>
             </View>
             <View style={[styles.hudPill, { backgroundColor: t.headerBg, borderColor: t.headerBorder }]}>
               <Ionicons name="podium" size={12} color={t.hudPillTextColor} />
-              <Text style={[styles.hudPillText, { color: t.hudPillTextColor }]}>{myRank > 0 ? `YOU · #${myRank}` : "UNRANKED"}</Text>
+              <Text style={[styles.hudPillText, { color: t.hudPillTextColor }]}>{myPreciseRank > 0 ? `YOU · #${myPreciseRank}` : "UNRANKED"}</Text>
             </View>
           </View>
         </Animated.View>
@@ -573,7 +611,7 @@ export default function GlobalRankingScreen({ navigation }) {
                   {userStats?.playerName || userStats?.name || "Player"}
                 </Text>
                 <Text style={[styles.myRankText, { color: t.myRankColor }]}>
-                  {myRank > 0 ? `RANK #${myRank} OF ${rankings.length}` : "UNRANKED"}
+                  {myPreciseRank > 0 ? `RANK #${myPreciseRank} OF ${totalUsers || rankings.length}` : "UNRANKED"}
                 </Text>
               </View>
             </View>

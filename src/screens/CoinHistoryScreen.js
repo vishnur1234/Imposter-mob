@@ -9,13 +9,14 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot, collection, query, orderBy, limit } from "firebase/firestore";
 import { db, auth } from "../firebase/firebase";
 import { useTheme } from "../context/ThemeContext";
 
 export default function CoinHistoryScreen({ navigation }) {
   const { colors, typography } = useTheme();
   const [stats, setStats] = useState(null);
+  const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const myUid = auth.currentUser?.uid;
@@ -26,14 +27,34 @@ export default function CoinHistoryScreen({ navigation }) {
       return;
     }
 
-    const unsub = onSnapshot(doc(db, "user_stats", myUid), (snap) => {
+    const unsubStats = onSnapshot(doc(db, "user_stats", myUid), (snap) => {
       if (snap.exists()) {
         setStats(snap.data());
       }
+    });
+
+    const historyQuery = query(
+      collection(db, "user_stats", myUid, "history"),
+      orderBy("timestamp", "desc"),
+      limit(100)
+    );
+
+    const unsubHistory = onSnapshot(historyQuery, (snap) => {
+      const list = [];
+      snap.forEach((d) => {
+        list.push({ id: d.id, ...d.data() });
+      });
+      setHistory(list);
+      setLoading(false);
+    }, (err) => {
+      console.error("Error fetching history subcollection:", err);
       setLoading(false);
     });
 
-    return () => unsub();
+    return () => {
+      unsubStats();
+      unsubHistory();
+    };
   }, [myUid]);
 
 
@@ -63,11 +84,9 @@ export default function CoinHistoryScreen({ navigation }) {
 
           {/* History List */}
           <View style={styles.historyList}>
-            {stats?.matchHistory && stats.matchHistory.length > 0 ? (
+            {history && history.length > 0 ? (
 
-              [...stats.matchHistory]
-                .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0))
-                .map((item, idx) => {
+              history.map((item, idx) => {
                   const dateStr = item.timestamp
                     ? new Date(item.timestamp).toLocaleDateString("en-US", {
                       month: "short",

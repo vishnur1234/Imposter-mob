@@ -5,9 +5,10 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { doc, onSnapshot, setDoc } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { db, auth } from "../firebase/firebase";
 import { useTheme } from "../context/ThemeContext";
+import { claimDailyReward } from "../services/statsService";
 
 const { width } = Dimensions.get("window");
 
@@ -123,23 +124,9 @@ export default function DailyRewardScreen({ navigation }) {
     setClaiming(true);
 
     try {
-      const now = Date.now();
-      const statsRef = doc(db, "user_stats", myUid);
-      const currentHistory = stats?.matchHistory || [];
-      const newHistoryItem = {
-        gameId: "DAILY_" + Math.random().toString(36).substring(2, 6).toUpperCase(),
-        roomCode: "DAILY",
-        score: 500,
-        timestamp: now
-      };
-      const updatedHistory = [...currentHistory, newHistoryItem];
-      const newHighScore = (stats?.highScore || 0) + 500;
-
-      await setDoc(statsRef, {
-        highScore: newHighScore,
-        lastDailyRewardClaimed: now,
-        matchHistory: updatedHistory
-      }, { merge: true });
+      const emailPrefix = auth.currentUser?.email ? auth.currentUser.email.split("@")[0] : "Player";
+      const nameVal = stats?.playerName || stats?.name || emailPrefix;
+      await claimDailyReward(myUid, nameVal);
 
       Alert.alert("Success", "Reward unlocked! +500 coins added to your balance.");
     } catch (e) {

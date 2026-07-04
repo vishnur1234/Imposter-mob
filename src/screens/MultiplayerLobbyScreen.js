@@ -5,9 +5,9 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
-import { db, auth } from "../firebase/firebase";
+import { auth } from "../firebase/firebase";
 import { useTheme } from "../context/ThemeContext";
+import { joinRoomAtomic } from "../services/roomService";
 
 export default function MultiplayerLobbyScreen({ navigation }) {
   const { colors, typography } = useTheme();
@@ -24,58 +24,45 @@ export default function MultiplayerLobbyScreen({ navigation }) {
       return;
     }
     setLoading(true);
+    const code = roomCode.toUpperCase();
+    const myUid = auth.currentUser?.uid || "guest";
+    const emailPrefix = auth.currentUser?.email ? auth.currentUser.email.split("@")[0] : "Guest";
+
     try {
-      const code = roomCode.toUpperCase();
-      const roomRef = doc(db, "rooms", code);
-      const snap = await getDoc(roomRef);
-      if (!snap.exists()) {
-        Alert.alert("Error", "Room not found.");
-        setLoading(false);
-        return;
-      }
-      const data = snap.data();
-      const playersList = data.players || [];
-      const capacity = data.playersRequired || data.players || 4;
-      const myUid = auth.currentUser?.uid || "guest";
-      const alreadyInRoom = playersList.some((p) => p.uid === myUid);
-
-      if (!alreadyInRoom && playersList.length >= capacity) {
-        Alert.alert("Error", "Room is full.");
-        setLoading(false);
-        return;
-      }
-
-      const emailPrefix = auth.currentUser?.email ? auth.currentUser.email.split("@")[0] : "Guest";
-      const playerObj = { uid: myUid, name: emailPrefix, score: 0 };
-
-      if (!alreadyInRoom) {
-        await updateDoc(roomRef, {
-          players: arrayUnion(playerObj),
-          playerList: arrayUnion({ uid: myUid, name: emailPrefix }),
-        });
-      }
+      const roomMeta = await joinRoomAtomic(code, myUid, emailPrefix);
 
       // Route offline rooms to OfflineWaitingLobby
-      if (data.gameMode === "Offline") {
+      if (roomMeta.gameMode === "Offline") {
         navigation.navigate("OfflineWaitingLobby", {
           roomCode: code,
-          course: data.category || data.course,
-          players: capacity,
-          rounds: data.totalRounds || 3,
-          selectedTopic: data.selectedTopic || null,
-          isHost: data.hostId === myUid,
+          course: roomMeta.category,
+          players: roomMeta.playersRequired,
+          rounds: roomMeta.totalRounds,
+          selectedTopic: roomMeta.selectedTopic,
+          isHost: roomMeta.hostId === myUid,
         });
       } else {
         navigation.navigate("WaitingRoom", {
           roomCode: code,
-          course: data.category || data.course,
-          players: capacity,
-          isHost: data.hostId === myUid,
+          course: roomMeta.category,
+          players: roomMeta.playersRequired,
+          isHost: roomMeta.hostId === myUid,
           isDemoMode: false,
         });
       }
     } catch (e) {
-      Alert.alert("Error", e.message);
+      console.log(e);
+      const msg = e.message || "";
+      if (msg === "ROOM_NOT_FOUND") {
+        Alert.alert("Error", "Room not found.");
+      } else if (msg === "ROOM_FULL") {
+        Alert.alert("Error", "Room is full.");
+      } else if (msg.startsWith("INSUFFICIENT_COINS:")) {
+        const cost = msg.split(":")[1];
+        Alert.alert("Insufficient Coins", `You need at least ${cost} coins to join this room. Claim your Daily Reward or play again later.`);
+      } else {
+        Alert.alert("Error", `Failed to join room: ${e.message}`);
+      }
     } finally {
       setLoading(false);
     }

@@ -5,6 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { doc, onSnapshot, updateDoc, deleteDoc, getDoc, setDoc } from "firebase/firestore";
 import { db, auth } from "../firebase/firebase";
 import { useTheme } from "../context/ThemeContext";
+import { saveUserScoreToHistory } from "../services/statsService";
 
 const AVATAR_COLORS = [
   "#F59E0B", "#10B981", "#3B82F6", "#EC4899",
@@ -12,52 +13,6 @@ const AVATAR_COLORS = [
 ];
 
 const RANK_ICONS = ["🥇", "🥈", "🥉"];
-
-const saveUserScoreToHistory = async (uid, name, roomCode, gameId, score, isEntryFee = false) => {
-  if (uid === "guest") return;
-  try {
-    const statsRef = doc(db, "user_stats", uid);
-    const snap = await getDoc(statsRef);
-    let matchHistory = [];
-    let highScore = 0;
-    let totalMatches = 0;
-
-    if (snap.exists()) {
-      const statsData = snap.data();
-      matchHistory = statsData.matchHistory || [];
-      highScore = statsData.highScore || 0;
-      totalMatches = statsData.totalMatches || 0;
-    }
-
-    if (matchHistory.some(m => m.gameId === gameId && (m.isEntryFee ?? false) === isEntryFee)) {
-      return;
-    }
-
-    const newMatch = {
-      roomCode,
-      gameId,
-      score,
-      isEntryFee,
-      timestamp: Date.now()
-    };
-
-    matchHistory.push(newMatch);
-    highScore = matchHistory.reduce((sum, m) => sum + (m.score || 0), 0);
-    if (!isEntryFee) {
-      totalMatches = totalMatches + 1;
-    }
-
-    await setDoc(statsRef, {
-      uid,
-      name,
-      highScore,
-      totalMatches,
-      matchHistory
-    }, { merge: true });
-  } catch (error) {
-    console.error("Error saving user match score:", error);
-  }
-};
 
 export default function OfflineResultScreen({ route, navigation }) {
   const { colors, typography } = useTheme();

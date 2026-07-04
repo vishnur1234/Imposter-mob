@@ -6,9 +6,10 @@ import {
 import topics from "../data/demoData";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
-import { doc, setDoc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot } from "firebase/firestore";
 import { db, auth } from "../firebase/firebase";
 import { useTheme } from "../context/ThemeContext";
+import { createRoomAtomic } from "../services/roomService";
 
 export default function CreateRoomScreen({ navigation }) {
   const { colors, typography } = useTheme();
@@ -55,15 +56,12 @@ export default function CreateRoomScreen({ navigation }) {
       Alert.alert("Insufficient Coins", `You need at least ${finalBettingAmount} coins to create this room. You currently have ${userCoins} coins.`);
       return;
     }
-    const roomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
     setLoading(true);
     const emailPrefix = auth.currentUser?.email ? auth.currentUser.email.split("@")[0] : "Host";
     const courseCategory = selectedTopic ? selectedTopic.category : "ACCA";
     const finalTopic = selectedTopic || { id: "random_acca", category: "ACCA", answer: "ACCA (Finance)" };
     try {
-
-      await setDoc(doc(db, "rooms", roomCode), {
-        roomCode,
+      const roomData = {
         hostId: auth.currentUser.uid,
         category: courseCategory,
         playersRequired: Number(players),
@@ -80,7 +78,10 @@ export default function CreateRoomScreen({ navigation }) {
         gameData: {},
         selectedTopic: finalTopic,
         bettingAmount: finalBettingAmount,
-      });
+      };
+
+      const roomCode = await createRoomAtomic(roomData);
+
       if (gameMode === "Offline") {
         navigation.navigate("OfflineWaitingLobby", {
           roomCode,

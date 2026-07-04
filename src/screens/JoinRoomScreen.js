@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { View, StyleSheet, Text, Alert, SafeAreaView, TouchableOpacity, ScrollView, TextInput, ActivityIndicator } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
-import { db, auth } from "../firebase/firebase";
+import { auth } from "../firebase/firebase";
 import { useTheme } from "../context/ThemeContext";
+import { joinRoomAtomic } from "../services/roomService";
 
 export default function JoinRoomScreen({ navigation }) {
   const { colors, typography } = useTheme();
@@ -18,75 +18,32 @@ export default function JoinRoomScreen({ navigation }) {
 
     setLoading(true);
     const code = roomCode.trim().toUpperCase();
+    const myUid = auth.currentUser?.uid || "guest";
+    const emailPrefix = auth.currentUser?.email ? auth.currentUser.email.split("@")[0] : "Guest Player";
 
     try {
-      const roomRef = doc(db, "rooms", code);
-      const roomSnap = await getDoc(roomRef);
-
-      if (!roomSnap.exists()) {
-        Alert.alert("Error", "Room not found. Check the code.");
-        setLoading(false);
-        return;
-      }
-
-      const roomData = roomSnap.data();
-      const playersList = roomData.players || [];
-      const capacity = roomData.playersRequired || roomData.players || 4;
-      const myUid = auth.currentUser?.uid || "guest";
-      const emailPrefix = auth.currentUser?.email ? auth.currentUser.email.split("@")[0] : "Guest Player";
-
-      // Enforce coin balance entry check
-      const statsRef = doc(db, "user_stats", myUid);
-      const statsSnap = await getDoc(statsRef);
-      let joinPlayerName = emailPrefix;
-      if (statsSnap.exists()) {
-        const statsData = statsSnap.data();
-        const scoreVal = statsData.highScore || 0;
-        const requiredCoins = roomData.bettingAmount !== undefined ? roomData.bettingAmount : 50;
-        if (scoreVal < requiredCoins) {
-          Alert.alert("Insufficient Coins", `You need at least ${requiredCoins} coins to join this room. Claim your Daily Reward or play again later.`);
-          setLoading(false);
-          return;
-        }
-        joinPlayerName = statsData.playerName || statsData.name || emailPrefix;
-      }
-
-      const alreadyInRoom = playersList.some((p) => p.uid === myUid);
-
-      if (!alreadyInRoom && playersList.length >= capacity) {
-        Alert.alert("Error", "This room is full.");
-        setLoading(false);
-        return;
-      }
-
-      const playerObj = { uid: myUid, name: joinPlayerName, score: 0 };
-
-      if (alreadyInRoom) {
-        // Player already in room — update their name to the latest gaming tag
-        const updatedPlayers = playersList.map(p =>
-          p.uid === myUid ? { ...p, name: joinPlayerName } : p
-        );
-        await updateDoc(roomRef, {
-          players: updatedPlayers,
-        });
-      } else {
-        // New player — add them with their gaming tag
-        await updateDoc(roomRef, {
-          players: arrayUnion(playerObj),
-          playerList: arrayUnion({ uid: myUid, name: joinPlayerName }),
-        });
-      }
+      const roomMeta = await joinRoomAtomic(code, myUid, emailPrefix);
 
       navigation.navigate("WaitingRoom", {
         roomCode: code,
-        course: roomData.category || roomData.course,
-        players: capacity,
-        isHost: roomData.hostId === myUid,
+        course: roomMeta.category,
+        players: roomMeta.playersRequired,
+        isHost: roomMeta.hostId === myUid,
         isDemoMode: false,
       });
     } catch (error) {
       console.log(error);
-      Alert.alert("Error", `Failed to join room: ${error.message}`);
+      const msg = error.message || "";
+      if (msg === "ROOM_NOT_FOUND") {
+        Alert.alert("Error", "Room not found. Check the code.");
+      } else if (msg === "ROOM_FULL") {
+        Alert.alert("Error", "This room is full.");
+      } else if (msg.startsWith("INSUFFICIENT_COINS:")) {
+        const cost = msg.split(":")[1];
+        Alert.alert("Insufficient Coins", `You need at least ${cost} coins to join this room. Claim your Daily Reward or play again later.`);
+      } else {
+        Alert.alert("Error", `Failed to join room: ${error.message}`);
+      }
     } finally {
       setLoading(false);
     }
