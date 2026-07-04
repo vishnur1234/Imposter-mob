@@ -77,11 +77,11 @@ const RULES_STEPS = [
     bgColor: "rgba(16,185,129,0.08)",
     borderColor: "rgba(16,185,129,0.25)",
     details: [
-      "🎟️ Entry Fee: Starting a match costs 50 coins, deducted at the start.",
-      "🛡️ Imposter Escapes: Imposter wins the entire pot (Players * 50 coins). Students lose their fee.",
-      "🎯 Imposter Caught: Correct voting students divide the total pot equally.",
-      "💰 The Pot: Pot = Everyone's entry fee + an additional 50-coin penalty from losers.",
-      "❌ Loser Penalty: Incorrect voters and caught Imposter lose an extra 50 coins (-100 total).",
+      "🎟️ Entry Fee: Customizable by the host (default: 50 coins), deducted at the start.",
+      "🛡️ Imposter Escapes: The Imposter wins the entire pot (Players * Entry Fee). Students lose their entry fee.",
+      "🎯 Imposter Caught: Correct voting students divide the total pot (everyone's entry fee) equally.",
+      "💰 The Pot: Pot = Sum of all players' entry fees.",
+      "❌ Loser Penalty: Incorrect voters and the caught Imposter receive a 0 payout (losing their entry fee).",
     ],
   },
 ];

@@ -549,7 +549,6 @@ const styles = StyleSheet.create({
     height: 400,
     justifyContent: "center",
     alignItems: "center",
-    marginVertical: 10,
     position: "relative",
   },
   orbitTrack: {
