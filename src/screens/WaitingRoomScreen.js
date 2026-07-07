@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import {
   View, StyleSheet, Text, TouchableOpacity, ScrollView,
-  SafeAreaView, Alert, ActivityIndicator,
+  SafeAreaView, Alert, ActivityIndicator, Modal,
 } from "react-native";
+import QRCode from "react-native-qrcode-svg";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { doc, onSnapshot, updateDoc, getDoc } from "firebase/firestore";
@@ -17,6 +18,7 @@ export default function WaitingRoomScreen({ route, navigation }) {
   const [starting, setStarting] = useState(false);
   const [selectedTopic, setSelectedTopic] = useState(initialSelectedTopic || null);
   const [roomData, setRoomData] = useState(null);
+  const [showQR, setShowQR] = useState(false);
 
   useEffect(() => {
     if (isDemoMode) {
@@ -167,6 +169,10 @@ export default function WaitingRoomScreen({ route, navigation }) {
                 <View style={[styles.liveDot, { backgroundColor: colors.success }]} />
                 <Text style={[styles.liveText, typography.sub8, { color: colors.success }]}>LIVE</Text>
               </View>
+              <TouchableOpacity onPress={() => setShowQR(true)} activeOpacity={0.8} style={[styles.qrBtn, { backgroundColor: colors.isDark ? "rgba(20,101,241,0.15)" : "#EFF6FF", borderColor: colors.isDark ? "rgba(20,101,241,0.3)" : "rgba(37,99,235,0.2)", marginTop: 12 }]}>
+                <Ionicons name="qr-code-outline" size={14} color={colors.primary} />
+                <Text style={[typography.btn2, { color: colors.primary }]}>Show QR Code</Text>
+              </TouchableOpacity>
             </View>
 
             {/* Room Code Share Warning / Info Banner */}
@@ -249,6 +255,33 @@ export default function WaitingRoomScreen({ route, navigation }) {
           </View>
         </ScrollView>
       </SafeAreaView>
+
+      {/* QR Code Modal */}
+      <Modal visible={showQR} transparent animationType="fade" onRequestClose={() => setShowQR(false)}>
+        <TouchableOpacity style={styles.qrOverlay} activeOpacity={1} onPress={() => setShowQR(false)}>
+          <TouchableOpacity activeOpacity={1} style={[styles.qrModal, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={styles.qrModalHeader}>
+              <Ionicons name="qr-code-outline" size={18} color={colors.primary} />
+              <Text style={[typography.sub2, { color: colors.textPrimary }]}>SCAN TO JOIN</Text>
+            </View>
+            <Text style={[typography.body3, { color: colors.textSecondary, textAlign: "center", marginBottom: 20 }]}>
+              Open <Text style={{ fontWeight: "700", color: colors.primary }}>Multiplayer → Join Room → Scan QR</Text>
+            </Text>
+            <View style={[styles.qrFrame, { borderColor: colors.primary + "40", backgroundColor: "#fff" }]}>
+              <QRCode
+                value={roomCode || "ROOM"}
+                size={180}
+                color="#0F172A"
+                backgroundColor="#FFFFFF"
+              />
+            </View>
+            <Text style={[typography.h3, { color: colors.textPrimary, letterSpacing: 4, marginBottom: 20 }]}>{roomCode}</Text>
+            <TouchableOpacity onPress={() => setShowQR(false)} style={[styles.qrCloseBtn, { backgroundColor: colors.isDark ? "#1E293B" : "#F1F5F9", borderColor: colors.border }]}>
+              <Text style={[typography.btn2, { color: colors.textSecondary }]}>CLOSE</Text>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </LinearGradient>
   );
 }
@@ -356,4 +389,10 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     fontSize: 12,
   },
+  qrBtn: { flexDirection: "row", alignItems: "center", gap: 6, borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8 },
+  qrOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "center", alignItems: "center", padding: 24 },
+  qrModal: { width: "100%", borderRadius: 28, borderWidth: 1, padding: 24, alignItems: "center" },
+  qrModalHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 },
+  qrFrame: { borderWidth: 2, borderRadius: 16, padding: 14, marginBottom: 20 },
+  qrCloseBtn: { borderWidth: 1, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 28 },
 });

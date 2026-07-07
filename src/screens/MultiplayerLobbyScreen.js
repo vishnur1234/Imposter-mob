@@ -1,10 +1,11 @@
 import React, { useState, useRef } from "react";
 import {
   View, StyleSheet, Text, TouchableOpacity, TextInput,
-  Alert, SafeAreaView, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator,
+  Alert, SafeAreaView, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator, Modal,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import { CameraView, useCameraPermissions } from "expo-camera";
 import { auth } from "../firebase/firebase";
 import { useTheme } from "../context/ThemeContext";
 import { joinRoomAtomic } from "../services/roomService";
@@ -13,6 +14,9 @@ export default function MultiplayerLobbyScreen({ navigation }) {
   const { colors, typography } = useTheme();
   const [roomCode, setRoomCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
+  const [scanned, setScanned] = useState(false);
+  const [permission, requestPermission] = useCameraPermissions();
   const inputRef = useRef(null);
   const CODE_LENGTH = 6;
   const chars = roomCode.toUpperCase().split("");
@@ -64,6 +68,61 @@ export default function MultiplayerLobbyScreen({ navigation }) {
       } else {
         Alert.alert("Error", `Failed to join room: ${e.message}`);
       }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleOpenScanner = async () => {
+    if (!permission?.granted) {
+      const result = await requestPermission();
+      if (!result.granted) {
+        Alert.alert("Camera Permission Required", "Please allow camera access to scan QR codes.");
+        return;
+      }
+    }
+    setScanned(false);
+    setShowScanner(true);
+  };
+
+  const handleBarcodeScanned = ({ data }) => {
+    if (scanned || loading) return;
+    setScanned(true);
+    const code = data.trim().toUpperCase().slice(0, 6);
+    setRoomCode(code);
+    setShowScanner(false);
+    // Auto-join immediately
+    handleJoinWithCode(code);
+  };
+
+  const handleJoinWithCode = async (code) => {
+    if (!code || code.length < 6) return;
+    setLoading(true);
+    const myUid = auth.currentUser?.uid || "guest";
+    const emailPrefix = auth.currentUser?.email ? auth.currentUser.email.split("@")[0] : "Guest";
+    try {
+      const roomMeta = await joinRoomAtomic(code, myUid, emailPrefix);
+      if (roomMeta.gameMode === "Offline") {
+        navigation.navigate("OfflineWaitingLobby", {
+          roomCode: code, course: roomMeta.category, players: roomMeta.playersRequired,
+          rounds: roomMeta.totalRounds, selectedTopic: roomMeta.selectedTopic,
+          isHost: roomMeta.hostId === myUid, clueTimer: roomMeta.clueTimer,
+        });
+      } else {
+        navigation.navigate("WaitingRoom", {
+          roomCode: code, course: roomMeta.category, players: roomMeta.playersRequired,
+          isHost: roomMeta.hostId === myUid, isDemoMode: false,
+        });
+      }
+    } catch (e) {
+      const msg = e.message || "";
+      if (msg === "ROOM_NOT_FOUND") Alert.alert("Error", "Room not found.");
+      else if (msg === "ROOM_FULL") Alert.alert("Error", "Room is full.");
+      else if (msg.startsWith("INSUFFICIENT_COINS:")) {
+        const cost = msg.split(":")[1];
+        Alert.alert("Insufficient Coins", `You need at least ${cost} coins to join.`);
+      } else Alert.alert("Error", `Failed to join room: ${e.message}`);
+      setScanned(false);
     } finally {
       setLoading(false);
     }
@@ -121,7 +180,13 @@ export default function MultiplayerLobbyScreen({ navigation }) {
                 </View>
               </View>
 
-              <Text style={[styles.codeLabel, typography.sub2, { color: colors.primary }]}>ROOM CODE</Text>
+              <View style={styles.codeLabelRow}>
+                <Text style={[styles.codeLabel, typography.sub2, { color: colors.primary }]}>ROOM CODE</Text>
+                <TouchableOpacity onPress={handleOpenScanner} activeOpacity={0.8} style={[styles.qrScanBtn, { backgroundColor: colors.isDark ? "rgba(20,101,241,0.15)" : "#EFF6FF", borderColor: colors.isDark ? "rgba(20,101,241,0.3)" : "rgba(37,99,235,0.2)" }]}>
+                  <Ionicons name="qr-code-outline" size={14} color={colors.primary} />
+                  <Text style={[typography.body3, { color: colors.primary, fontWeight: "700" }]}>Scan QR</Text>
+                </TouchableOpacity>
+              </View>
               {/* 6-block code input */}
               <TouchableOpacity onPress={() => inputRef.current?.focus()} activeOpacity={1} style={styles.codeWrapper}>
                 {codeChars.map((char, i) => {
@@ -183,6 +248,52 @@ export default function MultiplayerLobbyScreen({ navigation }) {
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
+
+      {/* QR Scanner Modal */}
+      <Modal visible={showScanner} animationType="slide" onRequestClose={() => setShowScanner(false)}>
+        <View style={styles.scannerBg}>
+          {permission?.granted ? (
+            <>
+              <CameraView
+                style={StyleSheet.absoluteFill}
+                facing="back"
+                barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
+                onBarcodeScanned={scanned ? undefined : handleBarcodeScanned}
+              />
+              {/* Overlay */}
+              <View style={styles.scanOverlay} pointerEvents="none">
+                <Text style={styles.scanTitle}>SCAN QR CODE</Text>
+                <View style={styles.scanGuide}>
+                  <View style={[styles.corner, styles.cornerTL]} />
+                  <View style={[styles.corner, styles.cornerTR]} />
+                  <View style={[styles.corner, styles.cornerBL]} />
+                  <View style={[styles.corner, styles.cornerBR]} />
+                </View>
+                <Text style={styles.scanHint}>Point camera at the host's QR code</Text>
+              </View>
+              {loading && (
+                <View style={styles.scanLoading}>
+                  <ActivityIndicator size="large" color="#FFFFFF" />
+                  <Text style={{ color: "#FFF", marginTop: 12, fontWeight: "700", fontSize: 15 }}>Joining room…</Text>
+                </View>
+              )}
+              <TouchableOpacity onPress={() => setShowScanner(false)} style={styles.scanCloseBtn}>
+                <Ionicons name="close" size={22} color="#FFF" />
+              </TouchableOpacity>
+            </>
+          ) : (
+            <View style={styles.permBox}>
+              <Ionicons name="camera-outline" size={52} color="#94A3B8" />
+              <Text style={{ color: "#64748B", textAlign: "center", marginVertical: 12, fontSize: 14 }}>
+                Camera access needed to scan QR codes.
+              </Text>
+              <TouchableOpacity onPress={requestPermission} style={styles.permBtn}>
+                <Text style={{ color: "#FFF", fontWeight: "700" }}>Allow Camera</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      </Modal>
     </LinearGradient>
   );
 }
@@ -250,4 +361,22 @@ const styles = StyleSheet.create({
   violetBtnText: { color: "#FFF", fontSize: 14, fontWeight: "800", letterSpacing: 0.8 },
 
   codeHint: { textAlign: "center", fontSize: 11, color: "#2563EB", letterSpacing: 0.5 },
+  codeLabelRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 },
+  codeLabel: { fontSize: 10, fontWeight: "700", color: "#2563EB", letterSpacing: 1.5 },
+  qrScanBtn: { flexDirection: "row", alignItems: "center", gap: 5, borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
+  // Scanner
+  scannerBg: { flex: 1, backgroundColor: "#000" },
+  scanOverlay: { ...StyleSheet.absoluteFillObject, justifyContent: "center", alignItems: "center" },
+  scanTitle: { color: "#FFF", fontSize: 13, fontWeight: "900", letterSpacing: 2, marginBottom: 30, textShadowColor: "rgba(0,0,0,0.6)", textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 },
+  scanGuide: { width: 230, height: 230, position: "relative" },
+  corner: { position: "absolute", width: 30, height: 30, borderColor: "#FFFFFF" },
+  cornerTL: { top: 0, left: 0, borderTopWidth: 3, borderLeftWidth: 3, borderTopLeftRadius: 6 },
+  cornerTR: { top: 0, right: 0, borderTopWidth: 3, borderRightWidth: 3, borderTopRightRadius: 6 },
+  cornerBL: { bottom: 0, left: 0, borderBottomWidth: 3, borderLeftWidth: 3, borderBottomLeftRadius: 6 },
+  cornerBR: { bottom: 0, right: 0, borderBottomWidth: 3, borderRightWidth: 3, borderBottomRightRadius: 6 },
+  scanHint: { color: "#FFF", fontSize: 13, fontWeight: "600", marginTop: 28, textShadowColor: "rgba(0,0,0,0.6)", textShadowOffset: { width: 0, height: 1 }, textShadowRadius: 4 },
+  scanLoading: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.55)", justifyContent: "center", alignItems: "center" },
+  scanCloseBtn: { position: "absolute", top: 56, right: 20, width: 42, height: 42, borderRadius: 21, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center" },
+  permBox: { flex: 1, justifyContent: "center", alignItems: "center", padding: 32 },
+  permBtn: { backgroundColor: "#2563EB", borderRadius: 14, paddingVertical: 12, paddingHorizontal: 24 },
 });

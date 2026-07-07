@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   View, StyleSheet, Text, TouchableOpacity, SafeAreaView,
-  Animated, Alert, ActivityIndicator, Clipboard,
+  Animated, Alert, ActivityIndicator, Clipboard, Modal,
 } from "react-native";
+import QRCode from "react-native-qrcode-svg";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { doc, onSnapshot, updateDoc, getDoc } from "firebase/firestore";
@@ -29,6 +30,7 @@ export default function OfflineWaitingLobbyScreen({ route, navigation }) {
   const [joinedPlayers, setJoinedPlayers] = useState([]);
   const [starting, setStarting] = useState(false);
   const [dbRoom, setDbRoom] = useState(null);
+  const [showQR, setShowQR] = useState(false);
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -123,10 +125,16 @@ export default function OfflineWaitingLobbyScreen({ route, navigation }) {
                 </View>
               ))}
             </View>
-            <TouchableOpacity onPress={handleCopyCode} activeOpacity={0.7} style={styles.copyBtn}>
-              <Ionicons name="copy-outline" size={13} color={colors.textSecondary} />
-              <Text style={[typography.body3, { color: colors.textSecondary }]}>Tap to copy code</Text>
-            </TouchableOpacity>
+            <View style={styles.codeActions}>
+              <TouchableOpacity onPress={handleCopyCode} activeOpacity={0.7} style={styles.copyBtn}>
+                <Ionicons name="copy-outline" size={13} color={colors.textSecondary} />
+                <Text style={[typography.body3, { color: colors.textSecondary }]}>Copy Code</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setShowQR(true)} activeOpacity={0.7} style={[styles.qrBtn, { backgroundColor: colors.isDark ? "rgba(20,101,241,0.15)" : "#EFF6FF", borderColor: colors.isDark ? "rgba(20,101,241,0.3)" : "rgba(37,99,235,0.2)" }]}>
+                <Ionicons name="qr-code-outline" size={13} color={colors.primary} />
+                <Text style={[typography.body3, { color: colors.primary, fontWeight: "700" }]}>Show QR</Text>
+              </TouchableOpacity>
+            </View>
             <Text style={[typography.body3, { color: colors.textSecondary, textAlign: "center", marginTop: 2, lineHeight: 18 }]}>
               Other players join via <Text style={{ color: colors.primary, fontWeight: "700" }}>Multiplayer → Join Room</Text>
             </Text>
@@ -217,6 +225,39 @@ export default function OfflineWaitingLobbyScreen({ route, navigation }) {
           )}
         </View>
       </SafeAreaView>
+
+      {/* QR Code Modal */}
+      <Modal visible={showQR} transparent animationType="fade" onRequestClose={() => setShowQR(false)}>
+        <TouchableOpacity style={styles.qrOverlay} activeOpacity={1} onPress={() => setShowQR(false)}>
+          <TouchableOpacity activeOpacity={1} style={[styles.qrModal, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={styles.qrModalHeader}>
+              <Ionicons name="qr-code-outline" size={18} color={colors.primary} />
+              <Text style={[typography.sub2, { color: colors.textPrimary }]}>SCAN TO JOIN</Text>
+            </View>
+            <Text style={[typography.body3, { color: colors.textSecondary, textAlign: "center", marginBottom: 20 }]}>
+              Open <Text style={{ fontWeight: "700", color: colors.primary }}>Multiplayer → Join Room → Scan QR</Text>
+            </Text>
+            <View style={[styles.qrFrame, { borderColor: colors.primary + "40", backgroundColor: "#fff" }]}>
+              <QRCode
+                value={roomCode || "ROOM"}
+                size={180}
+                color="#0F172A"
+                backgroundColor="#FFFFFF"
+              />
+            </View>
+            <View style={styles.qrCodeRow}>
+              {(roomCode || "------").split("").map((ch, i) => (
+                <View key={i} style={[styles.qrCodeBlock, { backgroundColor: colors.isDark ? "#000" : "#FFFBEB", borderColor: colors.isDark ? "rgba(251,191,36,0.4)" : "#FDE68A" }]}>
+                  <Text style={[styles.codeChar, { color: colors.warning }]}>{ch}</Text>
+                </View>
+              ))}
+            </View>
+            <TouchableOpacity onPress={() => setShowQR(false)} style={[styles.qrCloseBtn, { backgroundColor: colors.isDark ? "#1E293B" : "#F1F5F9", borderColor: colors.border }]}>
+              <Text style={[typography.btn2, { color: colors.textSecondary }]}>CLOSE</Text>
+            </TouchableOpacity>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </LinearGradient>
   );
 }
@@ -248,4 +289,13 @@ const styles = StyleSheet.create({
   startBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, paddingVertical: 17 },
   startBtnText: { color: "#FFF", fontSize: 15, fontWeight: "900", letterSpacing: 1 },
   waitBanner: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 12, borderWidth: 1, borderRadius: 18, padding: 18 },
+  codeActions: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 4 },
+  qrBtn: { flexDirection: "row", alignItems: "center", gap: 5, borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },
+  qrOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)", justifyContent: "center", alignItems: "center", padding: 24 },
+  qrModal: { width: "100%", borderRadius: 28, borderWidth: 1, padding: 24, alignItems: "center" },
+  qrModalHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 8 },
+  qrFrame: { borderWidth: 2, borderRadius: 16, padding: 14, marginBottom: 20 },
+  qrCodeRow: { flexDirection: "row", gap: 7, marginBottom: 20 },
+  qrCodeBlock: { width: 34, height: 42, borderRadius: 8, borderWidth: 1.5, justifyContent: "center", alignItems: "center" },
+  qrCloseBtn: { borderWidth: 1, borderRadius: 12, paddingVertical: 10, paddingHorizontal: 28 },
 });

@@ -93,7 +93,7 @@ const ROLES = [
     color: "#10B981",
     bg: "rgba(16,185,129,0.08)",
     border: "rgba(16,185,129,0.25)",
-    objective: "Identify the Imposter before they fool everyone. Give smart clues, discuss wisely, and vote correctly to earn 100 points.",
+    objective: "Identify the Imposter before they fool everyone. Give smart clues, discuss wisely, and vote correctly to win a share of the coin betting pot.",
     tips: ["Give related but not too obvious clues", "Watch for vague or off-topic answers", "Coordinate with other students subtly"],
   },
   {
@@ -210,7 +210,7 @@ export default function GameRulesScreen({ navigation }) {
               {[
                 { icon: "people", val: "3–8", label: "Players" },
                 { icon: "time", val: "Adjustable", label: "Turn Timer" },
-                { icon: "star", val: "100", label: "Max Points" },
+                { icon: "wallet", val: "Pot-based", label: "Coin Rewards" },
               ].map((s, i) => (
                 <View key={i} style={[styles.introStat, { backgroundColor: colors.isDark ? "rgba(255,255,255,0.07)" : "rgba(99,102,241,0.08)", borderColor: "rgba(99,102,241,0.2)" }]}>
                   <Ionicons name={s.icon} size={18} color="#6366F1" />
