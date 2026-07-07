@@ -13,15 +13,20 @@ import { doc, onSnapshot, collection, query, orderBy, limit } from "firebase/fir
 import { db, auth } from "../firebase/firebase";
 import { useTheme } from "../context/ThemeContext";
 
+let memoryStatsCache = null;
+let memoryHistoryCache = null;
+
 export default function CoinHistoryScreen({ navigation }) {
   const { colors, typography } = useTheme();
-  const [stats, setStats] = useState(null);
-  const [history, setHistory] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState(memoryStatsCache);
+  const [history, setHistory] = useState(memoryHistoryCache || []);
+  const [loading, setLoading] = useState(!memoryHistoryCache);
 
   const myUid = auth.currentUser?.uid;
 
   useEffect(() => {
+
+    const start = performance.now();
     if (!myUid) {
       setLoading(false);
       return;
@@ -29,14 +34,16 @@ export default function CoinHistoryScreen({ navigation }) {
 
     const unsubStats = onSnapshot(doc(db, "user_stats", myUid), (snap) => {
       if (snap.exists()) {
-        setStats(snap.data());
+        const data = snap.data();
+        setStats(data);
+        memoryStatsCache = data;
       }
     });
 
     const historyQuery = query(
       collection(db, "user_stats", myUid, "history"),
       orderBy("timestamp", "desc"),
-      limit(100)
+      limit(30)
     );
 
     const unsubHistory = onSnapshot(historyQuery, (snap) => {
@@ -45,7 +52,10 @@ export default function CoinHistoryScreen({ navigation }) {
         list.push({ id: d.id, ...d.data() });
       });
       setHistory(list);
+      memoryHistoryCache = list;
       setLoading(false);
+      const end = performance.now();
+      // console.log(`History loaded in ${(end - start).toFixed(2)} ms`);
     }, (err) => {
       console.error("Error fetching history subcollection:", err);
       setLoading(false);
@@ -55,6 +65,8 @@ export default function CoinHistoryScreen({ navigation }) {
       unsubStats();
       unsubHistory();
     };
+
+
   }, [myUid]);
 
 
@@ -119,9 +131,9 @@ export default function CoinHistoryScreen({ navigation }) {
                           </Text>
                           {item.roomCode !== "DAILY" && !isEntryFee && (
                             <View style={[styles.gameIdBadge, { backgroundColor: colors.isDark ? "#1E1E1E" : "#F1F5F9" }]}>
-                              <Text style={[typography.sub8, { color: colors.textSecondary, fontSize: 8 }]}>
+                              {/* <Text style={[typography.sub8, { color: colors.textSecondary, fontSize: 8 }]}>
                                 ID: {item.gameId || "N/A"}
-                              </Text>
+                              </Text> */}
                             </View>
                           )}
                         </View>

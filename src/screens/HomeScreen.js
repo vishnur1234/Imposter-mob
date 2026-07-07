@@ -14,7 +14,7 @@ import {
   Alert,
   TextInput,
 } from "react-native";
-
+import { House, Heart, PlayCircleIcon, TreasureChestIcon, SealQuestionIcon } from "phosphor-react-native";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -209,13 +209,10 @@ export default function HomeScreen({ navigation }) {
         <View style={[styles.navBar, { borderBottomColor: colors.border, backgroundColor: "transparent" }]}>
           <View style={styles.navBrand}>
             <Image
-              source={require("../../assets/elanceIcon.png")}
-              style={styles.brandIcon}
+              source={require("../../assets/elancefulllogo.png")}
+              style={[styles.logoImage, colors.isDark && { tintColor: "#FFFFFF" }]}
               resizeMode="contain"
             />
-            <Text style={[styles.brandText, { color: colors.isDark ? "#FFFFFF" : "#0F172A" }]}>
-              ELANCE
-            </Text>
           </View>
 
           <View style={styles.headerRight}>
@@ -323,8 +320,8 @@ export default function HomeScreen({ navigation }) {
                 style={[styles.modeCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
               >
                 <View style={styles.modeCardBody}>
-                  <View style={[styles.modeIconBox, { backgroundColor: colors.isDark ? "rgba(0,185,111,0.15)" : "#ECFDF5", borderColor: colors.isDark ? "rgba(0,185,111,0.3)" : "rgba(16,185,129,0.15)" }]}>
-                    <Ionicons name="wifi-outline" size={24} color={colors.success} />
+                  <View style={[styles.modeIconBox, { backgroundColor: colors.isDark ? "rgba(0, 3, 185, 0.15)" : "#fdfdfd", borderColor: colors.isDark ? "rgba(0,185,111,0.3)" : "rgba(16,185,129,0.15)" }]}>
+                    <PlayCircleIcon size={34} color={colors.primary} />
                   </View>
 
                   <View style={styles.modeTextWrap}>
@@ -333,7 +330,7 @@ export default function HomeScreen({ navigation }) {
                   </View>
 
                   <View style={[styles.modeArrow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <Ionicons name="chevron-forward" size={18} color={colors.success} />
+                    <Ionicons name="chevron-forward" size={18} color={colors.primary} />
                   </View>
                 </View>
               </TouchableOpacity>
@@ -367,8 +364,14 @@ export default function HomeScreen({ navigation }) {
                       activeOpacity={(isTopRank || isDailyReward || isGameRules) ? 0.8 : undefined}
                       style={[styles.statItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
                     >
-                      <View style={[styles.statIcon, { borderColor: `${color}22`, backgroundColor: `${color}11` }]}>
-                        <Ionicons name={icon} size={20} color={color} />
+                      <View style={[styles.statIcon, { borderColor: isDailyReward ? "#0959ee22" : (isGameRules ? "#0414fb22" : `${color}22`), backgroundColor: isDailyReward ? "#0959ee11" : (isGameRules ? "#0414fb11" : `${color}11`) }]}>
+                        {isDailyReward ? (
+                          <TreasureChestIcon size={20} color="#0959ee" weight="fill" />
+                        ) : isGameRules ? (
+                          <SealQuestionIcon size={20} color="#0959ee" weight="duotone" />
+                        ) : (
+                          <Ionicons name={icon} size={20} color={color} />
+                        )}
                       </View>
                       <Text style={[styles.statLabel, typography.sub8, { color: colors.textSecondary }]}>{label}</Text>
                     </CardComponent>

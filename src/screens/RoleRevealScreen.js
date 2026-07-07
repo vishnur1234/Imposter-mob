@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import {
-  View, StyleSheet, Text, TouchableOpacity, ScrollView, SafeAreaView, ActivityIndicator,
+  View, StyleSheet, Text, TouchableOpacity, ScrollView, SafeAreaView, ActivityIndicator, Alert,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
@@ -20,6 +20,17 @@ export default function RoleRevealScreen({ route, navigation }) {
 
   const currentUid = auth.currentUser?.uid;
   const isSoloMode = isDemoMode || !gamePlayers.some((p) => p.id === currentUid);
+
+  const handleQuit = () => {
+    Alert.alert(
+      "Quit Game",
+      "Are you sure you want to quit and return to the main menu?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Quit", style: "destructive", onPress: () => navigation.reset({ index: 0, routes: [{ name: "Home" }] }) }
+      ]
+    );
+  };
   const myPlayer = isSoloMode ? null : (gamePlayers.find((p) => p.id === currentUid) || gamePlayers[0]);
   const isImposter = myPlayer?.role === "IMPOSTER";
 
@@ -53,8 +64,13 @@ export default function RoleRevealScreen({ route, navigation }) {
     <LinearGradient colors={colors.gradientBg} locations={[0, 0.4, 1]} style={styles.bg}>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: "transparent" }]}>
-          <Ionicons name="card-outline" size={18} color={colors.primary} />
-          <Text style={[styles.headerTitle, typography.sub2, { color: colors.textPrimary }]}>ROLE REVEAL</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <Ionicons name="card-outline" size={18} color={colors.primary} />
+            <Text style={[styles.headerTitle, typography.sub2, { color: colors.textPrimary }]}>ROLE REVEAL</Text>
+          </View>
+          <TouchableOpacity onPress={handleQuit} style={[styles.quitBtn, { backgroundColor: colors.isDark ? "#121212" : "#F1F5F9", borderColor: colors.border }]}>
+            <Ionicons name="log-out-outline" size={16} color={colors.error} />
+          </TouchableOpacity>
         </View>
 
         <ScrollView contentContainerStyle={styles.scroll}>
@@ -175,8 +191,8 @@ export default function RoleRevealScreen({ route, navigation }) {
 const styles = StyleSheet.create({
   bg: { flex: 1 },
   header: {
-    flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10,
-    paddingVertical: 18, borderBottomWidth: 1, borderColor: "#E2E8F0",
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10,
+    paddingHorizontal: 20, paddingVertical: 18, borderBottomWidth: 1, borderColor: "#E2E8F0",
     backgroundColor: "#FFFFFF",
   },
   headerTitle: { fontSize: 15, fontWeight: "900", color: "#0F172A", letterSpacing: 2.5 },
@@ -258,4 +274,9 @@ const styles = StyleSheet.create({
     borderRadius: 16, paddingVertical: 14, paddingHorizontal: 18,
   },
   nextBtnGhostText: { flex: 1, color: "#2563EB", fontSize: 14, fontWeight: "700" },
+  quitBtn: {
+    width: 34, height: 34, borderRadius: 10,
+    borderWidth: 1,
+    justifyContent: "center", alignItems: "center",
+  },
 });

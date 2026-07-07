@@ -33,6 +33,17 @@ export default function GamePlayScreen({ route, navigation }) {
   const recordedGamesRef = useRef([]);
   const paidGamesRef = useRef([]);
 
+  const handleQuit = () => {
+    Alert.alert(
+      "Quit Game",
+      "Are you sure you want to quit and return to the main menu?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Quit", style: "destructive", onPress: () => navigation.reset({ index: 0, routes: [{ name: "Home" }] }) }
+      ]
+    );
+  };
+
   // Firestore Snapshot Listener
   useEffect(() => {
     if (!roomCode) {
@@ -1084,6 +1095,9 @@ export default function GamePlayScreen({ route, navigation }) {
             <Text style={[styles.headerTitle, typography.sub2, { color: colors.textPrimary }]}>
               ROOM: {roomCode}
             </Text>
+            <TouchableOpacity onPress={handleQuit} style={[styles.quitBtn, { backgroundColor: colors.isDark ? "#121212" : "#F1F5F9", borderColor: colors.border }]}>
+              <Ionicons name="log-out-outline" size={16} color={colors.error} />
+            </TouchableOpacity>
           </View>
 
           <ScrollView contentContainerStyle={styles.scroll}>
@@ -1103,9 +1117,11 @@ const styles = StyleSheet.create({
   bg: { flex: 1 },
   centerBg: { flex: 1, justifyContent: "center", alignItems: "center" },
   header: {
+    flexDirection: "row",
     paddingVertical: 16,
+    paddingHorizontal: 20,
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "space-between",
     borderBottomWidth: 1,
   },
   headerTitle: { fontSize: 16, fontWeight: "900", letterSpacing: 2 },
@@ -1368,5 +1384,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     marginTop: 10,
     alignSelf: "center",
+  },
+  quitBtn: {
+    width: 34, height: 34, borderRadius: 10,
+    borderWidth: 1,
+    justifyContent: "center", alignItems: "center",
   },
 });

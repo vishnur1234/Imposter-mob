@@ -16,6 +16,17 @@ export default function OfflineRoundEndScreen({ route, navigation }) {
   const playerList = Array.isArray(players) ? players : [];
   const totalRounds = rounds || 3;
 
+  const handleQuit = () => {
+    Alert.alert(
+      "Quit Game",
+      "Are you sure you want to quit and return to the main menu?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Quit", style: "destructive", onPress: () => navigation.reset({ index: 0, routes: [{ name: "Home" }] }) }
+      ]
+    );
+  };
+
   // Listen to Firestore for transitions
   useEffect(() => {
     if (!roomCode) return;
@@ -100,6 +111,16 @@ export default function OfflineRoundEndScreen({ route, navigation }) {
   return (
     <LinearGradient colors={colors.gradientBg} locations={[0, 0.4, 1]} style={styles.bg}>
       <SafeAreaView style={{ flex: 1 }}>
+        <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: "transparent" }]}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Ionicons name="flag-outline" size={18} color={colors.primary} />
+            <Text style={[styles.headerTitle, typography.sub2, { color: colors.textPrimary }]}>ROUND END</Text>
+          </View>
+          <TouchableOpacity onPress={handleQuit} style={[styles.quitBtn, { backgroundColor: colors.isDark ? "#121212" : "#F1F5F9", borderColor: colors.border }]}>
+            <Ionicons name="log-out-outline" size={16} color={colors.error} />
+          </TouchableOpacity>
+        </View>
+
         <ScrollView contentContainerStyle={styles.scroll}>
 
           {/* Banner */}
@@ -216,4 +237,15 @@ const styles = StyleSheet.create({
   btnGhost: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, borderWidth: 1, borderRadius: 18, paddingVertical: 16, paddingHorizontal: 18 },
   btn: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 16, paddingHorizontal: 18 },
   waitBanner: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 12, borderWidth: 1, borderRadius: 18, padding: 18, width: "100%" },
+  header: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10,
+    paddingHorizontal: 20, paddingVertical: 18, borderBottomWidth: 1, borderColor: "#E2E8F0",
+    backgroundColor: "#FFFFFF",
+  },
+  headerTitle: { fontSize: 15, fontWeight: "900", color: "#0F172A", letterSpacing: 2.5 },
+  quitBtn: {
+    width: 34, height: 34, borderRadius: 10,
+    borderWidth: 1,
+    justifyContent: "center", alignItems: "center",
+  },
 });

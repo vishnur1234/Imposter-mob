@@ -10,6 +10,9 @@ export const saveUserScoreToHistory = async (uid, name, roomCode, gameId, score,
   const statsRef = doc(db, "user_stats", uid);
   const historyRef = doc(db, "user_stats", uid, "history", matchId);
 
+
+  console.log("helloooooooooooo",historyRef);
+
   try {
     await runTransaction(db, async (transaction) => {
       const historySnap = await transaction.get(historyRef);

@@ -18,6 +18,17 @@ export default function OfflineRoleRevealScreen({ route, navigation }) {
   const playerList = Array.isArray(players) ? players : [];
   const currentUid = auth.currentUser?.uid;
 
+  const handleQuit = () => {
+    Alert.alert(
+      "Quit Game",
+      "Are you sure you want to quit and return to the main menu?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Quit", style: "destructive", onPress: () => navigation.reset({ index: 0, routes: [{ name: "Home" }] }) }
+      ]
+    );
+  };
+
   // Find this current player object
   const myPlayerIndex = playerList.findIndex((p) => p.uid === currentUid);
   const isImposter = myPlayerIndex === imposterIndex;
@@ -102,9 +113,13 @@ export default function OfflineRoleRevealScreen({ route, navigation }) {
     <LinearGradient colors={colors.gradientBg} locations={[0, 0.4, 1]} style={styles.bg}>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: "transparent" }]}>
-          <Ionicons name="card-outline" size={18} color={colors.primary} />
-          <Text style={[styles.headerTitle, typography.sub2, { color: colors.textPrimary }]}>ROLE REVEAL</Text>
-          <View style={{ width: 18 }} />
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <Ionicons name="card-outline" size={18} color={colors.primary} />
+            <Text style={[styles.headerTitle, typography.sub2, { color: colors.textPrimary }]}>ROLE REVEAL</Text>
+          </View>
+          <TouchableOpacity onPress={handleQuit} style={[styles.quitBtn, { backgroundColor: colors.isDark ? "#121212" : "#F1F5F9", borderColor: colors.border }]}>
+            <Ionicons name="log-out-outline" size={16} color={colors.error} />
+          </TouchableOpacity>
         </View>
 
         <ScrollView contentContainerStyle={styles.scroll}>
@@ -257,4 +272,9 @@ const styles = StyleSheet.create({
   miniAvatar: { width: 24, height: 24, borderRadius: 12, justifyContent: "center", alignItems: "center" },
   statusBadgeReady: { flexDirection: "row", alignItems: "center", gap: 4 },
   statusBadgeWaiting: { flexDirection: "row", alignItems: "center", gap: 4 },
+  quitBtn: {
+    width: 34, height: 34, borderRadius: 10,
+    borderWidth: 1,
+    justifyContent: "center", alignItems: "center",
+  },
 });

@@ -107,7 +107,8 @@ export const joinRoomAtomic = async (roomCode, myUid, emailPrefix) => {
       gameMode: roomData.gameMode,
       totalRounds: roomData.totalRounds || 3,
       selectedTopic: roomData.selectedTopic || null,
-      bettingAmount: requiredCoins
+      bettingAmount: requiredCoins,
+      clueTimer: roomData.clueTimer !== undefined ? roomData.clueTimer : 0
     };
   });
 };

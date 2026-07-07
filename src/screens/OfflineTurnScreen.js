@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView, ScrollView, ActivityIndicator } from "react-native";
+import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView, ScrollView, ActivityIndicator, Alert } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { doc, onSnapshot, updateDoc } from "firebase/firestore";
@@ -18,6 +18,17 @@ export default function OfflineTurnScreen({ route, navigation }) {
 
   const playerList = Array.isArray(players) ? players : [];
   const currentUid = auth.currentUser?.uid;
+
+  const handleQuit = () => {
+    Alert.alert(
+      "Quit Game",
+      "Are you sure you want to quit and return to the main menu?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Quit", style: "destructive", onPress: () => navigation.reset({ index: 0, routes: [{ name: "Home" }] }) }
+      ]
+    );
+  };
 
   // Listen to Firestore for active turns and screen transition
   useEffect(() => {
@@ -150,9 +161,16 @@ export default function OfflineTurnScreen({ route, navigation }) {
     <LinearGradient colors={colors.gradientBg} locations={[0, 0.4, 1]} style={styles.bg}>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: "transparent" }]}>
-          <Ionicons name="mic-outline" size={18} color={colors.primary} />
-          <Text style={[typography.sub2, { color: colors.textPrimary }]}>ROUND {roundNumber} — HINTS</Text>
-          <Text style={[typography.body3, { color: colors.textSecondary }]}>{turnIndex + 1}/{turnOrder.length}</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Ionicons name="mic-outline" size={18} color={colors.primary} />
+            <Text style={[typography.sub2, { color: colors.textPrimary }]}>ROUND {roundNumber} — HINTS</Text>
+          </View>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <Text style={[typography.body3, { color: colors.textSecondary }]}>{turnIndex + 1}/{turnOrder.length}</Text>
+            <TouchableOpacity onPress={handleQuit} style={[styles.quitBtn, { backgroundColor: colors.isDark ? "#121212" : "#F1F5F9", borderColor: colors.border }]}>
+              <Ionicons name="log-out-outline" size={16} color={colors.error} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <ScrollView contentContainerStyle={styles.scroll}>
@@ -280,5 +298,10 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     borderWidth: 1,
     alignSelf: "center",
+  },
+  quitBtn: {
+    width: 34, height: 34, borderRadius: 10,
+    borderWidth: 1,
+    justifyContent: "center", alignItems: "center",
   },
 });

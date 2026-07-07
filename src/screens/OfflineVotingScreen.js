@@ -17,6 +17,17 @@ export default function OfflineVotingScreen({ route, navigation }) {
   const playerList = Array.isArray(players) ? players : [];
   const currentUid = auth.currentUser?.uid;
 
+  const handleQuit = () => {
+    Alert.alert(
+      "Quit Game",
+      "Are you sure you want to quit and return to the main menu?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Quit", style: "destructive", onPress: () => navigation.reset({ index: 0, routes: [{ name: "Home" }] }) }
+      ]
+    );
+  };
+
   // Listen to Firestore for updates and transitions
   useEffect(() => {
     if (!roomCode) return;
@@ -147,9 +158,16 @@ export default function OfflineVotingScreen({ route, navigation }) {
     <LinearGradient colors={colors.gradientBg} locations={[0, 0.4, 1]} style={styles.bg}>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: "transparent" }]}>
-          <Ionicons name="hand-left-outline" size={18} color={colors.error} />
-          <Text style={[typography.sub2, { color: colors.textPrimary }]}>VOTING</Text>
-          <Text style={[typography.body3, { color: colors.textSecondary }]}>{votedCount}/{playerList.length} voted</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Ionicons name="hand-left-outline" size={18} color={colors.error} />
+            <Text style={[typography.sub2, { color: colors.textPrimary }]}>VOTING</Text>
+          </View>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+            <Text style={[typography.body3, { color: colors.textSecondary }]}>{votedCount}/{playerList.length} voted</Text>
+            <TouchableOpacity onPress={handleQuit} style={[styles.quitBtn, { backgroundColor: colors.isDark ? "#121212" : "#F1F5F9", borderColor: colors.border }]}>
+              <Ionicons name="log-out-outline" size={16} color={colors.error} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <ScrollView contentContainerStyle={styles.scroll}>
@@ -275,4 +293,9 @@ const styles = StyleSheet.create({
   voterRow: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   voterChip: { alignItems: "center", gap: 4, minWidth: 40 },
   voterDot: { width: 24, height: 24, borderRadius: 12, justifyContent: "center", alignItems: "center" },
+  quitBtn: {
+    width: 34, height: 34, borderRadius: 10,
+    borderWidth: 1,
+    justifyContent: "center", alignItems: "center",
+  },
 });

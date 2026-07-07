@@ -99,13 +99,30 @@ export default function OfflineResultScreen({ route, navigation }) {
   };
 
   const handleQuit = () => {
-    navigation.navigate("Home");
+    Alert.alert(
+      "Quit Game",
+      "Are you sure you want to quit and return to the main menu?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Quit", style: "destructive", onPress: () => navigation.navigate("Home") }
+      ]
+    );
   };
 
   return (
     <LinearGradient colors={colors.gradientBg} locations={[0, 0.4, 1]} style={styles.bg}>
       <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.scroll}>
+        <View style={[styles.header, { borderBottomColor: colors.border, backgroundColor: "transparent" }]}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+            <Ionicons name="trophy-outline" size={18} color={colors.primary} />
+            <Text style={[styles.headerTitle, typography.sub2, { color: colors.textPrimary }]}>GAME RESULTS</Text>
+          </View>
+          <TouchableOpacity onPress={handleQuit} style={[styles.quitBtn, { backgroundColor: colors.isDark ? "#121212" : "#F1F5F9", borderColor: colors.border }]}>
+            <Ionicons name="log-out-outline" size={16} color={colors.error} />
+          </TouchableOpacity>
+        </View>
+
+        <ScrollView contentContainerStyle={styles.scroll} bounces={false} showsVerticalScrollIndicator={false}>
 
           <Animated.View style={{ opacity: revealAnim, transform: [{ scale: scaleAnim }] }}>
             <LinearGradient
@@ -118,7 +135,7 @@ export default function OfflineResultScreen({ route, navigation }) {
                   : (colors.isDark ? "rgba(211,47,47,0.3)" : "rgba(239,68,68,0.3)"),
               }]}
             >
-              <Text style={{ fontSize: 54, marginBottom: 10 }}>
+              <Text style={{ fontSize: 40, marginBottom: 6 }}>
                 {finalImposterCaught ? "🎉" : "🕵️"}
               </Text>
               <Text style={[typography.sub2, { color: finalImposterCaught ? colors.success : colors.error, marginBottom: 8, letterSpacing: 2 }]}>
@@ -183,11 +200,11 @@ export default function OfflineResultScreen({ route, navigation }) {
                     isWinner && { backgroundColor: colors.isDark ? "rgba(251,191,36,0.08)" : "#FFFBEB" },
                   ]}
                 >
-                  <Text style={{ fontSize: idx < 3 ? 22 : 14, width: 30, textAlign: "center" }}>
+                  <Text style={{ fontSize: idx < 3 ? 18 : 12, width: 24, textAlign: "center" }}>
                     {idx < 3 ? RANK_ICONS[idx] : `#${idx + 1}`}
                   </Text>
                   <View style={[styles.scoreAvatar, { backgroundColor: ac + "22", borderColor: ac, borderWidth: 1.5 }]}>
-                    <Text style={[typography.btn2, { color: ac }]}>{(p.name || "?")[0].toUpperCase()}</Text>
+                    <Text style={[typography.btn2, { color: ac, fontSize: 11 }]}>{(p.name || "?")[0].toUpperCase()}</Text>
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={[typography.body1, { color: colors.textPrimary, fontWeight: isWinner ? "800" : "400" }]} numberOfLines={1}>{p.name}</Text>
@@ -201,10 +218,10 @@ export default function OfflineResultScreen({ route, navigation }) {
                       : (colors.isDark ? "#1a1a1a" : "#F8FAFC"),
                     borderColor: p.score > 0 ? colors.success : colors.border,
                   }]}>
-                    <Text style={[typography.h5, { color: p.score > 0 ? colors.success : colors.textDisabled }]}>
+                    <Text style={[typography.h6, { color: p.score > 0 ? colors.success : colors.textDisabled, fontSize: 13 }]}>
                       {p.score}
                     </Text>
-                    <Text style={{ color: p.score > 0 ? colors.success : colors.textDisabled, fontSize: 9, fontWeight: "700" }}>PTS</Text>
+                    <Text style={{ color: p.score > 0 ? colors.success : colors.textDisabled, fontSize: 8, fontWeight: "700" }}>PTS</Text>
                   </View>
                 </View>
               );
@@ -288,26 +305,37 @@ export default function OfflineResultScreen({ route, navigation }) {
 
 const styles = StyleSheet.create({
   bg: { flex: 1 },
-  scroll: { padding: 20, paddingBottom: 40 },
-  resultBanner: { borderWidth: 1.5, borderRadius: 28, padding: 28, alignItems: "center", marginBottom: 14 },
-  topicReveal: { borderWidth: 1, borderRadius: 16, paddingVertical: 14, paddingHorizontal: 20, alignItems: "center", gap: 4, marginTop: 8, width: "100%" },
-  legendCard: { borderWidth: 1, borderRadius: 20, padding: 16, marginBottom: 14 },
-  legendRow: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 10 },
-  legendItems: { gap: 8 },
-  legendItem: { flexDirection: "row", alignItems: "flex-start", gap: 10 },
-  legendDot: { width: 8, height: 8, borderRadius: 4, marginTop: 4 },
-  scoreCard: { borderWidth: 1, borderRadius: 22, padding: 18, marginBottom: 14 },
-  scoreHeader: { flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 14 },
-  scoreRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingVertical: 12, paddingHorizontal: 4 },
-  scoreAvatar: { width: 36, height: 36, borderRadius: 18, justifyContent: "center", alignItems: "center" },
-  scoreChip: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6, alignItems: "center", minWidth: 48 },
-  tallyCard: { borderWidth: 1, borderRadius: 20, padding: 16, marginBottom: 14 },
-  tallyRow: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 8 },
-  tallyBar: { flex: 1, height: 8, borderRadius: 4, backgroundColor: "rgba(0,0,0,0.05)", overflow: "hidden" },
-  tallyFill: { height: "100%", borderRadius: 4 },
-  actionRow: { flexDirection: "row", gap: 10, width: "100%" },
-  actionBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderWidth: 1, borderRadius: 16, paddingVertical: 15 },
-  actionBtnWrap: { borderRadius: 16, overflow: "hidden" },
-  actionGradBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 15 },
-  waitBanner: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 12, borderWidth: 1, borderRadius: 18, padding: 18, width: "100%" },
+  scroll: { padding: 12, paddingBottom: 16 },
+  resultBanner: { borderWidth: 1.5, borderRadius: 16, padding: 14, alignItems: "center", marginBottom: 8 },
+  topicReveal: { borderWidth: 1, borderRadius: 12, paddingVertical: 8, paddingHorizontal: 16, alignItems: "center", gap: 2, marginTop: 4, width: "100%" },
+  legendCard: { borderWidth: 1, borderRadius: 14, padding: 10, marginBottom: 8 },
+  legendRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 6 },
+  legendItems: { gap: 4 },
+  legendItem: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
+  legendDot: { width: 6, height: 6, borderRadius: 3, marginTop: 4 },
+  scoreCard: { borderWidth: 1, borderRadius: 16, padding: 12, marginBottom: 8 },
+  scoreHeader: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 },
+  scoreRow: { flexDirection: "row", alignItems: "center", gap: 8, paddingVertical: 6, paddingHorizontal: 4 },
+  scoreAvatar: { width: 28, height: 28, borderRadius: 14, justifyContent: "center", alignItems: "center" },
+  scoreChip: { borderWidth: 1, borderRadius: 8, paddingHorizontal: 6, paddingVertical: 3, alignItems: "center", minWidth: 42 },
+  tallyCard: { borderWidth: 1, borderRadius: 14, padding: 10, marginBottom: 8 },
+  tallyRow: { flexDirection: "row", alignItems: "center", gap: 6, paddingVertical: 4 },
+  tallyBar: { flex: 1, height: 6, borderRadius: 3, backgroundColor: "rgba(0,0,0,0.05)", overflow: "hidden" },
+  tallyFill: { height: "100%", borderRadius: 3 },
+  actionRow: { flexDirection: "row", gap: 8, width: "100%" },
+  actionBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, borderWidth: 1, borderRadius: 12, paddingVertical: 10 },
+  actionBtnWrap: { borderRadius: 12, overflow: "hidden" },
+  actionGradBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, paddingVertical: 10 },
+  waitBanner: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, borderWidth: 1, borderRadius: 14, padding: 12, width: "100%" },
+  header: {
+    flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10,
+    paddingHorizontal: 20, paddingVertical: 18, borderBottomWidth: 1, borderColor: "#E2E8F0",
+    backgroundColor: "#FFFFFF",
+  },
+  headerTitle: { fontSize: 15, fontWeight: "900", color: "#0F172A", letterSpacing: 2.5 },
+  quitBtn: {
+    width: 34, height: 34, borderRadius: 10,
+    borderWidth: 1,
+    justifyContent: "center", alignItems: "center",
+  },
 });

@@ -5,6 +5,7 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import { TreasureChestIcon } from "phosphor-react-native";
 import { doc, onSnapshot } from "firebase/firestore";
 import { db, auth } from "../firebase/firebase";
 import { useTheme } from "../context/ThemeContext";
@@ -198,10 +199,10 @@ export default function DailyRewardScreen({ navigation }) {
                     colors={isClaimable ? ["#FCD34D", "#F59E0B"] : ["#94A3B8", "#64748B"]}
                     style={styles.innerChestCircle}
                   >
-                    <Ionicons
-                      name={isClaimable ? "gift" : "gift-outline"}
+                    <TreasureChestIcon
                       size={64}
                       color="#FFFFFF"
+                      weight={isClaimable ? "fill" : "regular"}
                     />
                   </LinearGradient>
 

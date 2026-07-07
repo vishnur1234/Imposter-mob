@@ -15,8 +15,8 @@ export default function CreateRoomScreen({ navigation }) {
   const { colors, typography } = useTheme();
   const [gameMode, setGameMode] = useState("Offline"); // "Multiplayer" | "Offline"
   const [showModeModal, setShowModeModal] = useState(false);
-  const [players, setPlayers] = useState(4);
-  const [rounds, setRounds] = useState(3);
+  const [players, setPlayers] = useState(3);
+  const [rounds, setRounds] = useState(2);
   const [clueTimer, setClueTimer] = useState(60);
   const [loading, setLoading] = useState(false);
 
@@ -66,7 +66,7 @@ export default function CreateRoomScreen({ navigation }) {
         category: courseCategory,
         playersRequired: Number(players),
         totalRounds: Number(rounds),
-        clueTimer: gameMode === "Multiplayer" ? Number(clueTimer) : 0,
+        clueTimer: Number(clueTimer),
         currentRound: 1,
         gameStatus: "waiting",
         gameMode,
@@ -80,6 +80,7 @@ export default function CreateRoomScreen({ navigation }) {
         bettingAmount: finalBettingAmount,
       };
 
+
       const roomCode = await createRoomAtomic(roomData);
 
       if (gameMode === "Offline") {
@@ -90,6 +91,7 @@ export default function CreateRoomScreen({ navigation }) {
           rounds: Number(rounds),
           selectedTopic: finalTopic,
           isHost: true,
+          clueTimer: Number(clueTimer),
           bettingAmount: finalBettingAmount,
         });
       } else {
@@ -122,7 +124,7 @@ export default function CreateRoomScreen({ navigation }) {
           <View style={{ width: 38 }} />
         </View>
 
-        <ScrollView contentContainerStyle={styles.scroll}>
+        <ScrollView contentContainerStyle={styles.scroll} bounces={false} showsVerticalScrollIndicator={false}>
           <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
 
             {/* ── GAME MODE DROPDOWN ── */}
@@ -167,7 +169,7 @@ export default function CreateRoomScreen({ navigation }) {
                 borderColor: colors.isDark ? "rgba(251,191,36,0.25)" : "#FDE68A",
               }]}>
                 <Ionicons name="people-circle-outline" size={16} color={colors.warning} />
-                <Text style={[typography.body3, { color: colors.warning, flex: 1, lineHeight: 18 }]}>
+                <Text style={[typography.body3, { color: colors.warning, flex: 1, lineHeight: 14 }]}>
                   Players join via room code using their own phones.
                 </Text>
               </View>
@@ -177,7 +179,7 @@ export default function CreateRoomScreen({ navigation }) {
             <View style={[styles.modeDivider, { backgroundColor: colors.border }]} />
 
             {/* Select Game Category Dropdown */}
-            <View style={[styles.sectionLabelRow, { marginTop: 12 }]}>
+            <View style={[styles.sectionLabelRow, { marginTop: 8 }]}>
               <Ionicons name="bulb-outline" size={14} color={colors.success} />
               <Text style={[styles.sectionLabel, typography.sub2, { color: colors.success }]}>SELECT TOPIC</Text>
             </View>
@@ -193,7 +195,7 @@ export default function CreateRoomScreen({ navigation }) {
             </TouchableOpacity>
 
             {/* Players */}
-            <View style={[styles.sectionLabelRow, { marginTop: 14 }]}>
+            <View style={[styles.sectionLabelRow, { marginTop: 8 }]}>
               <Ionicons name="people-outline" size={14} color={colors.success} />
               <Text style={[styles.sectionLabel, typography.sub2, { color: colors.success }]}>MAX PLAYERS</Text>
             </View>
@@ -217,7 +219,7 @@ export default function CreateRoomScreen({ navigation }) {
             </ScrollView>
 
             {/* Rounds */}
-            <View style={[styles.sectionLabelRow, { marginTop: 14 }]}>
+            <View style={[styles.sectionLabelRow, { marginTop: 8 }]}>
               <Ionicons name="repeat-outline" size={14} color={colors.success} />
               <Text style={[styles.sectionLabel, typography.sub2, { color: colors.success }]}>NUMBER OF ROUNDS</Text>
             </View>
@@ -238,39 +240,37 @@ export default function CreateRoomScreen({ navigation }) {
               ))}
             </View>
 
-            {/* Clue Timer — only for Multiplayer */}
-            {gameMode === "Multiplayer" && (
-              <>
-                <View style={[styles.sectionLabelRow, { marginTop: 14 }]}>
-                  <Ionicons name="time-outline" size={14} color={colors.success} />
-                  <Text style={[styles.sectionLabel, typography.sub2, { color: colors.success }]}>CLUE TIMER</Text>
-                </View>
-                <View style={{ flexDirection: "row", gap: 10 }}>
-                  {[
-                    { label: "1 Min", val: 60 },
-                    { label: "2 Min", val: 120 },
-                    { label: "No Limit", val: 0 }
-                  ].map((t) => (
-                    <TouchableOpacity
-                      key={t.val}
-                      onPress={() => setClueTimer(t.val)}
-                      style={[
-                        styles.countCircle,
-                        { width: t.val === 0 ? 90 : 70 },
-                        clueTimer === t.val
-                          ? { backgroundColor: colors.success, borderColor: colors.success }
-                          : { backgroundColor: colors.isDark ? "#000000" : "#F8FAFC", borderColor: colors.border }
-                      ]}
-                    >
-                      <Text style={[styles.countText, typography.h7, { color: clueTimer === t.val ? "#FFFFFF" : colors.textSecondary, fontWeight: "600" }]}>{t.label}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </>
-            )}
+            {/* Clue Timer */}
+            <>
+              <View style={[styles.sectionLabelRow, { marginTop: 8 }]}>
+                <Ionicons name="time-outline" size={14} color={colors.success} />
+                <Text style={[styles.sectionLabel, typography.sub2, { color: colors.success }]}>CLUE TIMER</Text>
+              </View>
+              <View style={{ flexDirection: "row", gap: 10 }}>
+                {[
+                  { label: "1 Min", val: 60 },
+                  { label: "2 Min", val: 120 },
+                  { label: "No Limit", val: 0 }
+                ].map((t) => (
+                  <TouchableOpacity
+                    key={t.val}
+                    onPress={() => setClueTimer(t.val)}
+                    style={[
+                      styles.countCircle,
+                      { width: t.val === 0 ? 90 : 70 },
+                      clueTimer === t.val
+                        ? { backgroundColor: colors.success, borderColor: colors.success }
+                        : { backgroundColor: colors.isDark ? "#000000" : "#F8FAFC", borderColor: colors.border }
+                    ]}
+                  >
+                    <Text style={[styles.countText, typography.h7, { color: clueTimer === t.val ? "#FFFFFF" : colors.textSecondary, fontWeight: "600" }]}>{t.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </>
 
             {/* Betting Amount */}
-            <View style={[styles.sectionLabelRow, { marginTop: 14 }]}>
+            <View style={[styles.sectionLabelRow, { marginTop: 8 }]}>
               <Ionicons name="cash-outline" size={14} color={colors.success} />
               <Text style={[styles.sectionLabel, typography.sub2, { color: colors.success }]}>BETTING AMOUNT</Text>
             </View>
@@ -465,27 +465,27 @@ const styles = StyleSheet.create({
     justifyContent: "center", alignItems: "center",
   },
   headerTitle: { fontSize: 15, fontWeight: "900", color: "#0F172A", letterSpacing: 2.5 },
-  scroll: { padding: 20, paddingBottom: 80 },
+  scroll: { padding: 12, paddingBottom: 16 },
   card: {
     backgroundColor: "#FFFFFF",
     borderWidth: 1, borderColor: "#E2E8F0",
-    borderRadius: 24, padding: 24,
+    borderRadius: 16, padding: 16,
     shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.02,
     shadowRadius: 8,
     elevation: 1,
   },
-  sectionLabelRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 14 },
+  sectionLabelRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 8 },
   sectionLabel: { fontSize: 10, fontWeight: "700", color: "#059669", letterSpacing: 1.5 },
-  offlineBanner: { flexDirection: "row", alignItems: "flex-start", gap: 10, borderWidth: 1, borderRadius: 12, padding: 12, marginTop: 10 },
-  modeDivider: { height: 1, marginVertical: 14 },
+  offlineBanner: { flexDirection: "row", alignItems: "center", gap: 8, borderWidth: 1, borderRadius: 10, paddingVertical: 6, paddingHorizontal: 10, marginTop: 6 },
+  modeDivider: { height: 1, marginVertical: 8 },
   modeOption: { flexDirection: "row", alignItems: "center", gap: 14, borderWidth: 1.5, borderRadius: 16, padding: 16, marginBottom: 10 },
   modeOptionIcon: { width: 44, height: 44, borderRadius: 12, justifyContent: "center", alignItems: "center" },
   dropdownTrigger: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    borderWidth: 1, borderRadius: 14, paddingVertical: 14, paddingHorizontal: 16,
-    height: 52, marginTop: 8,
+    borderWidth: 1, borderRadius: 12, paddingVertical: 8, paddingHorizontal: 12,
+    height: 42, marginTop: 4,
   },
   dropdownText: { fontSize: 15, fontWeight: "600" },
   modalOverlay: {
@@ -520,20 +520,20 @@ const styles = StyleSheet.create({
     fontSize: 10, fontWeight: "800", textTransform: "uppercase", letterSpacing: 0.5,
   },
   countCircle: {
-    width: 46, height: 46, borderRadius: 23,
+    width: 36, height: 36, borderRadius: 18,
     backgroundColor: "#F8FAFC",
     borderWidth: 1, borderColor: "#E2E8F0",
     justifyContent: "center", alignItems: "center",
   },
   countCircleActive: { backgroundColor: "#059669", borderColor: "#10B981" },
-  countText: { color: "#64748B", fontSize: 15, fontWeight: "700" },
+  countText: { color: "#64748B", fontSize: 14, fontWeight: "700" },
   countTextActive: { color: "#FFF" },
-  btnWrap: { borderRadius: 16, overflow: "hidden", marginTop: 20 },
-  btn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 12, paddingVertical: 17 },
+  btnWrap: { borderRadius: 12, overflow: "hidden", marginTop: 12 },
+  btn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, paddingVertical: 12 },
   btnText: { color: "#FFF", fontSize: 15, fontWeight: "900", letterSpacing: 1.5 },
   customInputContainer: {
-    borderWidth: 1, borderRadius: 12,
-    paddingHorizontal: 12, height: 44, marginTop: 4, marginBottom: 14,
+    borderWidth: 1, borderRadius: 10,
+    paddingHorizontal: 10, height: 38, marginTop: 4, marginBottom: 8,
     justifyContent: "center",
   },
   customInput: {

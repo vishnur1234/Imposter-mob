@@ -40,6 +40,7 @@ export default function MultiplayerLobbyScreen({ navigation }) {
           rounds: roomMeta.totalRounds,
           selectedTopic: roomMeta.selectedTopic,
           isHost: roomMeta.hostId === myUid,
+          clueTimer: roomMeta.clueTimer,
         });
       } else {
         navigation.navigate("WaitingRoom", {
