@@ -64,7 +64,14 @@ export default function MultiplayerLobbyScreen({ navigation }) {
         Alert.alert("Error", "Room is full.");
       } else if (msg.startsWith("INSUFFICIENT_COINS:")) {
         const cost = msg.split(":")[1];
-        Alert.alert("Insufficient Coins", `You need at least ${cost} coins to join this room. Claim your Daily Reward or play again later.`);
+        Alert.alert(
+          "Insufficient Coins",
+          `You need at least ${cost} coins to join this room. Claim your Daily Reward to get coins!`,
+          [
+            { text: "Cancel", style: "cancel" },
+            { text: "Claim Reward", onPress: () => navigation.navigate("DailyReward") }
+          ]
+        );
       } else {
         Alert.alert("Error", `Failed to join room: ${e.message}`);
       }
@@ -120,7 +127,14 @@ export default function MultiplayerLobbyScreen({ navigation }) {
       else if (msg === "ROOM_FULL") Alert.alert("Error", "Room is full.");
       else if (msg.startsWith("INSUFFICIENT_COINS:")) {
         const cost = msg.split(":")[1];
-        Alert.alert("Insufficient Coins", `You need at least ${cost} coins to join.`);
+        Alert.alert(
+          "Insufficient Coins",
+          `You need at least ${cost} coins to join this room. Claim your Daily Reward to get coins!`,
+          [
+            { text: "Cancel", style: "cancel" },
+            { text: "Claim Reward", onPress: () => navigation.navigate("DailyReward") }
+          ]
+        );
       } else Alert.alert("Error", `Failed to join room: ${e.message}`);
       setScanned(false);
     } finally {

@@ -417,9 +417,18 @@ export default function CreateRoomScreen({ navigation }) {
                 {[
                   { id: "random_acca", category: "ACCA", answer: "ACCA (Finance)" },
                   { id: "random_cma", category: "CMA", answer: "CMA (Finance)" },
-                  { id: "random_general", category: "general", answer: "General" },
-                  { id: "random_bank", category: "bank", answer: "Bank" },
-                  { id: "random_movie", category: "movie", answer: "Movie" }
+                  { id: "random_movies", category: "movies", answer: "Movies" },
+                  { id: "random_sports", category: "sports", answer: "Sports" },
+                  { id: "random_anime", category: "anime", answer: "Anime" },
+                  { id: "random_science", category: "science", answer: "Science" },
+                  { id: "random_history", category: "history", answer: "History" },
+                  { id: "random_technology", category: "technology", answer: "Technology" },
+                  { id: "random_food", category: "food", answer: "Food" },
+                  { id: "random_countries", category: "countries", answer: "Countries" },
+                  { id: "random_business", category: "business", answer: "Business" },
+                  { id: "random_medicine", category: "medicine", answer: "Medicine" },
+                  { id: "random_programming", category: "programming", answer: "Programming" },
+                  { id: "random_music", category: "music", answer: "Music" }
                 ].map((item) => {
                   const isSelected = (!selectedTopic && item.id === "random_acca") || (selectedTopic && selectedTopic.id === item.id);
                   return (

@@ -18,27 +18,42 @@ export default function StudyCenterScreen({ navigation }) {
 
   const categories = [
     { key: "all", label: "All" },
-    { key: "financial", label: "Financial (ACCA)" },
-    { key: "bank", label: "Banking (CMA)" },
-    { key: "general", label: "General" }
+    { key: "finance", label: "Finance" },
+    { key: "business", label: "Business" },
+    { key: "movies", label: "Movies" },
+    { key: "sports", label: "Sports" },
+    { key: "anime", label: "Anime" },
+    { key: "science", label: "Science" },
+    { key: "history", label: "History" },
+    { key: "technology", label: "Technology" },
+    { key: "food", label: "Food" },
+    { key: "countries", label: "Countries" },
+    { key: "medicine", label: "Medicine" },
+    { key: "programming", label: "Programming" },
+    { key: "music", label: "Music" }
   ];
 
   const getCategoryColor = (category) => {
     switch (category) {
-      case "financial": return colors.error;
-      case "bank": return colors.success;
-      case "general": return colors.primary;
+      case "finance": return colors.error;
+      case "business": return colors.success;
+      case "movies": return colors.primary;
+      case "sports": return "#EAB308";
+      case "anime": return "#EC4899";
+      case "science": return "#06B6D4";
+      case "history": return "#8B5CF6";
+      case "technology": return "#3B82F6";
+      case "food": return "#F97316";
+      case "countries": return "#84CC16";
+      case "medicine": return "#EF4444";
+      case "programming": return "#10B981";
+      case "music": return "#6366F1";
       default: return colors.textSecondary;
     }
   };
 
   const getCategoryLabel = (category) => {
-    switch (category) {
-      case "financial": return "ACCA";
-      case "bank": return "CMA";
-      case "general": return "ECONOMICS";
-      default: return category.toUpperCase();
-    }
+    return category.toUpperCase();
   };
 
   const toggleCard = (id) => {
@@ -50,7 +65,18 @@ export default function StudyCenterScreen({ navigation }) {
 
   // Filter topics based on selected category tab and search query
   const filteredTopics = topics.filter(topic => {
-    const matchesTab = selectedTab === "all" || topic.category === selectedTab;
+    let matchesTab = selectedTab === "all";
+    if (!matchesTab) {
+      if (selectedTab === "finance") {
+        matchesTab = topic.category === "finance" || topic.category === "financial";
+      } else if (selectedTab === "business") {
+        matchesTab = topic.category === "business" || topic.category === "bank";
+      } else if (selectedTab === "movies") {
+        matchesTab = topic.category === "movies" || topic.category === "movie";
+      } else {
+        matchesTab = topic.category === selectedTab;
+      }
+    }
     const matchesSearch = 
       topic.answer.toLowerCase().includes(searchQuery.toLowerCase()) || 
       topic.clue.toLowerCase().includes(searchQuery.toLowerCase());

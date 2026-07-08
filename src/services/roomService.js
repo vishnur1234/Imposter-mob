@@ -1,6 +1,8 @@
 import { doc, runTransaction, arrayUnion } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 
+
+// Ensure this is called within a React component or hook context
 /**
  * Creates a multiplayer room with collision checking on the generated 6-character room code.
  */
