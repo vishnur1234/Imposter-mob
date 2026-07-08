@@ -33,22 +33,33 @@ In **Imposter Game**, players are divided into two teams: **Students** and the *
      - **Movie:** Pop culture movies, characters, film terms (for casual play).
    - **Automatic Fallback:** Gracefully falls back to a curated local database of 100+ topics if the Gemini API key is missing or encounters rate limits.
 
-4. **📚 Interactive Study Center**
+4. **👁️ 3D Card Flip Role Reveal**
+   - High-fidelity **3D card flip animation** built using React Native's `Animated` library with perspective interpolations.
+   - Requires players to **press & hold** a button to flip and peek at their secret role card, and **release** to flip it back and hide it instantly—preventing other players in the room from catching a glimpse.
+
+5. **📷 QR Code Match Entry**
+   - Integrated QR code display modal (`react-native-qrcode-svg`) in waiting lobbies.
+   - Integrated camera barcode scanner (`expo-camera`) on room join inputs, allowing players to join matches instantly by pointing their camera at the host's screen instead of typing codes manually.
+
+6. **🚪 Active Match Exit / Quit**
+   - Quick exit buttons (`log-out-outline`) implemented on all active turn, voting, round ending, and gameplay screens, allowing users to safely abandon matches and return to the main dashboard.
+
+7. **📚 Interactive Study Center**
    - A dedicated revision guide displaying the game’s core syllabus database.
    - Features real-time search queries and category filters (All, ACCA Financial, CMA Banking, Economics General) to help students review terms outside of matches.
 
-5. **💰 In-Game Economy & Daily Rewards**
+8. **💰 In-Game Economy & Daily Rewards**
    - **Coin System:** Players pay an entry fee of 50 coins to participate.
    - **Daily Rewards:** Claim free coins daily with built-in countdown clocks to prevent premature claims.
    - **Coin Ledger:** Review a detailed history of won matches, entry fees, and daily claims on the Coin History ledger.
 
-6. **🏆 Global Ranking Leaderboard**
+9. **🏆 Global Ranking Leaderboard**
    - Real-time global ranking ladder pulling player stats from Firestore.
    - Showcases the top players globally with customized badge tags (`LEGEND`, `ELITE`) and medals for podium ranks.
 
-7. **🌓 Theme Engine**
-   - Light and Dark modes available across all screens.
-   - Theme selections are persisted locally using `AsyncStorage`.
+10. **🌓 Theme Engine**
+    - Light and Dark modes available across all screens.
+    - Theme selections are persisted locally using `AsyncStorage`.
 
 ---
 
