@@ -190,7 +190,7 @@ export default function OfflineRoundEndScreen({ route, navigation }) {
                     <Ionicons name="refresh-circle-outline" size={22} color={colors.primary} />
                     <View style={{ flex: 1 }}>
                       <Text style={[typography.btn1, { color: colors.primary }]}>NEXT ROUND</Text>
-                      <Text style={[typography.body3, { color: colors.textSecondary }]}>Round {roundNumber + 1} of {totalRounds}</Text>
+                      {/* <Text style={[typography.body3, { color: colors.textSecondary }]}>Round {roundNumber + 1} of {totalRounds}</Text> */}
                     </View>
                     {loading ? <ActivityIndicator size="small" color={colors.primary} /> : <Ionicons name="chevron-forward" size={18} color={colors.primary} />}
                   </View>

@@ -23,6 +23,7 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialCommunityIcons, Feather } from "@expo/vector-icons";
+import { registerForPushNotificationsAsync } from "../services/notificationService";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../firebase/firebase";
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
@@ -60,6 +61,11 @@ export default function HomeScreen({ navigation }) {
     });
 
     return () => unsub();
+  }, []);
+
+  // Request notifications permission on mount
+  useEffect(() => {
+    registerForPushNotificationsAsync();
   }, []);
 
   const handleLogout = async () => {

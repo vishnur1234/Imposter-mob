@@ -10,6 +10,7 @@ import { doc, onSnapshot } from "firebase/firestore";
 import { db, auth } from "../firebase/firebase";
 import { useTheme } from "../context/ThemeContext";
 import { claimDailyReward } from "../services/statsService";
+import { scheduleDailyRewardNotification } from "../services/notificationService";
 
 const { width } = Dimensions.get("window");
 
@@ -128,6 +129,7 @@ export default function DailyRewardScreen({ navigation }) {
       const emailPrefix = auth.currentUser?.email ? auth.currentUser.email.split("@")[0] : "Player";
       const nameVal = stats?.playerName || stats?.name || emailPrefix;
       await claimDailyReward(myUid, nameVal);
+      await scheduleDailyRewardNotification(86400);
 
       Alert.alert("Success", "Reward unlocked! +500 coins added to your balance.");
     } catch (e) {
@@ -252,6 +254,24 @@ export default function DailyRewardScreen({ navigation }) {
                 </View>
               )}
             </View>
+
+            {__DEV__ && (
+              <TouchableOpacity
+                onPress={async () => {
+                  await scheduleDailyRewardNotification(5);
+                  Alert.alert(
+                    "Scheduled",
+                    "Test notification scheduled in 5 seconds.\n\nLock your screen or put the app in the background to test it!"
+                  );
+                }}
+                style={{ marginTop: 18 }}
+                activeOpacity={0.7}
+              >
+                <Text style={[typography.body3, { color: colors.primary, textDecorationLine: "underline" }]}>
+                  Test Notification (5s Delay)
+                </Text>
+              </TouchableOpacity>
+            )}
 
           </View>
         </View>

@@ -22,6 +22,11 @@
     },
     "plugins": [
       "expo-font"
-    ]
+    ],
+    "notification": {
+      "icon": "./assets/elanceIcon.png",
+      "color": "#0959ee",
+      "iosDisplayInForeground": true
+    }
   }
 }

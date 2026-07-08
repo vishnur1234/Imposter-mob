@@ -16,12 +16,14 @@ export default function CreateRoomScreen({ navigation }) {
   const [gameMode, setGameMode] = useState("Offline"); // "Multiplayer" | "Offline"
   const [showModeModal, setShowModeModal] = useState(false);
   const [players, setPlayers] = useState(3);
-  const [rounds, setRounds] = useState(2);
+  const [rounds, setRounds] = useState(4);
   const [clueTimer, setClueTimer] = useState(60);
   const [loading, setLoading] = useState(false);
 
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [showTopicModal, setShowTopicModal] = useState(false);
+  const [topicModalTab, setTopicModalTab] = useState("categories"); // "categories" | "topics"
+  const [topicSearchQuery, setTopicSearchQuery] = useState("");
   const [userCoins, setUserCoins] = useState(0);
   const [hostPlayerName, setHostPlayerName] = useState("");
 
@@ -95,13 +97,13 @@ export default function CreateRoomScreen({ navigation }) {
           bettingAmount: finalBettingAmount,
         });
       } else {
-        navigation.navigate("WaitingRoom", { 
-          roomCode, 
-          course: courseCategory, 
-          players: Number(players), 
-          isHost: true, 
-          isDemoMode: false, 
-          selectedTopic: finalTopic, 
+        navigation.navigate("WaitingRoom", {
+          roomCode,
+          course: courseCategory,
+          players: Number(players),
+          isHost: true,
+          isDemoMode: false,
+          selectedTopic: finalTopic,
           clueTimer: Number(clueTimer),
           bettingAmount: finalBettingAmount,
         });
@@ -219,7 +221,7 @@ export default function CreateRoomScreen({ navigation }) {
             </ScrollView>
 
             {/* Rounds */}
-            <View style={[styles.sectionLabelRow, { marginTop: 8 }]}>
+            {/* <View style={[styles.sectionLabelRow, { marginTop: 8 }]}>
               <Ionicons name="repeat-outline" size={14} color={colors.success} />
               <Text style={[styles.sectionLabel, typography.sub2, { color: colors.success }]}>NUMBER OF ROUNDS</Text>
             </View>
@@ -238,7 +240,7 @@ export default function CreateRoomScreen({ navigation }) {
                   <Text style={[styles.countText, typography.h5, { color: rounds === n ? "#FFFFFF" : colors.textSecondary }]}>{n}</Text>
                 </TouchableOpacity>
               ))}
-            </View>
+            </View> */}
 
             {/* Clue Timer */}
             <>
@@ -272,7 +274,7 @@ export default function CreateRoomScreen({ navigation }) {
             {/* Betting Amount */}
             <View style={[styles.sectionLabelRow, { marginTop: 8 }]}>
               <Ionicons name="cash-outline" size={14} color={colors.success} />
-              <Text style={[styles.sectionLabel, typography.sub2, { color: colors.success }]}>BETTING AMOUNT</Text>
+              <Text style={[styles.sectionLabel, typography.sub2, { color: colors.success }]}>game play points</Text>
             </View>
             <View style={{ flexDirection: "row", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
               {[50, 100, 250, 500].map((amt) => (
@@ -406,50 +408,114 @@ export default function CreateRoomScreen({ navigation }) {
 
         <Modal visible={showTopicModal} transparent animationType="fade" onRequestClose={() => setShowTopicModal(false)}>
           <View style={styles.modalOverlay}>
-            <View style={[styles.modalCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={[styles.modalCard, { backgroundColor: colors.surface, borderColor: colors.border, height: "70%", paddingBottom: 10 }]}>
               <View style={styles.modalHeader}>
                 <Text style={[styles.modalTitle, typography.h5, { color: colors.textPrimary }]}>Select Topic</Text>
                 <TouchableOpacity onPress={() => setShowTopicModal(false)}>
                   <Ionicons name="close" size={24} color={colors.textSecondary} />
                 </TouchableOpacity>
               </View>
-              <ScrollView style={styles.modalList}>
-                {[
-                  { id: "random_acca", category: "ACCA", answer: "ACCA (Finance)" },
-                  { id: "random_cma", category: "CMA", answer: "CMA (Finance)" },
-                  { id: "random_movies", category: "movies", answer: "Movies" },
-                  { id: "random_sports", category: "sports", answer: "Sports" },
-                  { id: "random_anime", category: "anime", answer: "Anime" },
-                  { id: "random_science", category: "science", answer: "Science" },
-                  { id: "random_history", category: "history", answer: "History" },
-                  { id: "random_technology", category: "technology", answer: "Technology" },
-                  { id: "random_food", category: "food", answer: "Food" },
-                  { id: "random_countries", category: "countries", answer: "Countries" },
-                  { id: "random_business", category: "business", answer: "Business" },
-                  { id: "random_medicine", category: "medicine", answer: "Medicine" },
-                  { id: "random_programming", category: "programming", answer: "Programming" },
-                  { id: "random_music", category: "music", answer: "Music" }
-                ].map((item) => {
-                  const isSelected = (!selectedTopic && item.id === "random_acca") || (selectedTopic && selectedTopic.id === item.id);
-                  return (
-                    <TouchableOpacity
-                      key={item.id}
-                      onPress={() => {
-                        setSelectedTopic(item);
-                        setShowTopicModal(false);
-                      }}
-                      style={[
-                        styles.modalItem,
-                        isSelected && { backgroundColor: colors.isDark ? "rgba(16,185,129,0.15)" : "#ECFDF5" }
-                      ]}
-                    >
-                      <Text style={[styles.modalItemText, typography.body1, { color: isSelected ? colors.success : colors.textPrimary }]}>
-                        {item.answer}
-                      </Text>
-                      {isSelected && <Ionicons name="checkmark" size={18} color={colors.success} />}
+
+              {/* Tabs */}
+              <View style={{ flexDirection: "row", marginBottom: 12, borderBottomWidth: 1, borderColor: colors.border }}>
+                <TouchableOpacity
+                  onPress={() => setTopicModalTab("categories")}
+                  style={{ flex: 1, paddingVertical: 10, alignItems: "center", borderBottomWidth: topicModalTab === "categories" ? 2 : 0, borderColor: colors.success }}
+                >
+                  <Text style={[typography.body2, { color: topicModalTab === "categories" ? colors.success : colors.textSecondary, fontWeight: "bold" }]}>Categories</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => setTopicModalTab("topics")}
+                  style={{ flex: 1, paddingVertical: 10, alignItems: "center", borderBottomWidth: topicModalTab === "topics" ? 2 : 0, borderColor: colors.success }}
+                >
+                  <Text style={[typography.body2, { color: topicModalTab === "topics" ? colors.success : colors.textSecondary, fontWeight: "bold" }]}>Specific Topics</Text>
+                </TouchableOpacity>
+              </View>
+
+              {topicModalTab === "topics" && (
+                <View style={{ marginBottom: 10, flexDirection: "row", alignItems: "center", borderWidth: 1, borderColor: colors.border, borderRadius: 10, paddingHorizontal: 10, backgroundColor: colors.isDark ? "#000" : "#FFF" }}>
+                  <Ionicons name="search" size={16} color={colors.textDisabled} style={{ marginRight: 6 }} />
+                  <TextInput
+                    value={topicSearchQuery}
+                    onChangeText={setTopicSearchQuery}
+                    placeholder="Search specific topics..."
+                    placeholderTextColor={colors.textDisabled}
+                    style={{ flex: 1, paddingVertical: 8, color: colors.textPrimary, fontSize: 13 }}
+                  />
+                  {topicSearchQuery.length > 0 && (
+                    <TouchableOpacity onPress={() => setTopicSearchQuery("")}>
+                      <Ionicons name="close-circle" size={16} color={colors.textSecondary} />
                     </TouchableOpacity>
-                  );
-                })}
+                  )}
+                </View>
+              )}
+
+              <ScrollView style={styles.modalList} showsVerticalScrollIndicator={false}>
+                {topicModalTab === "categories" ? (
+                  [
+                    { id: "random_acca", category: "ACCA", answer: "ACCA (Finance)" },
+                    { id: "random_cma", category: "CMA", answer: "CMA (Finance)" },
+                    { id: "random_movies", category: "movies", answer: "Movies" },
+                    { id: "random_sports", category: "sports", answer: "Sports" },
+                    { id: "random_anime", category: "anime", answer: "Anime" },
+                    { id: "random_science", category: "science", answer: "Science" },
+                    { id: "random_history", category: "history", answer: "History" },
+                    { id: "random_technology", category: "technology", answer: "Technology" },
+                    { id: "random_food", category: "food", answer: "Food" },
+                    { id: "random_countries", category: "countries", answer: "Countries" },
+                    { id: "random_business", category: "business", answer: "Business" },
+                    { id: "random_medicine", category: "medicine", answer: "Medicine" },
+                    { id: "random_programming", category: "programming", answer: "Programming" },
+                    { id: "random_music", category: "music", answer: "Music" }
+                  ].map((item) => {
+                    const isSelected = (!selectedTopic && item.id === "random_acca") || (selectedTopic && selectedTopic.id === item.id);
+                    return (
+                      <TouchableOpacity
+                        key={item.id}
+                        onPress={() => {
+                          setSelectedTopic(item);
+                          setShowTopicModal(false);
+                        }}
+                        style={[
+                          styles.modalItem,
+                          isSelected && { backgroundColor: colors.isDark ? "rgba(16,185,129,0.15)" : "#ECFDF5" }
+                        ]}
+                      >
+                        <Text style={[styles.modalItemText, typography.body1, { color: isSelected ? colors.success : colors.textPrimary }]}>
+                          {item.answer}
+                        </Text>
+                        {isSelected && <Ionicons name="checkmark" size={18} color={colors.success} />}
+                      </TouchableOpacity>
+                    );
+                  })
+                ) : (
+                  topics
+                    .filter(t => t.answer.toLowerCase().includes(topicSearchQuery.toLowerCase()))
+                    .map((item) => {
+                      const isSelected = selectedTopic && selectedTopic.id === item.id;
+                      return (
+                        <TouchableOpacity
+                          key={item.id}
+                          onPress={() => {
+                            setSelectedTopic(item);
+                            setShowTopicModal(false);
+                          }}
+                          style={[
+                            styles.modalItem,
+                            isSelected && { backgroundColor: colors.isDark ? "rgba(16,185,129,0.15)" : "#ECFDF5" }
+                          ]}
+                        >
+                          <View style={{ flex: 1 }}>
+                            <Text style={[styles.modalItemText, typography.body1, { color: isSelected ? colors.success : colors.textPrimary }]}>
+                              {item.answer}
+                            </Text>
+                            <Text style={{ fontSize: 10, color: colors.textSecondary, marginTop: 2 }}>{item.category.toUpperCase()}</Text>
+                          </View>
+                          {isSelected && <Ionicons name="checkmark" size={18} color={colors.success} />}
+                        </TouchableOpacity>
+                      );
+                    })
+                )}
               </ScrollView>
             </View>
           </View>

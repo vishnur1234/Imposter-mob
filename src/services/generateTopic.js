@@ -24,16 +24,54 @@ export async function generateTopic(course) {
 
   if (!ai) {
     console.warn("Gemini API key is not configured. Falling back to local demo data.");
-    const filteredTopics = topics.filter((t) => t.category === categoryKey);
+    const filteredTopics = topics.filter((t) => {
+      const cat = (t.category || "").toLowerCase();
+      if (categoryKey === "finance") return cat === "finance" || cat === "financial";
+      if (categoryKey === "business") return cat === "business" || cat === "bank" || cat === "banking";
+      if (categoryKey === "movies") return cat === "movies" || cat === "movie";
+      return cat === categoryKey;
+    });
     const useTopics = filteredTopics.length > 0 ? filteredTopics : topics;
     const randomIndex = Math.floor(Math.random() * useTopics.length);
     return useTopics[randomIndex];
   }
 
   try {
-    let cleanCourse = course;
-    if (typeof course === "string" && course.startsWith("random_")) {
-      cleanCourse = course.replace("random_", "");
+    let cleanCourse = "General";
+    if (typeof course === "string") {
+      let norm = course.toLowerCase().trim();
+      if (norm.startsWith("random_")) {
+        norm = norm.replace("random_", "");
+      }
+      if (norm === "acca" || norm === "cma" || norm === "financial" || norm === "finance") {
+        cleanCourse = "Finance";
+      } else if (norm === "bank" || norm === "banking" || norm === "business") {
+        cleanCourse = "Business";
+      } else if (norm === "movie" || norm === "movies") {
+        cleanCourse = "Movies";
+      } else if (norm === "sports") {
+        cleanCourse = "Sports";
+      } else if (norm === "anime") {
+        cleanCourse = "Anime";
+      } else if (norm === "science") {
+        cleanCourse = "Science";
+      } else if (norm === "history") {
+        cleanCourse = "History";
+      } else if (norm === "technology") {
+        cleanCourse = "Technology";
+      } else if (norm === "food") {
+        cleanCourse = "Food";
+      } else if (norm === "countries") {
+        cleanCourse = "Countries";
+      } else if (norm === "medicine") {
+        cleanCourse = "Medicine";
+      } else if (norm === "programming") {
+        cleanCourse = "Programming";
+      } else if (norm === "music") {
+        cleanCourse = "Music";
+      } else {
+        cleanCourse = norm.charAt(0).toUpperCase() + norm.slice(1);
+      }
     }
     const response = await ai.models.generateContent({
       model: "gemini-2.5-flash",
@@ -75,7 +113,13 @@ Rules:
     return JSON.parse(cleanText);
   } catch (error) {
     console.error("Gemini API call failed, falling back to local demo data:", error);
-    const filteredTopics = topics.filter((t) => t.category === categoryKey);
+    const filteredTopics = topics.filter((t) => {
+      const cat = (t.category || "").toLowerCase();
+      if (categoryKey === "finance") return cat === "finance" || cat === "financial";
+      if (categoryKey === "business") return cat === "business" || cat === "bank" || cat === "banking";
+      if (categoryKey === "movies") return cat === "movies" || cat === "movie";
+      return cat === categoryKey;
+    });
     const useTopics = filteredTopics.length > 0 ? filteredTopics : topics;
     const randomIndex = Math.floor(Math.random() * useTopics.length);
     return useTopics[randomIndex];
