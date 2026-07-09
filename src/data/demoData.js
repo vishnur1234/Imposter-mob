@@ -813,7 +813,7 @@ const topics = [
   { id: 810, category: "nature", answer: "Volcano",  clue: "Earthquake" },
 
   // ─── HOUSEHOLD ────────────────────────────────────────────────────────────
-  { id: 811, category: "household", answer: "Kitchen",      clue: "Dining Room" },
+  { id: 811, category: "household", answer: "Kitchen",      clue: "Dining" },
   { id: 812, category: "household", answer: "Bathroom",     clue: "Bedroom" },
   { id: 813, category: "household", answer: "Bedroom",      clue: "Guest Room" },
   { id: 114, category: "household", answer: "Garden",       clue: "Yard" }, // Fixed visual layout issue if any
@@ -880,7 +880,7 @@ const topics = [
   { id: 870, category: "financial", answer: "Return on Capital",   clue: "Profit Earned on Investment" },
 
   { id: 871, category: "easy_words", answer: "Dog",     clue: "Leash" },
-  { id: 872, category: "easy_words", answer: "Sun",     clue: "Daylight" },
+  { id: 872, category: "easy_words", answer: "Sun",     clue: "orange" },
   { id: 873, category: "easy_words", answer: "Book",    clue: "Chapter" },
   { id: 874, category: "easy_words", answer: "Chair",   clue: "Furniture" },
   { id: 875, category: "easy_words", answer: "Shoe",    clue: "Leather" },
@@ -943,14 +943,14 @@ const topics = [
   { id: 880, category: "anime", answer: "Sword Art Online",   clue: "Log Horizon" },
 
   // ─── BANK ─────────────────────────────────────────────────────────────────
-  { id: 881, category: "bank", answer: "Savings Account",     clue: "Checking Account" },
-  { id: 882, category: "bank", answer: "Credit Card",         clue: "Debit Card" },
+  { id: 881, category: "bank", answer: "Savings Account",     clue: "money" },
+  { id: 882, category: "bank", answer: "Credit Card",         clue: "Card" },
   { id: 883, category: "bank", answer: "Mortgage",             clue: "Personal Loan" },
   { id: 884, category: "bank", answer: "Interest Rate",       clue: "Inflation Rate" },
-  { id: 885, category: "bank", answer: "ATM",                 clue: "Cash Register" },
+  { id: 885, category: "bank", answer: "ATM",                 clue: "golden papper" },
   { id: 886, category: "bank", answer: "Overdraft",           clue: "Insufficient Funds" },
   { id: 887, category: "bank", answer: "Teller",              clue: "Customer Service" },
-  { id: 888, category: "bank", answer: "Vault",               clue: "Safe Deposit Box" },
+  { id: 888, category: "bank", answer: "Vault",               clue: "Deposit" },
   { id: 889, category: "bank", answer: "Wire Transfer",       clue: "Direct Deposit" },
   { id: 890, category: "bank", answer: "Collateral",          clue: "Guarantor" },
 
