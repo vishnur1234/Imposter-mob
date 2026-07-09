@@ -20,6 +20,11 @@ import StudyCenterScreen from "../screens/StudyCenterScreen";
 import GameRulesScreen from "../screens/GameRulesScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import CoinHistoryScreen from "../screens/CoinHistoryScreen";
+import PassAndPlaySetupScreen from "../screens/PassAndPlaySetupScreen";
+import GameModeScreen from "../screens/GameModeScreen";
+import PnpSetupScreen from "../screens/PnpSetupScreen";
+import PnpRoleRevealScreen from "../screens/PnpRoleRevealScreen";
+import PnpDiscussionScreen from "../screens/PnpDiscussionScreen";
 
 // Offline screens
 import OfflineWaitingLobbyScreen from "../screens/OfflineWaitingLobbyScreen";
@@ -59,6 +64,11 @@ export default function AppNavigator() {
             <Stack.Screen name="GameRules" component={GameRulesScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
             <Stack.Screen name="CoinHistory" component={CoinHistoryScreen} />
+            <Stack.Screen name="PassAndPlaySetup" component={PassAndPlaySetupScreen} />
+            <Stack.Screen name="GameMode" component={GameModeScreen} />
+            <Stack.Screen name="PnpSetup" component={PnpSetupScreen} />
+            <Stack.Screen name="PnpRoleReveal" component={PnpRoleRevealScreen} />
+            <Stack.Screen name="PnpDiscussion" component={PnpDiscussionScreen} />
 
             {/* ── Offline Mode Screens ── */}
             <Stack.Screen name="OfflineWaitingLobby" component={OfflineWaitingLobbyScreen} />

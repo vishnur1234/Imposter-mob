@@ -372,7 +372,7 @@ export default function CreateRoomScreen({ navigation }) {
               </View>
               {[
                 { value: "Multiplayer", icon: "wifi-outline", label: "Multiplayer", sub: "Online • Real-time • Each player on own phone", color: colors.success },
-                { value: "Offline", icon: "phone-portrait-outline", label: "Offline", sub: "Pass & Play ", color: colors.warning },
+                { value: "Offline", icon: "phone-portrait-outline", label: "Offline", sub: "Pass & Play individual phones", color: colors.warning },
               ].map((m) => (
                 <TouchableOpacity
                   key={m.value}

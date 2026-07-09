@@ -321,7 +321,7 @@ export default function HomeScreen({ navigation }) {
 
 
               <TouchableOpacity
-                onPress={() => navigation.navigate("MultiplayerLobby")}
+                onPress={() => navigation.navigate("GameMode")}
                 activeOpacity={0.88}
                 style={[styles.modeCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
               >
@@ -332,7 +332,7 @@ export default function HomeScreen({ navigation }) {
 
                   <View style={styles.modeTextWrap}>
                     <Text style={[styles.modeTitle, typography.h5, { color: colors.textPrimary }]}>Start Game</Text>
-                    <Text style={[styles.modeSub, typography.body2, { color: colors.textSecondary }]}>Online • Real-Time • Challenge Friends</Text>
+                    <Text style={[styles.modeSub, typography.body2, { color: colors.textSecondary }]}>Multiplayer • Pass & Play • Choose Mode</Text>
                   </View>
 
                   <View style={[styles.modeArrow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -340,6 +340,27 @@ export default function HomeScreen({ navigation }) {
                   </View>
                 </View>
               </TouchableOpacity>
+
+              {/* <TouchableOpacity
+                onPress={() => navigation.navigate("PassAndPlaySetup")}
+                activeOpacity={0.88}
+                style={[styles.modeCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              >
+                <View style={styles.modeCardBody}>
+                  <View style={[styles.modeIconBox, { backgroundColor: colors.isDark ? "rgba(255,160,0,0.12)" : "#FFFBEB", borderColor: colors.isDark ? "rgba(255,160,0,0.3)" : "rgba(245,158,11,0.2)" }]}>
+                    <Ionicons name="phone-portrait-outline" size={26} color="#F59E0B" />
+                  </View>
+
+                  <View style={styles.modeTextWrap}>
+                    <Text style={[styles.modeTitle, typography.h5, { color: colors.textPrimary }]}>Pass & Play</Text>
+                    <Text style={[styles.modeSub, typography.body2, { color: colors.textSecondary }]}>Offline • 3–10 Players • 1 Device</Text>
+                  </View>
+
+                  <View style={[styles.modeArrow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                    <Ionicons name="chevron-forward" size={18} color="#F59E0B" />
+                  </View>
+                </View>
+              </TouchableOpacity> */}
             </View>
 
 
