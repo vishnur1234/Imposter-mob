@@ -16,7 +16,7 @@ Notifications.setNotificationHandler({
  */
 export async function registerForPushNotificationsAsync() {
   if (!Device.isDevice) {
-    console.log("Must use physical device for Push Notifications");
+    // console.log("Must use physical device for Push Notifications");
     return false;
   }
 

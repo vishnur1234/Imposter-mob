@@ -6,10 +6,11 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../context/ThemeContext";
+import { getLocalTopic } from "../services/generateTopic";
 
 export default function PnpDiscussionScreen({ route, navigation }) {
   const { colors, typography } = useTheme();
-  const { players, topic, imposterIndices, timeLimitEnabled, duration } = route.params;
+  const { players, topic, imposterIndices, hintsEnabled, timeLimitEnabled, duration, selectedCategory } = route.params;
 
   const [phase, setPhase] = useState("discussion"); // "discussion" | "voting" | "result"
   const [votes, setVotes] = useState({}); // { voterIdx: votedPlayerIdx }
@@ -19,6 +20,27 @@ export default function PnpDiscussionScreen({ route, navigation }) {
   const [revealed, setRevealed] = useState(false);
 
   const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  const handlePlayAgain = () => {
+    try {
+      const newTopic = getLocalTopic(selectedCategory || "acca");
+      const imposterCount = imposterIndices ? imposterIndices.length : 1;
+      const shuffledIndices = [...Array(players.length).keys()].sort(() => Math.random() - 0.5);
+      const newImposterIndices = shuffledIndices.slice(0, imposterCount);
+
+      navigation.replace("PnpRoleReveal", {
+        players,
+        topic: newTopic,
+        imposterIndices: newImposterIndices,
+        hintsEnabled: hintsEnabled ?? true,
+        timeLimitEnabled,
+        duration,
+        selectedCategory,
+      });
+    } catch (e) {
+      Alert.alert("Error", "Failed to start a new match. Please try again.");
+    }
+  };
 
   // Discussion timer
   useEffect(() => {
@@ -366,7 +388,7 @@ export default function PnpDiscussionScreen({ route, navigation }) {
 
           {/* Play Again */}
           <TouchableOpacity
-            onPress={() => navigation.replace("PnpSetup")}
+            onPress={handlePlayAgain}
             activeOpacity={0.85}
             style={styles.voteWrap}
           >

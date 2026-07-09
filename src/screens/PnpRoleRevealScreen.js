@@ -54,6 +54,7 @@ export default function PnpRoleRevealScreen({ route, navigation }) {
         players,
         topic,
         imposterIndices,
+        hintsEnabled,
         timeLimitEnabled,
         duration,
         selectedCategory,
@@ -244,7 +245,7 @@ export default function PnpRoleRevealScreen({ route, navigation }) {
               >
                 <Ionicons name={isLastPlayer ? "play-circle-outline" : "hand-right-outline"} size={22} color="#FFF" />
                 <Text style={[typography.btn1, { color: "#FFF" }]}>
-                  {isLastPlayer ? "START GAME" : `PASS TO ${players[currentPlayerIdx + 1]?.name?.toUpperCase() || "NEXT PLAYER"}`}
+                  {isLastPlayer ? "PASS" : `PASS TO ${players[currentPlayerIdx + 1]?.name?.toUpperCase() || "NEXT PLAYER"}`}
                 </Text>
               </LinearGradient>
             </TouchableOpacity>
