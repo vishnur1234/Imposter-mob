@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView, ScrollView, ActivityIndicator, Alert } from "react-native";
+import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView, ScrollView, ActivityIndicator, Alert, Image } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db, auth } from "../firebase/firebase";
 import { useTheme } from "../context/ThemeContext";
+import { getAvatarByIndex } from "../services/avatarService";
 
 export default function OfflineRoundEndScreen({ route, navigation }) {
   const { colors, typography } = useTheme();
@@ -72,7 +73,12 @@ export default function OfflineRoundEndScreen({ route, navigation }) {
     setLoading(true);
     try {
       // Shuffle turn order for next round
-      const shuffledUids = [...playerList].sort(() => Math.random() - 0.5).map(p => p.uid);
+      const shuffledPlayers = [...playerList];
+      for (let i = shuffledPlayers.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledPlayers[i], shuffledPlayers[j]] = [shuffledPlayers[j], shuffledPlayers[i]];
+      }
+      const shuffledUids = shuffledPlayers.map(p => p.uid);
       await updateDoc(doc(db, "rooms", roomCode), {
         gameStatus: "offline_turn",
         currentRound: roundNumber + 1,
@@ -169,8 +175,12 @@ export default function OfflineRoundEndScreen({ route, navigation }) {
               {scoreboard.map((p, idx) => (
                 <View key={p.uid} style={[styles.scoreRow, idx < scoreboard.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border }]}>
                   <Text style={[typography.h6, { color: colors.textDisabled, width: 24 }]}>#{idx + 1}</Text>
-                  <View style={[styles.scoreAvatar, { backgroundColor: colors.primaryLight }]}>
-                    <Text style={[typography.btn2, { color: colors.primary }]}>{(p.name || "?")[0].toUpperCase()}</Text>
+                  <View style={[styles.scoreAvatar, { backgroundColor: colors.primaryLight, overflow: "hidden" }]}>
+                    <Image
+                      source={getAvatarByIndex(playerList.findIndex(pl => pl.uid === p.uid))}
+                      style={{ width: "100%", height: "100%" }}
+                      resizeMode="cover"
+                    />
                   </View>
                   <Text style={[typography.body2, { color: colors.textPrimary, flex: 1 }]} numberOfLines={1}>{p.name}</Text>
                   <Text style={[typography.h5, { color: p.totalScore > 0 ? colors.success : colors.textDisabled }]}>

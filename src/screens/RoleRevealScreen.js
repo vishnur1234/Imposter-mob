@@ -1,12 +1,13 @@
 import React, { useState, useRef } from "react";
 import {
   View, StyleSheet, Text, TouchableOpacity, ScrollView,
-  SafeAreaView, ActivityIndicator, Alert, Animated, Dimensions,
+  SafeAreaView, ActivityIndicator, Alert, Animated, Dimensions, Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { auth } from "../firebase/firebase";
 import { useTheme } from "../context/ThemeContext";
+import { getAvatarByIndex } from "../services/avatarService";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width - 48;
@@ -66,6 +67,7 @@ export default function RoleRevealScreen({ route, navigation }) {
   const soloPlayer = gamePlayers[soloIndex];
   const soloIsImposter = soloPlayer?.role === "IMPOSTER";
   const activePlayer = isSoloMode ? soloPlayer : myPlayer;
+  const activeIdx = gamePlayers.findIndex(gp => gp.id === activePlayer?.id);
   const activeIsImposter = isSoloMode ? soloIsImposter : isImposter;
   const clueList = topic?.clues ? topic.clues : (topic?.clue ? [topic.clue] : []);
 
@@ -155,10 +157,12 @@ export default function RoleRevealScreen({ route, navigation }) {
                   <Text style={[typography.sub8, { color: colors.primary }]}>{course}</Text>
                 </View>
 
-                <View style={[styles.avatarLarge, { backgroundColor: colors.primaryLight }]}>
-                  <Text style={[typography.h2, { color: colors.primary }]}>
-                    {activePlayer?.name?.[0]?.toUpperCase() || "?"}
-                  </Text>
+                <View style={[styles.avatarLarge, { backgroundColor: colors.primaryLight, overflow: "hidden" }]}>
+                  <Image
+                    source={getAvatarByIndex(activeIdx)}
+                    style={{ width: "100%", height: "100%" }}
+                    resizeMode="cover"
+                  />
                 </View>
                 <Text style={[typography.h3, { color: colors.textPrimary, marginBottom: 8, textAlign: "center" }]}>
                   {activePlayer?.name}

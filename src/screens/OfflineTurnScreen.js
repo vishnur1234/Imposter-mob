@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView, ScrollView, ActivityIndicator, Alert } from "react-native";
+import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView, ScrollView, ActivityIndicator, Alert, Image } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db, auth } from "../firebase/firebase";
 import { useTheme } from "../context/ThemeContext";
+import { getAvatarByIndex } from "../services/avatarService";
 
 export default function OfflineTurnScreen({ route, navigation }) {
   const { colors, typography } = useTheme();
@@ -63,6 +64,7 @@ export default function OfflineTurnScreen({ route, navigation }) {
   // Identify active player
   const activePlayerUid = turnOrder[turnIndex];
   const activePlayer = playerList.find((p) => p.uid === activePlayerUid) || playerList[0] || { name: "Player" };
+  const activeIdx = playerList.findIndex((p) => p.uid === activePlayer?.uid);
   const isMyTurn = currentUid === activePlayerUid;
   const isLast = turnIndex >= turnOrder.length - 1;
   const progress = ((turnIndex + 1) / turnOrder.length) * 100;
@@ -191,10 +193,12 @@ export default function OfflineTurnScreen({ route, navigation }) {
 
                 {renderClueTimer()}
 
-                <View style={[styles.avatar, { backgroundColor: colors.primaryLight }]}>
-                  <Text style={[typography.h2, { color: colors.primary }]}>
-                    {activePlayer?.name?.[0]?.toUpperCase() || "?"}
-                  </Text>
+                <View style={[styles.avatar, { backgroundColor: colors.primaryLight, overflow: "hidden" }]}>
+                  <Image
+                    source={getAvatarByIndex(activeIdx)}
+                    style={{ width: "100%", height: "100%" }}
+                    resizeMode="cover"
+                  />
                 </View>
                 <Text style={[typography.h3, { color: colors.textPrimary, textAlign: "center", marginBottom: 6 }]}>{activePlayer?.name}</Text>
                 <Text style={[typography.body2, { color: colors.textSecondary, textAlign: "center", marginBottom: 32, lineHeight: 20 }]}>
@@ -223,10 +227,12 @@ export default function OfflineTurnScreen({ route, navigation }) {
 
                 {renderClueTimer()}
 
-                <View style={[styles.avatar, { backgroundColor: colors.isDark ? "#2a2a2a" : "#F1F5F9" }]}>
-                  <Text style={[typography.h2, { color: colors.textSecondary }]}>
-                    {activePlayer?.name?.[0]?.toUpperCase() || "?"}
-                  </Text>
+                <View style={[styles.avatar, { backgroundColor: colors.isDark ? "#2a2a2a" : "#F1F5F9", overflow: "hidden" }]}>
+                  <Image
+                    source={getAvatarByIndex(activeIdx)}
+                    style={{ width: "100%", height: "100%" }}
+                    resizeMode="cover"
+                  />
                 </View>
                 <Text style={[typography.h3, { color: colors.textPrimary, textAlign: "center", marginBottom: 6 }]}>{activePlayer?.name}</Text>
                 <Text style={[typography.body2, { color: colors.textSecondary, textAlign: "center", marginBottom: 32, lineHeight: 20 }]}>

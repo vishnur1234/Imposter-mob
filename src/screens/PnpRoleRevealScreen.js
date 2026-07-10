@@ -1,11 +1,12 @@
 import React, { useState, useRef } from "react";
 import {
   View, StyleSheet, Text, TouchableOpacity, SafeAreaView,
-  Animated, Alert, Dimensions, Platform,
+  Animated, Alert, Dimensions, Platform, Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../context/ThemeContext";
+import { getAvatarByIndex } from "../services/avatarService";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width - 48;
@@ -143,10 +144,12 @@ export default function PnpRoleRevealScreen({ route, navigation }) {
                     <View key={i} style={[styles.patternDot, { backgroundColor: colors.isDark ? "rgba(20,101,241,0.15)" : "rgba(37,99,235,0.08)" }]} />
                   ))}
                 </View>
-                <View style={[styles.avatarLarge, { backgroundColor: colors.primaryLight }]}>
-                  <Text style={[typography.h2, { color: colors.primary }]}>
-                    {currentPlayer?.name?.[0]?.toUpperCase() || "?"}
-                  </Text>
+                <View style={[styles.avatarLarge, { backgroundColor: colors.primaryLight, overflow: "hidden" }]}>
+                  <Image
+                    source={getAvatarByIndex(currentPlayerIdx)}
+                    style={{ width: "100%", height: "100%" }}
+                    resizeMode="cover"
+                  />
                 </View>
                 <Text style={[typography.h3, { color: colors.textPrimary, marginBottom: 6, textAlign: "center" }]}>
                   {currentPlayer?.name}

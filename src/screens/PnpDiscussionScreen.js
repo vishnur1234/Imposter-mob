@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   View, StyleSheet, Text, TouchableOpacity, SafeAreaView,
-  ScrollView, Alert, Animated, Platform,
+  ScrollView, Alert, Animated, Platform, Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../context/ThemeContext";
 import { getLocalTopic } from "../services/generateTopic";
+import { getAvatarByIndex } from "../services/avatarService";
 
 export default function PnpDiscussionScreen({ route, navigation }) {
   const { colors, typography } = useTheme();
@@ -25,8 +26,14 @@ export default function PnpDiscussionScreen({ route, navigation }) {
     try {
       const newTopic = getLocalTopic(selectedCategory || "acca");
       const imposterCount = imposterIndices ? imposterIndices.length : 1;
-      const shuffledIndices = [...Array(players.length).keys()].sort(() => Math.random() - 0.5);
-      const newImposterIndices = shuffledIndices.slice(0, imposterCount);
+      const allIndices = [...Array(players.length).keys()];
+      const candidates = allIndices.filter(idx => !imposterIndices.includes(idx));
+      const pool = candidates.length >= imposterCount ? candidates : allIndices;
+      for (let i = pool.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [pool[i], pool[j]] = [pool[j], pool[i]];
+      }
+      const newImposterIndices = pool.slice(0, imposterCount);
 
       navigation.replace("PnpRoleReveal", {
         players,
@@ -185,10 +192,12 @@ export default function PnpDiscussionScreen({ route, navigation }) {
                   key={i}
                   style={[styles.playerRow, i < players.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.border }]}
                 >
-                  <View style={[styles.playerAvatar, { backgroundColor: colors.primaryLight }]}>
-                    <Text style={[typography.btn2, { color: colors.isDark ? "#FFF" : colors.primary }]}>
-                      {p.name?.[0]?.toUpperCase()}
-                    </Text>
+                  <View style={[styles.playerAvatar, { backgroundColor: colors.primaryLight, overflow: "hidden" }]}>
+                    <Image
+                      source={getAvatarByIndex(i)}
+                      style={{ width: "100%", height: "100%" }}
+                      resizeMode="cover"
+                    />
                   </View>
                   <Text style={[typography.body1, { color: colors.textPrimary, flex: 1 }]}>{p.name}</Text>
                   <View style={[styles.playerNumBadge, { backgroundColor: colors.isDark ? "#1a1a1a" : "#F1F5F9" }]}>
@@ -238,10 +247,12 @@ export default function PnpDiscussionScreen({ route, navigation }) {
             </View>
 
             <View style={[styles.voterCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <View style={[styles.playerAvatar, { backgroundColor: colors.primaryLight, width: 60, height: 60, borderRadius: 30, marginBottom: 8 }]}>
-                <Text style={[typography.h3, { color: colors.isDark ? "#FFF" : colors.primary }]}>
-                  {currentVoter?.name?.[0]?.toUpperCase()}
-                </Text>
+              <View style={[styles.playerAvatar, { backgroundColor: colors.primaryLight, width: 60, height: 60, borderRadius: 30, marginBottom: 8, overflow: "hidden" }]}>
+                <Image
+                  source={getAvatarByIndex(currentVoterIdx)}
+                  style={{ width: "100%", height: "100%" }}
+                  resizeMode="cover"
+                />
               </View>
               <Text style={[typography.h4, { color: colors.textPrimary, fontWeight: "700", marginBottom: 4 }]}>
                 {currentVoter?.name}
@@ -271,10 +282,12 @@ export default function PnpDiscussionScreen({ route, navigation }) {
                     },
                   ]}
                 >
-                  <View style={[styles.playerAvatar, { backgroundColor: isSelected ? "rgba(239,68,68,0.2)" : colors.primaryLight }]}>
-                    <Text style={[typography.btn2, { color: isSelected ? colors.error : (colors.isDark ? "#FFF" : colors.primary) }]}>
-                      {p.name?.[0]?.toUpperCase()}
-                    </Text>
+                  <View style={[styles.playerAvatar, { backgroundColor: isSelected ? "rgba(239,68,68,0.2)" : colors.primaryLight, overflow: "hidden" }]}>
+                    <Image
+                      source={getAvatarByIndex(i)}
+                      style={{ width: "100%", height: "100%" }}
+                      resizeMode="cover"
+                    />
                   </View>
                   <Text style={[typography.body1, { color: colors.textPrimary, flex: 1, fontWeight: isSelected ? "700" : "400" }]}>
                     {p.name}
@@ -360,8 +373,12 @@ export default function PnpDiscussionScreen({ route, navigation }) {
             </Text>
             {imposterIndices.map((idx) => (
               <View key={idx} style={[styles.playerRow, { borderBottomColor: colors.border }]}>
-                <View style={[styles.playerAvatar, { backgroundColor: "rgba(239,68,68,0.15)" }]}>
-                  <Text style={[typography.btn2, { color: colors.error }]}>{players[idx]?.name?.[0]?.toUpperCase()}</Text>
+                <View style={[styles.playerAvatar, { backgroundColor: "rgba(239,68,68,0.15)", overflow: "hidden" }]}>
+                  <Image
+                    source={getAvatarByIndex(idx)}
+                    style={{ width: "100%", height: "100%" }}
+                    resizeMode="cover"
+                  />
                 </View>
                 <Text style={[typography.body1, { color: colors.textPrimary, flex: 1, fontWeight: "700" }]}>{players[idx]?.name}</Text>
                 <Ionicons name="alert-circle" size={18} color={colors.error} />
@@ -380,10 +397,12 @@ export default function PnpDiscussionScreen({ route, navigation }) {
               return (
                 <View key={i} style={{ marginBottom: 12 }}>
                   <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 4 }}>
-                    <View style={[styles.playerAvatar, { backgroundColor: isActualImposter ? "rgba(239,68,68,0.15)" : colors.primaryLight, width: 28, height: 28, borderRadius: 14 }]}>
-                      <Text style={[{ fontSize: 11, fontWeight: "700", color: isActualImposter ? colors.error : (colors.isDark ? "#FFF" : colors.primary) }]}>
-                        {p.name?.[0]?.toUpperCase()}
-                      </Text>
+                    <View style={[styles.playerAvatar, { backgroundColor: isActualImposter ? "rgba(239,68,68,0.15)" : colors.primaryLight, width: 28, height: 28, borderRadius: 14, overflow: "hidden" }]}>
+                      <Image
+                        source={getAvatarByIndex(i)}
+                        style={{ width: "100%", height: "100%" }}
+                        resizeMode="cover"
+                      />
                     </View>
                     <Text style={[typography.body2, { color: colors.textPrimary, flex: 1, marginLeft: 8 }]}>{p.name}</Text>
                     <Text style={[typography.body3, { color: colors.textSecondary }]}>{voteCount} vote{voteCount !== 1 ? "s" : ""}</Text>

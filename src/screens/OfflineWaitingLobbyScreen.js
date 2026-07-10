@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   View, StyleSheet, Text, TouchableOpacity, SafeAreaView,
-  Animated, Alert, ActivityIndicator, Clipboard, Modal,
+  Animated, Alert, ActivityIndicator, Clipboard, Modal, Image,
 } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import { LinearGradient } from "expo-linear-gradient";
@@ -10,6 +10,7 @@ import { doc, onSnapshot, updateDoc, getDoc } from "firebase/firestore";
 import { db, auth } from "../firebase/firebase";
 import { generateTopic } from "../services/generateTopic";
 import { useTheme } from "../context/ThemeContext";
+import { getAvatarByIndex } from "../services/avatarService";
 
 const AVATAR_COLORS = [
   "#F59E0B", "#10B981", "#3B82F6", "#EC4899",
@@ -175,8 +176,12 @@ export default function OfflineWaitingLobbyScreen({ route, navigation }) {
                 const ac = AVATAR_COLORS[i % AVATAR_COLORS.length];
                 const isMe = p.uid === auth.currentUser?.uid;
                 return (
-                  <View key={p.uid} style={[styles.avatar, { left: pos.x - 4, top: pos.y - 4, backgroundColor: ac + "22", borderColor: isMe ? colors.primary : ac, borderWidth: isMe ? 2.5 : 1.5 }]}>
-                    <Text style={[styles.avatarText, { color: ac }]}>{(p.name || "?")[0].toUpperCase()}</Text>
+                  <View key={p.uid} style={[styles.avatar, { left: pos.x - 4, top: pos.y - 4, backgroundColor: ac + "22", borderColor: isMe ? colors.primary : ac, borderWidth: isMe ? 2.5 : 1.5, overflow: "hidden" }]}>
+                    <Image
+                      source={getAvatarByIndex(i)}
+                      style={{ width: "100%", height: "100%" }}
+                      resizeMode="cover"
+                    />
                     {isMe && <View style={[styles.meBadge, { backgroundColor: colors.primary }]}><Text style={{ color: "#FFF", fontSize: 6, fontWeight: "900" }}>ME</Text></View>}
                   </View>
                 );

@@ -5,7 +5,9 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { doc, onSnapshot, updateDoc, setDoc } from "firebase/firestore";
+import { signOut } from "firebase/auth";
 import { db, auth } from "../firebase/firebase";
 import { useTheme } from "../context/ThemeContext";
 
@@ -51,7 +53,7 @@ export default function ProfileScreen({ navigation }) {
       const statsRef = doc(db, "user_stats", myUid);
       await setDoc(statsRef, {
         playerName: cleanName,
-        name: cleanName 
+        name: cleanName
       }, { merge: true });
 
       Alert.alert("Success", "Gaming name updated successfully!");
@@ -60,6 +62,31 @@ export default function ProfileScreen({ navigation }) {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      "Logout",
+      "Are you sure you want to logout?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "OK",
+          onPress: async () => {
+            try {
+              await signOut(auth);
+            } catch (e) {
+              console.log(e);
+              Alert.alert("Error", `Failed to logout: ${e.message}`);
+            }
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   if (loading) {
@@ -171,6 +198,22 @@ export default function ProfileScreen({ navigation }) {
                 )}
               </TouchableOpacity>
             </View>
+
+            {/* Logout Button */}
+            <TouchableOpacity
+              onPress={handleLogout}
+              style={[
+                styles.logoutBtn,
+                {
+                  backgroundColor: colors.isDark ? "rgba(239, 68, 68, 0.08)" : "#FEF2F2",
+                  borderColor: colors.isDark ? "rgba(239, 68, 68, 0.2)" : "#FEE2E2",
+                }
+              ]}
+              activeOpacity={0.8}
+            >
+              <MaterialIcons name="logout" size={18} color="#EF4444" />
+              <Text style={[styles.logoutBtnText, typography.btn1, { color: "#EF4444" }]}>LOGOUT</Text>
+            </TouchableOpacity>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
@@ -256,4 +299,15 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   saveBtnText: { color: "#FFF", fontWeight: "bold", letterSpacing: 1 },
+  logoutBtn: {
+    height: 48,
+    borderRadius: 12,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 8,
+    width: "100%",
+    borderWidth: 1,
+  },
+  logoutBtnText: { fontWeight: "bold", letterSpacing: 1.5, textTransform: "uppercase" },
 });

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
   View, StyleSheet, Text, TouchableOpacity, ScrollView,
-  SafeAreaView, Alert, ActivityIndicator, Modal,
+  SafeAreaView, Alert, ActivityIndicator, Modal, Image,
 } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import { LinearGradient } from "expo-linear-gradient";
@@ -10,6 +10,7 @@ import { doc, onSnapshot, updateDoc, getDoc } from "firebase/firestore";
 import { db, auth } from "../firebase/firebase";
 import { generateTopic } from "../services/generateTopic";
 import { useTheme } from "../context/ThemeContext";
+import { getAvatarByIndex } from "../services/avatarService";
 
 export default function WaitingRoomScreen({ route, navigation }) {
   const { colors, typography } = useTheme();
@@ -203,8 +204,12 @@ export default function WaitingRoomScreen({ route, navigation }) {
               </View>
               {joinedPlayers.map((p, i) => (
                 <View key={p.uid || i} style={[styles.playerRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                  <View style={[styles.playerAvatar, { backgroundColor: colors.primaryLight }]}>
-                    <Text style={[styles.playerAvatarText, typography.btn2, { color: colors.primary }]}>{p.name ? p.name[0].toUpperCase() : "?"}</Text>
+                  <View style={[styles.playerAvatar, { backgroundColor: colors.primaryLight, overflow: "hidden" }]}>
+                    <Image
+                      source={getAvatarByIndex(i)}
+                      style={{ width: "100%", height: "100%" }}
+                      resizeMode="cover"
+                    />
                   </View>
                   <Text style={[styles.playerName, typography.body2, { color: colors.textPrimary }]} numberOfLines={1}>{p.name}</Text>
                   <View style={[styles.playerOnline, { backgroundColor: colors.success }]} />

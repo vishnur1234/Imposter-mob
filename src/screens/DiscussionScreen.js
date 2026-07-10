@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import {
   View, StyleSheet, Text, TouchableOpacity, ScrollView,
-  SafeAreaView, Alert, ActivityIndicator,
+  SafeAreaView, Alert, ActivityIndicator, Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
@@ -9,6 +9,7 @@ import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import { generateTopic } from "../services/generateTopic";
 import { useTheme } from "../context/ThemeContext";
+import { getAvatarByIndex } from "../services/avatarService";
 
 export default function DiscussionScreen({ route, navigation }) {
   const { colors, typography } = useTheme();
@@ -45,7 +46,11 @@ export default function DiscussionScreen({ route, navigation }) {
     setLoading(true);
     try {
       const newTopic = await generateTopic(course);
-      const newImposter = Math.floor(Math.random() * gamePlayers.length);
+      let newImposter = Math.floor(Math.random() * gamePlayers.length);
+      if (gamePlayers.length > 1) {
+        const pool = [...Array(gamePlayers.length).keys()].filter(idx => idx !== imposterIndex);
+        newImposter = pool[Math.floor(Math.random() * pool.length)];
+      }
       const nextId = Math.random().toString(36).substring(2, 8).toUpperCase();
       if (isDemoMode || !roomCode) {
         navigation.navigate("RoleReveal", {
@@ -85,17 +90,19 @@ export default function DiscussionScreen({ route, navigation }) {
 
             {/* Grid */}
             <View style={styles.grid}>
-              {gamePlayers.map((p) => {
+              {gamePlayers.map((p, i) => {
                 const flagged = !!suspects[p.id];
                 return (
                   <TouchableOpacity
                     key={p.id} onPress={() => toggle(p.id)} activeOpacity={0.8}
                     style={[styles.gridBtn, { backgroundColor: colors.surface, borderColor: colors.border }, flagged && { backgroundColor: colors.isDark ? "rgba(211,47,47,0.12)" : "#FEE2E2", borderColor: colors.error }]}
                   >
-                    <View style={[styles.gridAvatar, { backgroundColor: colors.primaryLight }, flagged && { backgroundColor: colors.isDark ? "rgba(211,47,47,0.15)" : "rgba(239,68,68,0.15)" }]}>
-                      <Text style={[styles.gridAvatarText, typography.btn2, { color: colors.primary }, flagged && { color: colors.error }]}>
-                        {p.name?.[0]?.toUpperCase() || "?"}
-                      </Text>
+                    <View style={[styles.gridAvatar, { backgroundColor: colors.primaryLight, overflow: "hidden" }, flagged && { backgroundColor: colors.isDark ? "rgba(211,47,47,0.15)" : "rgba(239,68,68,0.15)" }]}>
+                      <Image
+                        source={getAvatarByIndex(i)}
+                        style={{ width: "100%", height: "100%" }}
+                        resizeMode="cover"
+                      />
                     </View>
                     <Text style={[styles.gridName, typography.body2, { color: colors.textPrimary }, flagged && { color: colors.error, fontWeight: "700" }]} numberOfLines={1}>{p.name}</Text>
                     {flagged && <Ionicons name="flag" size={12} color={colors.error} style={{ marginTop: 2 }} />}
@@ -117,8 +124,12 @@ export default function DiscussionScreen({ route, navigation }) {
                 <View style={[styles.winnerCard, { backgroundColor: colors.isDark ? "rgba(211,47,47,0.12)" : "#FEF2F2", borderColor: colors.isDark ? "rgba(211,47,47,0.2)" : "rgba(239,68,68,0.2)" }]}>
                   <Text style={[styles.winnerLabel, typography.sub2, { color: colors.error }]}>THE IMPOSTER WAS</Text>
                   <View style={styles.winnerAvatarRow}>
-                    <View style={[styles.winnerAvatar, { backgroundColor: colors.isDark ? "#000000" : "#FEF2F2", borderColor: colors.error }]}>
-                      <Text style={[styles.winnerAvatarText, typography.btn1, { color: colors.error }]}>{imposterPlayer?.name?.[0]?.toUpperCase() || "?"}</Text>
+                    <View style={[styles.winnerAvatar, { backgroundColor: colors.isDark ? "#000000" : "#FEF2F2", borderColor: colors.error, overflow: "hidden" }]}>
+                      <Image
+                        source={getAvatarByIndex(gamePlayers.findIndex(gp => gp.id === imposterPlayer?.id))}
+                        style={{ width: "100%", height: "100%" }}
+                        resizeMode="cover"
+                      />
                     </View>
                     <Text style={[styles.winnerName, typography.h3, { color: colors.error }]}>{imposterPlayer?.name}</Text>
                   </View>

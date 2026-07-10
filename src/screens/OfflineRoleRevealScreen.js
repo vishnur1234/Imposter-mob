@@ -1,13 +1,14 @@
 import React, { useEffect, useState, useRef } from "react";
 import {
   View, StyleSheet, Text, TouchableOpacity, SafeAreaView,
-  ScrollView, ActivityIndicator, Alert, Animated, Dimensions,
+  ScrollView, ActivityIndicator, Alert, Animated, Dimensions, Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { doc, onSnapshot, updateDoc, arrayUnion } from "firebase/firestore";
 import { db, auth } from "../firebase/firebase";
 import { useTheme } from "../context/ThemeContext";
+import { getAvatarByIndex } from "../services/avatarService";
 
 const { width } = Dimensions.get("window");
 const CARD_WIDTH = width - 48;
@@ -163,10 +164,12 @@ export default function OfflineRoleRevealScreen({ route, navigation }) {
                   ))}
                 </View>
 
-                <View style={[styles.avatarLarge, { backgroundColor: colors.primaryLight }]}>
-                  <Text style={[typography.h2, { color: colors.primary }]}>
-                    {myPlayer?.name?.[0]?.toUpperCase() || "?"}
-                  </Text>
+                <View style={[styles.avatarLarge, { backgroundColor: colors.primaryLight, overflow: "hidden" }]}>
+                  <Image
+                    source={getAvatarByIndex(myPlayerIndex)}
+                    style={{ width: "100%", height: "100%" }}
+                    resizeMode="cover"
+                  />
                 </View>
                 <Text style={[typography.h3, { color: colors.textPrimary, marginBottom: 6, textAlign: "center" }]}>
                   {myPlayer?.name}
@@ -298,12 +301,16 @@ export default function OfflineRoleRevealScreen({ route, navigation }) {
             <Text style={[typography.sub2, { color: colors.textSecondary, marginBottom: 12 }]}>
               PLAYER STATUS ({readyPlayersList.length}/{playerList.length})
             </Text>
-            {playerList.map((p) => {
+            {playerList.map((p, i) => {
               const isPlayerReady = readyPlayersList.includes(p.uid);
               return (
                 <View key={p.uid} style={styles.playerStatusRow}>
-                  <View style={[styles.miniAvatar, { backgroundColor: colors.primaryLight }]}>
-                    <Text style={{ color: colors.primary, fontSize: 11, fontWeight: "700" }}>{p.name?.[0]?.toUpperCase()}</Text>
+                  <View style={[styles.miniAvatar, { backgroundColor: colors.primaryLight, overflow: "hidden" }]}>
+                    <Image
+                      source={getAvatarByIndex(i)}
+                      style={{ width: "100%", height: "100%" }}
+                      resizeMode="cover"
+                    />
                   </View>
                   <Text style={[typography.body3, { color: colors.textPrimary, flex: 1 }]}>{p.name}</Text>
                   {isPlayerReady ? (

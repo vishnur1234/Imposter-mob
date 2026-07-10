@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   View, StyleSheet, Text, TouchableOpacity, ScrollView,
-  SafeAreaView, Alert, ActivityIndicator, TextInput, KeyboardAvoidingView, Platform, Dimensions,
+  SafeAreaView, Alert, ActivityIndicator, TextInput, KeyboardAvoidingView, Platform, Dimensions, Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
@@ -9,6 +9,7 @@ import { doc, onSnapshot, updateDoc, arrayUnion, getDoc, setDoc, deleteField } f
 import { db, auth } from "../firebase/firebase";
 import { generateTopic } from "../services/generateTopic";
 import { useTheme } from "../context/ThemeContext";
+import { getAvatarByIndex } from "../services/avatarService";
 import { saveUserScoreToHistory } from "../services/statsService";
 
 const { width } = Dimensions.get("window");
@@ -444,10 +445,12 @@ export default function GamePlayScreen({ route, navigation }) {
               <Text style={[typography.sub7, { color: colors.textSecondary }]}>ROLE REVEAL</Text>
             </View>
 
-            <View style={[styles.avatarLarge, { backgroundColor: colors.primaryLight, shadowColor: colors.primary }]}>
-              <Text style={[styles.avatarLargeText, typography.h2, { color: colors.primary }]}>
-                {myPlayerObj.name?.[0]?.toUpperCase() || "?"}
-              </Text>
+            <View style={[styles.avatarLarge, { backgroundColor: colors.primaryLight, shadowColor: colors.primary, overflow: "hidden" }]}>
+              <Image
+                source={getAvatarByIndex(players.findIndex(p => p.uid === myUid))}
+                style={{ width: "100%", height: "100%" }}
+                resizeMode="cover"
+              />
             </View>
 
             <Text style={[styles.playerNameLarge, typography.h3, { color: colors.textPrimary }]}>{myPlayerObj.name}</Text>
@@ -639,10 +642,12 @@ export default function GamePlayScreen({ route, navigation }) {
                   }
                 ]}
               >
-                <View style={[styles.avatarMini, { backgroundColor: colors.primaryLight }]}>
-                  <Text style={[styles.avatarMiniText, typography.btn2, { color: colors.primary }]}>
-                    {hintObj.name?.[0]?.toUpperCase() || "?"}
-                  </Text>
+                <View style={[styles.avatarMini, { backgroundColor: colors.primaryLight, overflow: "hidden" }]}>
+                  <Image
+                    source={getAvatarByIndex(players.findIndex(p => p.uid === hintObj.uid))}
+                    style={{ width: "100%", height: "100%" }}
+                    resizeMode="cover"
+                  />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[typography.body2, { color: colors.textSecondary, fontSize: 12 }]}>{hintObj.name}</Text>
@@ -776,10 +781,12 @@ export default function GamePlayScreen({ route, navigation }) {
                         }
                       ]}
                     >
-                      <View style={[styles.avatarMini, { backgroundColor: selected ? "rgba(239,68,68,0.15)" : colors.primaryLight }]}>
-                        <Text style={[styles.avatarMiniText, typography.btn2, { color: selected ? colors.error : colors.primary }]}>
-                          {player.name?.[0]?.toUpperCase() || "?"}
-                        </Text>
+                      <View style={[styles.avatarMini, { backgroundColor: selected ? "rgba(239,68,68,0.15)" : colors.primaryLight, overflow: "hidden" }]}>
+                        <Image
+                          source={getAvatarByIndex(players.findIndex(p => p.uid === player.uid))}
+                          style={{ width: "100%", height: "100%" }}
+                          resizeMode="cover"
+                        />
                       </View>
                       <Text style={[typography.body1, { flex: 1, color: colors.textPrimary, fontWeight: selected ? "bold" : "600" }]}>
                         {player.name}

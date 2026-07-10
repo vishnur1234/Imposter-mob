@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView, ScrollView, Alert, ActivityIndicator } from "react-native";
+import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView, ScrollView, Alert, ActivityIndicator, Image } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db, auth } from "../firebase/firebase";
 import { useTheme } from "../context/ThemeContext";
+import { getAvatarByIndex } from "../services/avatarService";
 
 export default function OfflineVotingScreen({ route, navigation }) {
   const { colors, typography } = useTheme();
@@ -206,7 +207,7 @@ export default function OfflineVotingScreen({ route, navigation }) {
           {!hasVoted && (
             <>
               <Text style={[typography.sub2, { color: colors.textSecondary, marginBottom: 10, marginTop: 4 }]}>TAP TO SELECT YOUR SUSPECT</Text>
-              {playerList.map((p) => {
+              {playerList.map((p, i) => {
                 const isSelf = p.uid === currentUid;
                 const isSelected = selected === p.uid;
                 return (
@@ -222,8 +223,12 @@ export default function OfflineVotingScreen({ route, navigation }) {
                       isSelected && { backgroundColor: colors.isDark ? "rgba(211,47,47,0.15)" : "#FEF2F2", borderColor: colors.error },
                     ]}
                   >
-                    <View style={[styles.playerAvatar, { backgroundColor: isSelected ? (colors.isDark ? "rgba(211,47,47,0.25)" : "#FEE2E2") : colors.primaryLight }]}>
-                      <Text style={[typography.h6, { color: isSelected ? colors.error : colors.primary }]}>{p.name?.[0]?.toUpperCase()}</Text>
+                    <View style={[styles.playerAvatar, { backgroundColor: isSelected ? (colors.isDark ? "rgba(211,47,47,0.25)" : "#FEE2E2") : colors.primaryLight, overflow: "hidden" }]}>
+                      <Image
+                        source={getAvatarByIndex(i)}
+                        style={{ width: "100%", height: "100%" }}
+                        resizeMode="cover"
+                      />
                     </View>
                     <Text style={[typography.body1, { color: isSelected ? colors.error : colors.textPrimary, flex: 1, fontWeight: isSelected ? "700" : "400" }]}>
                       {p.name}{isSelf ? " (You)" : ""}

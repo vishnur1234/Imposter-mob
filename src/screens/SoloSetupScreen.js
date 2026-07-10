@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import {
   View, StyleSheet, Text, TouchableOpacity, ScrollView,
   KeyboardAvoidingView, Platform, SafeAreaView, Alert, TextInput, ActivityIndicator,
-  Modal, FlatList,
+  Modal, FlatList, Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { generateTopic } from "../services/generateTopic";
 import { useTheme } from "../context/ThemeContext";
+import { getAvatarByIndex } from "../services/avatarService";
 import topics from "../data/demoData";
 
 export default function SoloSetupScreen({ navigation }) {
@@ -145,10 +146,12 @@ export default function SoloSetupScreen({ navigation }) {
               </View>
               {playerNames.map((name, i) => (
                 <View key={i} style={styles.nameRow}>
-                  <View style={[styles.nameAvatar, { backgroundColor: colors.primaryLight }]}>
-                    <Text style={[styles.nameAvatarText, typography.btn2, { color: colors.isDark ? "#ffffff" : colors.primary }]}>
-                      {name.trim() ? name.trim()[0].toUpperCase() : i + 1}
-                    </Text>
+                  <View style={[styles.nameAvatar, { backgroundColor: colors.primaryLight, overflow: "hidden" }]}>
+                    <Image
+                      source={getAvatarByIndex(i)}
+                      style={{ width: "100%", height: "100%" }}
+                      resizeMode="cover"
+                    />
                   </View>
                   <TextInput
                     value={name}

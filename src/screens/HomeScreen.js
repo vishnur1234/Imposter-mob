@@ -29,7 +29,8 @@ import { auth, db } from "../firebase/firebase";
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { useTheme } from "../context/ThemeContext";
 
-const { width } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
+const scale = Math.max(0.65, Math.min(1.0, height / 844));
 
 export default function HomeScreen({ navigation }) {
   const { theme, toggleTheme, colors, typography } = useTheme();
@@ -68,13 +69,7 @@ export default function HomeScreen({ navigation }) {
     registerForPushNotificationsAsync();
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-    } catch (e) {
-      console.log(e);
-    }
-  };
+
 
 
   useEffect(() => {
@@ -122,21 +117,20 @@ export default function HomeScreen({ navigation }) {
   });
 
   const outerItems = [
-    { source: require("../../assets/new-img/Goal Achievement - blue_glass - target with trophy - small.png"), color: "#FBBF24", itemSize: 76 },
-    { source: require("../../assets/new-img/Business Strategy - blue_glass - chess knight on paper plan - small.png"), color: "#3B82F6", itemSize: 76 },
-    { source: require("../../assets/new-img/AI Analytics - blue_glass - brain with circuit lines - small.png"), color: "#06B6D4", itemSize: 76 },
-    { source: require("../../assets/new-img/search.png"), color: "#10B981", itemSize: 76 },
+    { source: require("../../assets/new-img/Goal Achievement - blue_glass - target with trophy - small.png"), color: "#FBBF24", itemSize: Math.round(64 * scale) },
+    { source: require("../../assets/new-img/Business Strategy - blue_glass - chess knight on paper plan - small.png"), color: "#3B82F6", itemSize: Math.round(64 * scale) },
+    { source: require("../../assets/new-img/AI Analytics - blue_glass - brain with circuit lines - small.png"), color: "#06B6D4", itemSize: Math.round(64 * scale) },
+    { source: require("../../assets/new-img/search.png"), color: "#10B981", itemSize: Math.round(64 * scale) },
   ];
 
   const middleItems = [
-    { source: require("../../assets/new-img/Financial Milestone - blue_glass - flag on stacked coins - small.png"), color: "#10B981", itemSize: 64 },
-    { source: require("../../assets/new-img/Employee Bonus 2 - blue_glass - gift box beside employee badge - small.png"), color: "#EC4899", itemSize: 64 },
-
+    { source: require("../../assets/new-img/Financial Milestone - blue_glass - flag on stacked coins - small.png"), color: "#10B981", itemSize: Math.round(64 * scale) },
+    { source: require("../../assets/new-img/Employee Bonus 2 - blue_glass - gift box beside employee badge - small.png"), color: "#EC4899", itemSize: Math.round(64 * scale) },
   ];
 
   const innerItems = [
-    { source: require("../../assets/new-img/Accounting Ledger 2 - blue_glass - open ledger showing transaction columns - small.png"), color: "#8B5CF6", itemSize: 52 },
-    { source: require("../../assets/new-img/Wrap (2).png"), color: "#FBBF24", itemSize: 52 },
+    // { source: require("../../assets/new-img/Accounting Ledger 2 - blue_glass - open ledger showing transaction columns - small.png"), color: "#8B5CF6", itemSize: Math.round(64 * scale) },
+    // { source: require("../../assets/new-img/Wrap (2).png"), color: "#FBBF24", itemSize: Math.round(64 * scale) },
   ];
 
   const renderOrbitalRing = (radius, items, rotation, rotationInverse) => {
@@ -215,8 +209,8 @@ export default function HomeScreen({ navigation }) {
         <View style={[styles.navBar, { borderBottomColor: colors.border, backgroundColor: "transparent" }]}>
           <View style={styles.navBrand}>
             <Image
-              source={require("../../assets/elancefulllogo.png")}
-              style={[styles.logoImage, colors.isDark && { tintColor: "#FFFFFF" }]}
+              source={colors.isDark ? require("../../assets/elancelogolight.png") : require("../../assets/elancefulllogo.png")}
+              style={styles.logoImage}
               resizeMode="contain"
             />
           </View>
@@ -240,131 +234,70 @@ export default function HomeScreen({ navigation }) {
             <TouchableOpacity onPress={toggleTheme} style={[styles.themeBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} activeOpacity={0.8}>
               <Feather name={theme === "light" ? "moon" : "sun"} size={14} color={colors.textSecondary} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={handleLogout} style={[styles.logoutBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} activeOpacity={0.8}>
-              <Feather name="log-out" size={14} color={colors.textSecondary} />
-            </TouchableOpacity>
           </View>
         </View>
 
-        <ScrollView
-          contentContainerStyle={styles.scroll}
-          showsVerticalScrollIndicator={false}
-        >
+        <View style={styles.mainContentContainer}>
           <Animated.View style={{ opacity: fadeIn, flex: 1, width: "100%", justifyContent: "space-between", alignItems: "center" }}>
 
             <View style={styles.topGroup}>
 
               <View style={styles.titleBlock}>
-                <Text style={[styles.mainTitle, typography.h1, { color: colors.textPrimary }]}>IMPOSTER</Text>
+                <Text style={[styles.mainTitle, typography.h1, { color: colors.textPrimary, fontSize: Math.round(32 * scale) }]}>IMPOSTER</Text>
                 <View style={styles.tagRow}>
                   <View style={[styles.tag, { borderColor: colors.border, backgroundColor: colors.isDark ? "rgba(20,101,241,0.15)" : colors.primaryLight }]}>
                     <Ionicons name="school-outline" size={10} color={colors.primary} />
                     <Text style={[styles.tagText, typography.sub2, { color: colors.primary }]}>ACCA • CMA REVISION</Text>
                   </View>
-
-                  {/* <View style={[styles.liveBadge, { backgroundColor: colors.isDark ? "rgba(0,185,111,0.15)" : "#ECFDF5", borderColor: colors.isDark ? "rgba(0,185,111,0.2)" : "rgba(16,185,129,0.15)" }]}>
-                    <View style={[styles.liveDot, { backgroundColor: colors.success }]} />
-                    <Text style={[styles.liveText, typography.sub8, { color: colors.success }]}>2,841 online</Text>
-                  </View> */}
                 </View>
               </View>
 
-
               <View style={styles.orbitalWrap}>
 
-                <View style={[styles.orbitTrack, { width: 360, height: 360, borderRadius: 180, borderColor: colors.isDark ? "rgba(255,255,255,0.08)" : "rgba(37,99,235,0.06)" }]} />
-                <View style={[styles.orbitTrack, { width: 265, height: 265, borderRadius: 132, borderColor: colors.isDark ? "rgba(255,255,255,0.08)" : "rgba(37,99,235,0.06)" }]} />
-                <View style={[styles.orbitTrack, { width: 170, height: 170, borderRadius: 85, borderColor: colors.isDark ? "rgba(255,255,255,0.08)" : "rgba(37,99,235,0.06)" }]} />
+                <View style={[styles.orbitTrack, { width: 360 * scale, height: 360 * scale, borderRadius: 180 * scale, borderColor: colors.isDark ? "rgba(255,255,255,0.08)" : "rgba(37,99,235,0.06)" }]} />
+                <View style={[styles.orbitTrack, { width: 265 * scale, height: 265 * scale, borderRadius: 132.5 * scale, borderColor: colors.isDark ? "rgba(255,255,255,0.08)" : "rgba(37,99,235,0.06)" }]} />
+                <View style={[styles.orbitTrack, { width: 170 * scale, height: 170 * scale, borderRadius: 85 * scale, borderColor: colors.isDark ? "rgba(255,255,255,0.08)" : "rgba(37,99,235,0.06)" }]} />
 
-
-                {renderOrbitalRing(180, outerItems, spinOuter, spinOuterInverse)}
-                {renderOrbitalRing(132, middleItems, spinMiddle, spinMiddleInverse)}
-                {renderOrbitalRing(85, innerItems, spinInner, spinInnerInverse)}
-
+                {renderOrbitalRing(180 * scale, outerItems, spinOuter, spinOuterInverse)}
+                {renderOrbitalRing(132.5 * scale, middleItems, spinMiddle, spinMiddleInverse)}
+                {renderOrbitalRing(85 * scale, innerItems, spinInner, spinInnerInverse)}
 
                 <Image
                   source={require("../../assets/crazyboy.png")}
                   style={{
                     position: "absolute",
-                    width: 420,
-                    height: 420,
+                    width: 420 * scale,
+                    height: 420 * scale,
                     resizeMode: "contain",
-                    marginTop: 16,
+                    marginTop: 5 * scale,
                   }}
                 />
               </View>
             </View>
 
+            <View style={styles.menuGroup}>
+              <View style={styles.cardsSection}>
+                <TouchableOpacity
+                  onPress={() => navigation.navigate("GameMode")}
+                  activeOpacity={0.88}
+                  style={[styles.modeCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                >
+                  <View style={styles.modeCardBody}>
+                    <View style={[styles.modeIconBox, { backgroundColor: colors.isDark ? "rgba(0, 3, 185, 0.15)" : "#fdfdfd", borderColor: colors.isDark ? "rgba(0,185,111,0.3)" : "rgba(16,185,129,0.15)" }]}>
+                      <PlayCircleIcon size={Math.round(34 * scale)} color={colors.primary} />
+                    </View>
 
-            <View style={styles.cardsSection}>
+                    <View style={styles.modeTextWrap}>
+                      <Text style={[styles.modeTitle, typography.h5, { color: colors.textPrimary }]}>Start Game</Text>
+                      <Text style={[styles.modeSub, typography.body2, { color: colors.textSecondary }]}>Multiplayer • Pass & Play • Choose Mode</Text>
+                    </View>
 
-              {/* <TouchableOpacity
-                onPress={() => navigation.navigate("SoloSetup")}
-                activeOpacity={0.88}
-                style={[styles.modeCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
-              >
-                <View style={styles.modeCardBody}>
-                  <View style={[styles.modeIconBox, { backgroundColor: colors.isDark ? "rgba(20,101,241,0.15)" : colors.primaryLight, borderColor: colors.isDark ? "rgba(20,101,241,0.3)" : "rgba(37,99,235,0.15)" }]}>
-                    <Ionicons name="game-controller-outline" size={24} color={colors.primary} />
+                    <View style={[styles.modeArrow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                      <Ionicons name="chevron-forward" size={18} color={colors.primary} />
+                    </View>
                   </View>
-
-                  <View style={styles.modeTextWrap}>
-                    <Text style={[styles.modeTitle, typography.h5, { color: colors.textPrimary }]}>Offline</Text>
-                    <Text style={[styles.modeSub, typography.body2, { color: colors.textSecondary }]}>Pass & Play • 3–10 Players • 1 Device</Text>
-                  </View>
-
-                  <View style={[styles.modeArrow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <Ionicons name="chevron-forward" size={18} color={colors.primary} />
-                  </View>
-                </View>
-              </TouchableOpacity> */}
-
-
-              <TouchableOpacity
-                onPress={() => navigation.navigate("GameMode")}
-                activeOpacity={0.88}
-                style={[styles.modeCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
-              >
-                <View style={styles.modeCardBody}>
-                  <View style={[styles.modeIconBox, { backgroundColor: colors.isDark ? "rgba(0, 3, 185, 0.15)" : "#fdfdfd", borderColor: colors.isDark ? "rgba(0,185,111,0.3)" : "rgba(16,185,129,0.15)" }]}>
-                    <PlayCircleIcon size={34} color={colors.primary} />
-                  </View>
-
-                  <View style={styles.modeTextWrap}>
-                    <Text style={[styles.modeTitle, typography.h5, { color: colors.textPrimary }]}>Start Game</Text>
-                    <Text style={[styles.modeSub, typography.body2, { color: colors.textSecondary }]}>Multiplayer • Pass & Play • Choose Mode</Text>
-                  </View>
-
-                  <View style={[styles.modeArrow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <Ionicons name="chevron-forward" size={18} color={colors.primary} />
-                  </View>
-                </View>
-              </TouchableOpacity>
-
-              {/* <TouchableOpacity
-                onPress={() => navigation.navigate("PassAndPlaySetup")}
-                activeOpacity={0.88}
-                style={[styles.modeCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
-              >
-                <View style={styles.modeCardBody}>
-                  <View style={[styles.modeIconBox, { backgroundColor: colors.isDark ? "rgba(255,160,0,0.12)" : "#FFFBEB", borderColor: colors.isDark ? "rgba(255,160,0,0.3)" : "rgba(245,158,11,0.2)" }]}>
-                    <Ionicons name="phone-portrait-outline" size={26} color="#F59E0B" />
-                  </View>
-
-                  <View style={styles.modeTextWrap}>
-                    <Text style={[styles.modeTitle, typography.h5, { color: colors.textPrimary }]}>Pass & Play</Text>
-                    <Text style={[styles.modeSub, typography.body2, { color: colors.textSecondary }]}>Offline • 3–10 Players • 1 Device</Text>
-                  </View>
-
-                  <View style={[styles.modeArrow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                    <Ionicons name="chevron-forward" size={18} color="#F59E0B" />
-                  </View>
-                </View>
-              </TouchableOpacity> */}
-            </View>
-
-
-            <View style={styles.bottomGroup}>
+                </TouchableOpacity>
+              </View>
 
               <View style={styles.statsStrip}>
                 {[
@@ -393,11 +326,11 @@ export default function HomeScreen({ navigation }) {
                     >
                       <View style={[styles.statIcon, { borderColor: isDailyReward ? "#0959ee22" : (isGameRules ? "#0414fb22" : `${color}22`), backgroundColor: isDailyReward ? "#0959ee11" : (isGameRules ? "#0414fb11" : `${color}11`) }]}>
                         {isDailyReward ? (
-                          <TreasureChestIcon size={20} color="#0959ee" weight="fill" />
+                          <TreasureChestIcon size={Math.round(20 * scale)} color="#0959ee" weight="fill" />
                         ) : isGameRules ? (
-                          <SealQuestionIcon size={20} color="#0959ee" weight="duotone" />
+                          <SealQuestionIcon size={Math.round(20 * scale)} color="#0959ee" weight="duotone" />
                         ) : (
-                          <Ionicons name={icon} size={20} color={color} />
+                          <Ionicons name={icon} size={Math.round(20 * scale)} color={color} />
                         )}
                       </View>
                       <Text style={[styles.statLabel, typography.sub8, { color: colors.textSecondary }]}>{label}</Text>
@@ -405,16 +338,15 @@ export default function HomeScreen({ navigation }) {
                   );
                 })}
               </View>
+            </View>
 
-
-              <View style={styles.footerRow}>
-                <Ionicons name="book-outline" size={12} color={colors.textDisabled} />
-                <Text style={[styles.footerText, typography.sub2, { color: colors.textSecondary }]}>Study • Play • Compete</Text>
-                <Ionicons name="book-outline" size={12} color={colors.textDisabled} />
-              </View>
+            <View style={styles.footerRow}>
+              <Ionicons name="book-outline" size={Math.round(12 * scale)} color={colors.textDisabled} />
+              <Text style={[styles.footerText, typography.sub2, { color: colors.textSecondary }]}>Study • Play • Compete</Text>
+              <Ionicons name="book-outline" size={Math.round(12 * scale)} color={colors.textDisabled} />
             </View>
           </Animated.View>
-        </ScrollView>
+        </View>
         {/* Gaming Name Setup Modal */}
 
         <Modal
@@ -554,29 +486,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  /* Scroll */
-  scroll: {
-    flexGrow: 1,
+  /* Main Fixed Content Container */
+  mainContentContainer: {
+    flex: 1,
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingBottom: 24,
-    paddingTop: 10,
+    paddingBottom: Math.round(20 * scale),
+    paddingTop: Math.round(10 * scale),
   },
   topGroup: {
     width: "100%",
     alignItems: "center",
   },
-  bottomGroup: {
+  menuGroup: {
     width: "100%",
-    alignItems: "center",
-    gap: 16,
-    marginBottom: 8,
+    gap: Math.round(8 * scale),
   },
 
   /* Orbital Animation */
   orbitalWrap: {
-    width: 400,
-    height: 400,
+    width: Math.round(400 * scale),
+    height: Math.round(400 * scale),
     justifyContent: "center",
     alignItems: "center",
     position: "relative",
@@ -599,7 +529,7 @@ const styles = StyleSheet.create({
   avatarBubble: {
     width: "100%",
     height: "100%",
-    borderRadius: 32,
+    borderRadius: Math.round(32 * scale),
     borderWidth: 1.2,
     borderColor: "#FFFFFF",
     overflow: "hidden",
@@ -610,7 +540,7 @@ const styles = StyleSheet.create({
   orbitalImageAvatar: {
     width: "100%",
     height: "100%",
-    borderRadius: 32,
+    borderRadius: Math.round(32 * scale),
   },
   iconBubble: {
     width: "100%",
@@ -619,67 +549,67 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   radarCenter: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: Math.round(40 * scale),
+    height: Math.round(40 * scale),
+    borderRadius: Math.round(20 * scale),
     justifyContent: "center",
     alignItems: "center",
     position: "absolute",
   },
   logoNodeContainer: {
-    width: 40,
-    height: 40,
+    width: Math.round(40 * scale),
+    height: Math.round(40 * scale),
     position: "relative",
     justifyContent: "center",
     alignItems: "center",
   },
   logoNodeMain: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+    width: Math.round(18 * scale),
+    height: Math.round(18 * scale),
+    borderRadius: Math.round(9 * scale),
     backgroundColor: "#FFFFFF",
   },
   logoNodeSub1: {
-    width: 11,
-    height: 11,
-    borderRadius: 5.5,
+    width: Math.round(11 * scale),
+    height: Math.round(11 * scale),
+    borderRadius: Math.round(5.5 * scale),
     backgroundColor: "#FFFFFF",
     position: "absolute",
-    top: 4,
-    right: 4,
+    top: Math.round(4 * scale),
+    right: Math.round(4 * scale),
   },
   logoNodeSub2: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
+    width: Math.round(7 * scale),
+    height: Math.round(7 * scale),
+    borderRadius: Math.round(3.5 * scale),
     backgroundColor: "#FFFFFF",
     position: "absolute",
-    top: -1,
-    right: -1,
+    top: Math.round(-1 * scale),
+    right: Math.round(-1 * scale),
   },
 
   /* Title */
-  titleBlock: { alignItems: "center", marginBottom: 14 },
+  titleBlock: { alignItems: "center", marginBottom: Math.round(14 * scale) },
   mainTitle: {
-    fontSize: 40,
+    fontSize: Math.round(40 * scale),
     fontWeight: "900",
     color: "#0F172A",
     letterSpacing: 6,
   },
-  tagRow: { marginTop: 12, flexDirection: "row", gap: 8, alignItems: "center" },
+  tagRow: { marginTop: Math.round(12 * scale), flexDirection: "row", gap: Math.round(8 * scale), alignItems: "center" },
   tag: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: Math.round(6 * scale),
     borderWidth: 1,
     borderColor: "rgba(37,99,235,0.15)",
-    borderRadius: 20,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
+    borderRadius: Math.round(20 * scale),
+    paddingVertical: Math.round(4 * scale),
+    paddingHorizontal: Math.round(10 * scale),
     backgroundColor: "#EFF6FF",
   },
   tagText: {
-    fontSize: 9,
+    fontSize: Math.round(9 * scale),
     fontWeight: "700",
     color: "#2563EB",
     letterSpacing: 1,
@@ -687,30 +617,30 @@ const styles = StyleSheet.create({
   liveBadge: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 5,
+    gap: Math.round(5 * scale),
     backgroundColor: "#ECFDF5",
     borderWidth: 1,
     borderColor: "rgba(16,185,129,0.15)",
-    borderRadius: 20,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
+    borderRadius: Math.round(20 * scale),
+    paddingVertical: Math.round(4 * scale),
+    paddingHorizontal: Math.round(10 * scale),
   },
   liveDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 3.5,
+    width: Math.round(7 * scale),
+    height: Math.round(7 * scale),
+    borderRadius: Math.round(3.5 * scale),
     backgroundColor: "#10B981",
   },
-  liveText: { fontSize: 9, color: "#059669", fontWeight: "600" },
+  liveText: { fontSize: Math.round(9 * scale), color: "#059669", fontWeight: "600" },
 
 
-  cardsSection: { width: "100%", gap: 8 },
+  cardsSection: { width: "100%", gap: Math.round(8 * scale) },
   modeCard: {
     width: "100%",
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 22,
+    borderRadius: Math.round(22 * scale),
     shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.04,
@@ -720,13 +650,13 @@ const styles = StyleSheet.create({
   modeCardBody: {
     flexDirection: "row",
     alignItems: "center",
-    padding: 16,
-    gap: 12,
+    padding: Math.round(16 * scale),
+    gap: Math.round(12 * scale),
   },
   modeIconBox: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
+    width: Math.round(48 * scale),
+    height: Math.round(48 * scale),
+    borderRadius: Math.round(12 * scale),
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
@@ -741,21 +671,21 @@ const styles = StyleSheet.create({
   },
   modeTextWrap: { flex: 1 },
   modeTitle: {
-    fontSize: 18,
+    fontSize: Math.round(18 * scale),
     fontWeight: "800",
     color: "#0F172A",
     letterSpacing: 0.5,
-    marginBottom: 2,
+    marginBottom: Math.round(2 * scale),
   },
   modeSub: {
-    fontSize: 11,
+    fontSize: Math.round(11 * scale),
     color: "#64748B",
-    lineHeight: 16,
+    lineHeight: Math.round(16 * scale),
   },
   modeArrow: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+    width: Math.round(28 * scale),
+    height: Math.round(28 * scale),
+    borderRadius: Math.round(14 * scale),
     backgroundColor: "#F1F5F9",
     borderWidth: 1,
     borderColor: "#E2E8F0",
@@ -772,8 +702,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
-    gap: 10,
-    marginTop: 4
+    gap: Math.round(8 * scale),
+    marginTop: 0
   },
   statItem: {
     flex: 1,
@@ -781,9 +711,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: 18,
-    paddingVertical: 12,
-    gap: 6,
+    borderRadius: Math.round(18 * scale),
+    paddingVertical: Math.round(16 * scale),
+    gap: Math.round(6 * scale),
     shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.02,
@@ -791,15 +721,15 @@ const styles = StyleSheet.create({
     elevation: 1,
   },
   statIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
+    width: Math.round(32 * scale),
+    height: Math.round(32 * scale),
+    borderRadius: Math.round(8 * scale),
     borderWidth: 1,
     justifyContent: "center",
     alignItems: "center",
   },
   statLabel: {
-    fontSize: 9,
+    fontSize: Math.round(9 * scale),
     fontWeight: "700",
     color: "#475569",
     letterSpacing: 0.5,
@@ -811,10 +741,10 @@ const styles = StyleSheet.create({
   footerRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: Math.round(8 * scale),
   },
   footerText: {
-    fontSize: 11,
+    fontSize: Math.round(11 * scale),
     color: "#94A3B8",
     letterSpacing: 2,
     textTransform: "uppercase",

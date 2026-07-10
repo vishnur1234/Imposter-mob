@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView, ScrollView, Animated, ActivityIndicator, Alert } from "react-native";
+import { View, StyleSheet, Text, TouchableOpacity, SafeAreaView, ScrollView, Animated, ActivityIndicator, Alert, Image } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { doc, onSnapshot, updateDoc, deleteDoc, getDoc, setDoc } from "firebase/firestore";
 import { db, auth } from "../firebase/firebase";
 import { useTheme } from "../context/ThemeContext";
+import { getAvatarByIndex } from "../services/avatarService";
 import { saveUserScoreToHistory } from "../services/statsService";
 
 const AVATAR_COLORS = [
@@ -203,8 +204,12 @@ export default function OfflineResultScreen({ route, navigation }) {
                   <Text style={{ fontSize: idx < 3 ? 18 : 12, width: 24, textAlign: "center" }}>
                     {idx < 3 ? RANK_ICONS[idx] : `#${idx + 1}`}
                   </Text>
-                  <View style={[styles.scoreAvatar, { backgroundColor: ac + "22", borderColor: ac, borderWidth: 1.5 }]}>
-                    <Text style={[typography.btn2, { color: ac, fontSize: 11 }]}>{(p.name || "?")[0].toUpperCase()}</Text>
+                  <View style={[styles.scoreAvatar, { backgroundColor: ac + "22", borderColor: ac, borderWidth: 1.5, overflow: "hidden" }]}>
+                    <Image
+                      source={getAvatarByIndex(playerList.findIndex(pl => pl.uid === p.uid))}
+                      style={{ width: "100%", height: "100%" }}
+                      resizeMode="cover"
+                    />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={[typography.body1, { color: colors.textPrimary, fontWeight: isWinner ? "800" : "400" }]} numberOfLines={1}>{p.name}</Text>

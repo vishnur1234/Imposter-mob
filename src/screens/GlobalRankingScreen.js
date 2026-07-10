@@ -10,6 +10,7 @@ import {
   Dimensions,
   Animated,
   Easing,
+  Image,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
@@ -25,6 +26,7 @@ import {
 } from "firebase/firestore";
 import { db, auth } from "../firebase/firebase";
 import { useTheme } from "../context/ThemeContext";
+import { getPlayerAvatar } from "../services/avatarService";
 
 const { width } = Dimensions.get("window");
 
@@ -85,7 +87,7 @@ function RankBadge({ rank, tone, accent }) {
   );
 }
 
-function HexAvatar({ initial, color, size = 46, glowColor, ring = false, isDark = true }) {
+function HexAvatar({ initial, color, size = 46, glowColor, ring = false, isDark = true, playerName }) {
   return (
     <View style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}>
       <View
@@ -104,18 +106,28 @@ function HexAvatar({ initial, color, size = 46, glowColor, ring = false, isDark 
           borderWidth: ring ? 2.5 : 2,
           borderColor: glowColor || color,
           transform: [{ rotate: "45deg" }],
+          overflow: "hidden",
         }}
       >
-        <Text
-          style={{
-            color: color,
-            fontSize: size * 0.42,
-            fontWeight: "900",
-            transform: [{ rotate: "-45deg" }],
-          }}
-        >
-          {initial}
-        </Text>
+        <View style={{ transform: [{ rotate: "-45deg" }], width: "115%", height: "115%", justifyContent: "center", alignItems: "center", overflow: "hidden" }}>
+          {playerName ? (
+            <Image
+              source={getPlayerAvatar(playerName)}
+              style={{ width: "90%", height: "90%" }}
+              resizeMode="contain"
+            />
+          ) : (
+            <Text
+              style={{
+                color: color,
+                fontSize: size * 0.42,
+                fontWeight: "900",
+              }}
+            >
+              {initial}
+            </Text>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -182,6 +194,7 @@ function PodiumCard({ player, rank, isMe, colors, index }) {
         glowColor={cfg.glow}
         ring={rank === 1}
         isDark={colors.isDark}
+        playerName={player?.name}
       />
 
       <View style={[podiumStyles.tierChip, { backgroundColor: `${cfg.glow}22`, borderColor: `${cfg.glow}77` }]}>
@@ -265,11 +278,15 @@ function LeaderboardRow({ player, rank, isMe, colors, index, styleSet }) {
       <View
         style={[
           styles.rowAvatar,
-          { backgroundColor: colors.isDark ? "#0A0E1A" : "#F0F4FF", borderColor: player.avatarColor, shadowColor: player.avatarColor },
+          { backgroundColor: colors.isDark ? "#0A0E1A" : "#F0F4FF", borderColor: player.avatarColor, shadowColor: player.avatarColor, overflow: "hidden" },
           isMe && { borderColor: colors.primary, borderWidth: 2 },
         ]}
       >
-        <Text style={[styles.rowAvatarText, { color: player.avatarColor }]}>{initial}</Text>
+        <Image
+          source={getPlayerAvatar(player.name)}
+          style={{ width: "100%", height: "100%" }}
+          resizeMode="cover"
+        />
       </View>
 
       <View style={styles.rowInfo}>
@@ -599,12 +616,15 @@ export default function GlobalRankingScreen({ navigation }) {
                     backgroundColor: t.myAvatarBg,
                     borderColor: t.myAvatarBorder,
                     shadowColor: t.myAvatarBorder,
+                    overflow: "hidden",
                   },
                 ]}
               >
-                <Text style={[styles.myAvatarText, { color: t.myAvatarTextColor }]}>
-                  {(userStats?.name || userStats?.playerName || "?")[0]?.toUpperCase()}
-                </Text>
+                <Image
+                  source={getPlayerAvatar(userStats?.playerName || userStats?.name)}
+                  style={{ width: "100%", height: "100%" }}
+                  resizeMode="cover"
+                />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={[styles.myName, { color: t.myNameColor }]} numberOfLines={1}>

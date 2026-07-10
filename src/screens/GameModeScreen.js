@@ -123,7 +123,11 @@ export default function GameModeScreen({ navigation }) {
         uid: `pnp-${i}`,
         name: name.trim() || `Player ${i + 1}`,
       }));
-      const shuffledIndices = [...Array(players.length).keys()].sort(() => Math.random() - 0.5);
+      const shuffledIndices = [...Array(players.length).keys()];
+      for (let i = shuffledIndices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffledIndices[i], shuffledIndices[j]] = [shuffledIndices[j], shuffledIndices[i]];
+      }
       const imposterIndices = shuffledIndices.slice(0, safeImposterCount);
 
       navigation.navigate("PnpRoleReveal", {
@@ -345,9 +349,14 @@ export default function GameModeScreen({ navigation }) {
                 color={mode === "online" ? SIGNAL.magenta : colors.textDisabled}
                 style={{ marginBottom: 6 }}
               />
-              <Text style={[styles.modeCardTitle, { color: mode === "online" ? colors.textPrimary : colors.textSecondary }]}>
-                PLAY ONLINE
-              </Text>
+              <View style={styles.titleRow}>
+                <Text style={[styles.modeCardTitle, { color: mode === "online" ? colors.textPrimary : colors.textSecondary, marginBottom: 0 }]}>
+                  PLAY ONLINE
+                </Text>
+                <View style={styles.betaBadge}>
+                  <Text style={styles.betaText}>BETA</Text>
+                </View>
+              </View>
               <Text style={[styles.modeCardSub, { color: colors.textDisabled }]}>Play together from anywhere</Text>
             </TouchableOpacity>
           </View>
@@ -631,4 +640,24 @@ const styles = StyleSheet.create({
   nameAvatar: { width: 32, height: 32, borderRadius: 16, justifyContent: "center", alignItems: "center" },
   nameInput: { flex: 1, borderWidth: 1.5, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, fontSize: 15 },
   editBtn: { width: 30, height: 30, borderRadius: 8, justifyContent: "center", alignItems: "center" },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 4,
+  },
+  betaBadge: {
+    backgroundColor: "rgba(255, 46, 154, 0.15)",
+    borderColor: "rgba(255, 46, 154, 0.4)",
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 5,
+    paddingVertical: 1.5,
+  },
+  betaText: {
+    color: "#FF2E9A",
+    fontSize: 8,
+    fontWeight: "900",
+    letterSpacing: 0.5,
+  },
 });
