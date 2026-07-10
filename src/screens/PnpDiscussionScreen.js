@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
   View, StyleSheet, Text, TouchableOpacity, SafeAreaView,
-  ScrollView, Alert, Animated,
+  ScrollView, Alert, Animated, Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
@@ -38,7 +38,11 @@ export default function PnpDiscussionScreen({ route, navigation }) {
         selectedCategory,
       });
     } catch (e) {
-      Alert.alert("Error", "Failed to start a new match. Please try again.");
+      if (Platform.OS === "web") {
+        alert("Failed to start a new match. Please try again.");
+      } else {
+        Alert.alert("Error", "Failed to start a new match. Please try again.");
+      }
     }
   };
 
@@ -80,7 +84,11 @@ export default function PnpDiscussionScreen({ route, navigation }) {
 
   const handleVoteSubmit = () => {
     if (selectedVote === null) {
-      Alert.alert("Select a player", "Please select who you think is the imposter.");
+      if (Platform.OS === "web") {
+        alert("Please select who you think is the imposter.");
+      } else {
+        Alert.alert("Select a player", "Please select who you think is the imposter.");
+      }
       return;
     }
     const newVotes = { ...votes, [currentVoterIdx]: selectedVote };
@@ -104,10 +112,17 @@ export default function PnpDiscussionScreen({ route, navigation }) {
   const imposterCaught = imposterIndices.includes(accusedIdx);
 
   const handleQuit = () => {
-    Alert.alert("Quit", "Return to home?", [
-      { text: "Cancel", style: "cancel" },
-      { text: "Quit", style: "destructive", onPress: () => navigation.reset({ index: 0, routes: [{ name: "Home" }] }) },
-    ]);
+    if (Platform.OS === "web") {
+      const confirmQuit = window.confirm("Are you sure you want to quit and return to the home screen?");
+      if (confirmQuit) {
+        navigation.reset({ index: 0, routes: [{ name: "Home" }] });
+      }
+    } else {
+      Alert.alert("Quit", "Return to home?", [
+        { text: "Cancel", style: "cancel" },
+        { text: "Quit", style: "destructive", onPress: () => navigation.reset({ index: 0, routes: [{ name: "Home" }] }) },
+      ]);
+    }
   };
 
   // ── DISCUSSION PHASE ──

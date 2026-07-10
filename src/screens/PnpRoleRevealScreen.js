@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 import {
   View, StyleSheet, Text, TouchableOpacity, SafeAreaView,
-  Animated, Alert, Dimensions,
+  Animated, Alert, Dimensions, Platform,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
@@ -45,7 +45,11 @@ export default function PnpRoleRevealScreen({ route, navigation }) {
 
   const handlePass = () => {
     if (!hasSeen) {
-      Alert.alert("Hold to Peek", "Please hold and view your role before passing the phone.");
+      if (Platform.OS === "web") {
+        alert("Please hold and view your role before passing the phone.");
+      } else {
+        Alert.alert("Hold to Peek", "Please hold and view your role before passing the phone.");
+      }
       return;
     }
     if (isLastPlayer) {
@@ -69,14 +73,21 @@ export default function PnpRoleRevealScreen({ route, navigation }) {
   };
 
   const handleQuit = () => {
-    Alert.alert(
-      "Quit Game",
-      "Return to home screen?",
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Quit", style: "destructive", onPress: () => navigation.reset({ index: 0, routes: [{ name: "Home" }] }) },
-      ]
-    );
+    if (Platform.OS === "web") {
+      const confirmQuit = window.confirm("Are you sure you want to quit and return to the home screen?");
+      if (confirmQuit) {
+        navigation.reset({ index: 0, routes: [{ name: "Home" }] });
+      }
+    } else {
+      Alert.alert(
+        "Quit Game",
+        "Return to home screen?",
+        [
+          { text: "Cancel", style: "cancel" },
+          { text: "Quit", style: "destructive", onPress: () => navigation.reset({ index: 0, routes: [{ name: "Home" }] }) },
+        ]
+      );
+    }
   };
 
   return (
