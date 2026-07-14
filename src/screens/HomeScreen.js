@@ -41,6 +41,56 @@ export default function HomeScreen({ navigation }) {
   const [showNameModal, setShowNameModal] = useState(false);
   const [gamingName, setGamingName] = useState("");
 
+  const [showDailyPopup, setShowDailyPopup] = useState(false);
+  const [hasCheckedDailyReward, setHasCheckedDailyReward] = useState(false);
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  // Pulse animation for the Daily Reward chest
+  useEffect(() => {
+    let anim;
+    if (showDailyPopup) {
+      anim = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.08,
+            duration: 1200,
+            easing: Easing.easeInOut,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1.0,
+            duration: 1200,
+            easing: Easing.easeInOut,
+            useNativeDriver: true,
+          })
+        ])
+      );
+      anim.start();
+    } else {
+      pulseAnim.setValue(1);
+    }
+    return () => {
+      if (anim) anim.stop();
+    };
+  }, [showDailyPopup]);
+
+  // Check if daily reward is claimable on app open (after stats are loaded and name modal is settled)
+  useEffect(() => {
+    if (stats && !showNameModal && !hasCheckedDailyReward) {
+      const lastClaimed = stats.lastDailyRewardClaimed || 0;
+      const isClaimable = Date.now() - lastClaimed >= 24 * 60 * 60 * 1000;
+      if (isClaimable) {
+        setShowDailyPopup(true);
+      }
+      setHasCheckedDailyReward(true);
+    }
+  }, [stats, showNameModal, hasCheckedDailyReward]);
+
+  const handleOpenDailyReward = () => {
+    setShowDailyPopup(false);
+    navigation.navigate("DailyReward");
+  };
+
   useEffect(() => {
     const myUid = auth.currentUser?.uid;
     if (!myUid) return;
@@ -437,6 +487,103 @@ export default function HomeScreen({ navigation }) {
               </View>
             </TouchableWithoutFeedback>
           </KeyboardAvoidingView>
+        </Modal>
+
+        {/* Daily Reward claimable popup */}
+        <Modal
+          visible={showDailyPopup}
+          animationType="fade"
+          transparent={true}
+          onRequestClose={() => setShowDailyPopup(false)}
+        >
+          <View style={styles.dailyModalOverlay}>
+            <View style={[styles.dailyModalContainer, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+              {/* Header with Close Button */}
+              <View style={styles.dailyModalHeader}>
+                <Text style={[typography.sub8, { color: colors.textSecondary, letterSpacing: 1.5 }]}>SPECIAL EVENT</Text>
+                <TouchableOpacity
+                  onPress={() => setShowDailyPopup(false)}
+                  style={[styles.dailyCloseBtn, { backgroundColor: colors.isDark ? "#1E1E1E" : "#F1F5F9", borderColor: colors.border }]}
+                  activeOpacity={0.8}
+                >
+                  <Feather name="x" size={16} color={colors.textSecondary} />
+                </TouchableOpacity>
+              </View>
+
+              {/* Glowing animated chest icon */}
+              <View style={styles.dailyChestContainer}>
+                <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+                  <TouchableOpacity
+                    activeOpacity={0.9}
+                    onPress={handleOpenDailyReward}
+                    style={[
+                      styles.dailyChestCircle,
+                      {
+                        borderColor: "#F59E0B",
+                        backgroundColor: colors.isDark ? "rgba(245,158,11,0.08)" : "rgba(245,158,11,0.05)",
+                      }
+                    ]}
+                  >
+                    <LinearGradient
+                      colors={["#FCD34D", "#F59E0B"]}
+                      style={styles.dailyInnerChestCircle}
+                    >
+                      <TreasureChestIcon
+                        size={48}
+                        color="#FFFFFF"
+                        weight="fill"
+                      />
+                    </LinearGradient>
+                    
+                    {/* Glowing ring */}
+                    <View style={styles.dailyGlowRing} />
+                  </TouchableOpacity>
+                </Animated.View>
+              </View>
+
+              {/* Title & Description */}
+              <View style={styles.dailyTextSection}>
+                <View style={styles.dailyTitleRow}>
+                  <Ionicons name="sparkles" size={20} color="#FBBF24" />
+                  <Text style={[typography.h3, { color: colors.textPrimary, fontWeight: "900", marginLeft: 6 }]}>
+                    Daily Reward!
+                  </Text>
+                </View>
+                <Text style={[typography.body2, { color: colors.textSecondary, textAlign: "center", marginTop: 8, lineHeight: 18 }]}>
+                  Your daily treasure chest is ready to unlock. Claim your free coins now!
+                </Text>
+              </View>
+
+              {/* Action Buttons */}
+              <View style={styles.dailyActionSection}>
+                <TouchableOpacity
+                  onPress={handleOpenDailyReward}
+                  style={styles.dailyClaimBtnWrap}
+                  activeOpacity={0.85}
+                >
+                  <LinearGradient
+                    colors={["#FBBF24", "#F59E0B"]}
+                    style={styles.dailyClaimBtn}
+                  >
+                    <Ionicons name="gift" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
+                    <Text style={[typography.btn1, { color: "#FFFFFF", fontWeight: "bold" }]}>
+                      CLAIM REWARD
+                    </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => setShowDailyPopup(false)}
+                  style={styles.dailySecondaryBtn}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[typography.body3, { color: colors.textSecondary, fontWeight: "600" }]}>
+                    Maybe Later
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
         </Modal>
       </SafeAreaView>
     </LinearGradient>
@@ -922,6 +1069,101 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 60,
+  },
+  /* Daily Reward Modal Styles */
+  dailyModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.75)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  dailyModalContainer: {
+    width: "100%",
+    maxWidth: 320,
+    borderRadius: 24,
+    padding: 20,
+    borderWidth: 1.5,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 15,
+    elevation: 10,
+  },
+  dailyModalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    width: "100%",
+    marginBottom: 10,
+  },
+  dailyCloseBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  dailyChestContainer: {
+    marginVertical: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  dailyChestCircle: {
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 2,
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+  },
+  dailyInnerChestCircle: {
+    width: 86,
+    height: 86,
+    borderRadius: 43,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  dailyGlowRing: {
+    position: "absolute",
+    width: 122,
+    height: 122,
+    borderRadius: 61,
+    borderWidth: 1.5,
+    borderColor: "rgba(245,158,11,0.35)",
+    borderStyle: "dashed",
+  },
+  dailyTextSection: {
+    width: "100%",
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  dailyTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  dailyActionSection: {
+    width: "100%",
+    alignItems: "center",
+    gap: 12,
+  },
+  dailyClaimBtnWrap: {
+    width: "100%",
+    borderRadius: 12,
+    overflow: "hidden",
+  },
+  dailyClaimBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+  },
+  dailySecondaryBtn: {
+    paddingVertical: 6,
   },
 });
 

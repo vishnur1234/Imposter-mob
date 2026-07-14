@@ -13,11 +13,15 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Dimensions,
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
 import { getLocalTopic } from "../services/generateTopic";
 import { useTheme } from "../context/ThemeContext";
+
+const { width, height } = Dimensions.get("window");
+const scale = Math.max(0.65, Math.min(1.0, height / 844));
 
 const CATEGORIES = [
   { id: "acca", label: "ACCA (Finance)", icon: "📈" },
@@ -275,7 +279,8 @@ export default function GameModeScreen({ navigation }) {
           <View style={{ width: 38 }} />
         </View>
 
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <View style={styles.mainContainer}>
+          <View>
 
           {/* Mode Selector Cards */}
           <View style={styles.modeRow}>
@@ -398,12 +403,14 @@ export default function GameModeScreen({ navigation }) {
             </View>
           )}
 
+          </View>
+
           {/* Start Game Button */}
           <TouchableOpacity
             onPress={handleStart}
             disabled={loading}
             activeOpacity={0.88}
-            style={[styles.startBtnWrap, { marginTop: 24, marginBottom: 12, shadowColor: SIGNAL.cyan }]}
+            style={[styles.startBtnWrap, { marginTop: 12 * scale, marginBottom: 12 * scale, shadowColor: SIGNAL.cyan }]}
           >
             <LinearGradient
               colors={loading ? [colors.textDisabled, colors.textDisabled] : [SIGNAL.green, SIGNAL.cyan]}
@@ -419,7 +426,7 @@ export default function GameModeScreen({ navigation }) {
             </LinearGradient>
           </TouchableOpacity>
 
-        </ScrollView>
+        </View>
 
         {/* ── Players Modal: Count picker + editable names ── */}
         <Modal visible={showPlayersModal} transparent animationType="slide" onRequestClose={() => setShowPlayersModal(false)}>
@@ -566,19 +573,24 @@ const styles = StyleSheet.create({
   headerTitleWrap: { flexDirection: "row", alignItems: "center", gap: 8 },
   headerTitle: { letterSpacing: 3, fontWeight: "800" },
   headerDot: { width: 5, height: 5, borderRadius: 3, shadowOpacity: 0.9, shadowRadius: 4, shadowOffset: { width: 0, height: 0 } },
-  scroll: { padding: 20, paddingBottom: 48 },
+  mainContainer: {
+    flex: 1,
+    paddingHorizontal: 20,
+    paddingVertical: 10 * scale,
+    justifyContent: "space-between",
+  },
 
   // Start Button
   startBtnWrap: {
-    borderRadius: 18, overflow: "hidden", marginBottom: 20,
+    borderRadius: 18, overflow: "hidden", marginBottom: 12 * scale,
     shadowOpacity: 0.5, shadowRadius: 18, shadowOffset: { width: 0, height: 6 }, elevation: 8,
   },
-  startBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 12, paddingVertical: 18 },
+  startBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 12, paddingVertical: 14 * scale },
   startBtnText: { color: "#0A0A0A", fontWeight: "800", fontSize: 16, letterSpacing: 2 },
 
   // Mode cards
-  modeRow: { flexDirection: "row", gap: 12, marginBottom: 18 },
-  modeCard: { flex: 1, borderRadius: 16, padding: 14, position: "relative" },
+  modeRow: { flexDirection: "row", gap: 12, marginBottom: 10 * scale },
+  modeCard: { flex: 1, borderRadius: 16, padding: 10 * scale, position: "relative" },
   modeCheck: {
     position: "absolute", top: 10, right: 10,
     width: 20, height: 20, borderRadius: 10, borderWidth: 1.5,
@@ -595,30 +607,30 @@ const styles = StyleSheet.create({
   bracketBR: { bottom: 4, right: 4, borderBottomWidth: 2, borderRightWidth: 2, borderBottomRightRadius: 6 },
 
   // Description
-  descText: { fontSize: 13, lineHeight: 20, textAlign: "center", marginBottom: 20, paddingHorizontal: 8, fontStyle: "italic" },
+  descText: { fontSize: 13, lineHeight: 18, textAlign: "center", marginBottom: 10 * scale, paddingHorizontal: 8, fontStyle: "italic" },
 
   // Settings card
   settingsCard: {
     borderWidth: 1, borderRadius: 22, overflow: "hidden",
     shadowOpacity: 0.12, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 2,
   },
-  settingsCardHeader: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 18, paddingTop: 16, paddingBottom: 10 },
+  settingsCardHeader: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 18, paddingTop: 10 * scale, paddingBottom: 6 * scale },
   settingsCardHeaderDot: { width: 6, height: 6, borderRadius: 3, shadowOpacity: 0.9, shadowRadius: 4, shadowOffset: { width: 0, height: 0 } },
   settingsCardHeaderText: { fontSize: 11, fontWeight: "800", letterSpacing: 2 },
   settingRow: {
     flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-    paddingVertical: 15, paddingHorizontal: 18, borderBottomWidth: StyleSheet.hairlineWidth,
+    paddingVertical: 10 * scale, paddingHorizontal: 18, borderBottomWidth: StyleSheet.hairlineWidth,
   },
   settingLeft: { flexDirection: "row", alignItems: "center", gap: 12, flex: 1 },
   settingIconBadge: {
-    width: 34, height: 34, borderRadius: 17, borderWidth: 1.2,
+    width: 32, height: 32, borderRadius: 16, borderWidth: 1.2,
     justifyContent: "center", alignItems: "center",
     shadowOpacity: 0.5, shadowRadius: 6, shadowOffset: { width: 0, height: 0 },
   },
   settingEmoji: { fontSize: 16 },
-  settingLabel: { fontSize: 16, fontWeight: "600" },
+  settingLabel: { fontSize: 15, fontWeight: "600" },
   settingRight: { flexDirection: "row", alignItems: "center", gap: 4 },
-  settingValue: { fontSize: 15, fontWeight: "700" },
+  settingValue: { fontSize: 14, fontWeight: "700" },
 
   // Picker modal (generic)
   pickerOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
