@@ -241,14 +241,29 @@ export default function WaitingRoomScreen({ route, navigation }) {
               <TouchableOpacity
                 onPress={handleStart}
                 disabled={starting || joinedPlayers.length < 2}
-                activeOpacity={0.85}
-                style={[styles.startBtnWrap, (starting || joinedPlayers.length < 2) && { opacity: 0.45 }]}
+                activeOpacity={0.92}
+                style={[
+                  styles.startBtnWrap,
+                  {
+                    borderWidth: 1,
+                    borderColor: colors.playBtnBorder,
+                    borderRadius: 12,
+                    overflow: "hidden"
+                  },
+                  (starting || joinedPlayers.length < 2) && { opacity: 0.45 }
+                ]}
               >
-                <LinearGradient colors={colors.gradientSuccess} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.startBtn}>
-                  {starting
-                    ? <><ActivityIndicator size="small" color="#FFF" /><Text style={[styles.startBtnText, typography.btn1]}>STARTING…</Text></>
-                    : <><Ionicons name="rocket-outline" size={20} color="#FFF" /><Text style={[styles.startBtnText, typography.btn1]}>START GAME</Text></>
-                  }
+                <LinearGradient
+                  colors={colors.gradientPlayBtn}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.startBtn}
+                >
+                  {starting ? (
+                    <><ActivityIndicator size="small" color={colors.playBtnText} /><Text style={[styles.startBtnText, typography.btnPlay, { color: colors.playBtnText }]}>STARTING…</Text></>
+                  ) : (
+                    <><Ionicons name="rocket-outline" size={20} color={colors.playBtnText} /><Text style={[styles.startBtnText, typography.btnPlay, { color: colors.playBtnText }]}>START GAME</Text></>
+                  )}
                 </LinearGradient>
               </TouchableOpacity>
             ) : (
@@ -369,9 +384,9 @@ const styles = StyleSheet.create({
   infoLabel: { flex: 1, color: "#64748B", fontSize: 12 },
   infoValue: { color: "#2563EB", fontSize: 12, fontWeight: "700", letterSpacing: 1 },
 
-  startBtnWrap: { borderRadius: 16, overflow: "hidden" },
-  startBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 12, paddingVertical: 17 },
-  startBtnText: { color: "#FFF", fontSize: 15, fontWeight: "900", letterSpacing: 1.5 },
+  startBtnWrap: { borderRadius: 12, overflow: "hidden" },
+  startBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, paddingVertical: 16 },
+  startBtnText: { textAlign: "center", marginBottom: 0 },
 
   waitingRow: {
     flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10,

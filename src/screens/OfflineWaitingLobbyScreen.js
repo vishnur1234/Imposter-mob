@@ -215,11 +215,37 @@ export default function OfflineWaitingLobbyScreen({ route, navigation }) {
 
           {/* Start / Waiting */}
           {isHost ? (
-            <TouchableOpacity onPress={handleStart} disabled={!canStart || starting} activeOpacity={0.85} style={[styles.startBtnWrap, (!canStart || starting) && { opacity: 0.5 }]}>
-              <LinearGradient colors={canStart ? ["#10B981", "#059669"] : [colors.textDisabled, colors.textDisabled]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.startBtn}>
-                {starting ? <ActivityIndicator size="small" color="#FFF" /> :
-                  <><Ionicons name="play-circle-outline" size={22} color="#FFF" />
-                    <Text style={[styles.startBtnText, typography.btn1]}>{canStart ? "START GAME" : `Need ${3 - joinedPlayers.length} more player(s)`}</Text></>}
+            <TouchableOpacity
+              onPress={handleStart}
+              disabled={!canStart || starting}
+              activeOpacity={0.92}
+              style={[
+                styles.startBtnWrap,
+                {
+                  borderWidth: 1,
+                  borderColor: canStart ? colors.playBtnBorder : colors.textDisabled,
+                  borderRadius: 12,
+                  overflow: "hidden"
+                },
+                (!canStart || starting) && { opacity: 0.5 }
+              ]}
+            >
+              <LinearGradient
+                colors={canStart ? colors.gradientPlayBtn : [colors.textDisabled, colors.textDisabled]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.startBtn}
+              >
+                {starting ? (
+                  <ActivityIndicator size="small" color={colors.playBtnText} />
+                ) : (
+                  <>
+                    <Ionicons name="play-circle-outline" size={22} color={colors.playBtnText} />
+                    <Text style={[styles.startBtnText, typography.btnPlay, { color: colors.playBtnText }]}>
+                      {canStart ? "START GAME" : `Need ${3 - joinedPlayers.length} more player(s)`}
+                    </Text>
+                  </>
+                )}
               </LinearGradient>
             </TouchableOpacity>
           ) : (
@@ -290,9 +316,9 @@ const styles = StyleSheet.create({
   nameChip: { flexDirection: "row", alignItems: "center", gap: 6, borderWidth: 1, borderRadius: 10, paddingHorizontal: 9, paddingVertical: 5 },
   nameChipDot: { width: 7, height: 7, borderRadius: 3.5 },
   hostTag: { paddingHorizontal: 5, paddingVertical: 1, borderRadius: 4 },
-  startBtnWrap: { borderRadius: 18, overflow: "hidden" },
-  startBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, paddingVertical: 17 },
-  startBtnText: { color: "#FFF", fontSize: 15, fontWeight: "900", letterSpacing: 1 },
+  startBtnWrap: { borderRadius: 12, overflow: "hidden" },
+  startBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, paddingVertical: 16 },
+  startBtnText: { textAlign: "center", marginBottom: 0 },
   waitBanner: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 12, borderWidth: 1, borderRadius: 18, padding: 18 },
   codeActions: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 4 },
   qrBtn: { flexDirection: "row", alignItems: "center", gap: 5, borderWidth: 1, borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5 },

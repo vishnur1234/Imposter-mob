@@ -14,7 +14,6 @@ import {
   Alert,
   TextInput,
 } from "react-native";
-import { House, Heart, PlayCircleIcon, TreasureChestIcon, SealQuestionIcon } from "phosphor-react-native";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -28,14 +27,67 @@ import { signOut } from "firebase/auth";
 import { auth, db } from "../firebase/firebase";
 import { doc, onSnapshot, setDoc } from "firebase/firestore";
 import { useTheme } from "../context/ThemeContext";
+import Svg, { Path, G } from "react-native-svg";
+
+function MedalIcon({ size = 24, color = "#000" }) {
+  return (
+    <Svg viewBox="0 0 24 24" width={size} height={size} fill={color}>
+      <Path d="m22.21.939c-.365-.588-.997-.939-1.689-.939h-3.009c-1.534,0-2.909.854-3.587,2.23l-1.861,3.773c-.021,0-.042-.003-.063-.003-.014,0-.027.002-.041.002l-1.861-3.772c-.679-1.376-2.053-2.23-3.587-2.23h-3.009c-.692,0-1.324.351-1.69.939-.365.588-.4,1.31-.094,1.931l3.232,6.553c-1.217,1.535-1.95,3.471-1.95,5.578,0,4.962,4.038,9,9,9s9-4.038,9-9c0-2.099-.728-4.027-1.937-5.56l3.241-6.57c.307-.621.271-1.343-.094-1.931Zm-15.699,1.061c.767,0,1.454.427,1.793,1.115l1.555,3.153c-1.264.31-2.424.884-3.416,1.666L3.502,2h3.009Zm5.489,20c-3.86,0-7-3.14-7-7,0-3.66,2.825-6.668,6.409-6.97.001,0,.002,0,.004,0,.194-.016.39-.03.588-.03,3.86,0,7,3.14,7,7s-3.14,7-7,7Zm5.57-14.055c-.99-.784-2.148-1.359-3.41-1.672l1.558-3.158c.339-.688,1.026-1.115,1.793-1.115l3-.015-2.94,5.96Zm-1.413,6.465c0,.361-.251.665-.539.825l-1.49.828.661,1.803c.128.349.012.741-.285.965h0c-.304.229-.723.226-1.023-.007l-1.482-1.146-1.482,1.146c-.301.232-.72.235-1.023.007h0c-.297-.224-.413-.615-.285-.965l.661-1.803-1.49-.828c-.288-.16-.539-.464-.539-.825,0-.306.266-.644.696-.644h2.14l.567-2.175c.09-.345.399-.585.755-.591.355.007.665.246.755.591l.567,2.175h2.14c.43,0,.696.337.696.644Z" />
+    </Svg>
+  );
+}
+
+function RankingStarIcon({ size = 24, color = "#000" }) {
+  return (
+    <Svg viewBox="0 0 24 24" width={size} height={size} fill={color}>
+      <Path d="m20.5,16h-3.5v-3.5c0-1.93-1.57-3.5-3.5-3.5h-3c-1.93,0-3.5,1.57-3.5,3.5v.5h-3.5c-1.93,0-3.5,1.57-3.5,3.5v4c0,1.93,1.57,3.5,3.5,3.5h17c1.93,0,3.5-1.57,3.5-3.5v-1c0-1.93-1.57-3.5-3.5-3.5Zm-11.5-3.5c0-.827.673-1.5,1.5-1.5h3c.827,0,1.5.673,1.5,1.5v9.5h-6v-9.5Zm-7,8v-4c0-.827.673-1.5,1.5-1.5h3.5v7h-3.5c-.827,0-1.5-.673-1.5-1.5Zm20,0c0,.827-.673,1.5-1.5,1.5h-3.5v-4h3.5c.827,0,1.5.673,1.5,1.5v1ZM8.041,2.857c.096-.262.346-.437.626-.437h2.001l.708-1.987c.097-.261.346-.434.625-.434s.528.173.625.434l.708,1.987h2.001c.28,0,.53.175.626.438s.017.558-.197.739l-1.577,1.285.652,1.987c.089.269-.001.565-.226.738-.225.173-.534.185-.771.031l-1.836-1.196-1.805,1.208c-.112.075-.242.113-.371.113-.141,0-.282-.045-.4-.133-.227-.17-.321-.464-.236-.734l.627-2.011-1.585-1.29c-.213-.181-.291-.476-.194-.738Z" />
+    </Svg>
+  );
+}
+
+function GameRulesIcon({ size = 24, color = "#000" }) {
+  return (
+    <Svg viewBox="0 0 24 24" width={size} height={size} fill={color}>
+      <Path d="m22.714 15.657c-.409-1.365-1.38-2.25-2.714-2.542.052-.591-.399-1.119-1-1.115-.552 0-1 .447-1 1h-4c0-.553-.448-1-1-1-.601-.003-1.052.525-1 1.116-1.334.293-2.306 1.18-2.72 2.564-.967 2.856-1.28 5.331-1.28 6.082 0 1.234 1.004 2.238 2.238 2.238 1.639 0 3.517-2.111 4.281-3.228.331-.483.885-.772 1.481-.772s1.15.289 1.481.771c.764 1.117 2.642 3.229 4.281 3.229 1.234 0 2.238-1.004 2.238-2.238 0-.751-.313-3.226-1.286-6.104zm-.951 6.343c-.368-.014-1.646-.918-2.631-2.358-.705-1.027-1.875-1.642-3.131-1.642s-2.427.614-3.131 1.643c-.985 1.439-2.264 2.344-2.63 2.357-.131 0-.238-.106-.238-.238 0-.526.278-2.794 1.202-5.53.158-.528.517-1.231 1.798-1.231h6c1.281 0 1.64.703 1.826 1.32.896 2.647 1.174 4.915 1.174 5.441 0 .132-.107.238-.237.238zm-7.763-17c.552 0 1 .447 1 1s-.448 1-1 1h-8c-.552 0-1-.447-1-1s.448-1 1-1zm-5 6h-3c-.552 0-1-.447-1-1s.448-1 1-1h3c.552 0 1 .447 1 1s-.448 1-1 1zm-3 12c0 .553-.448 1-1 1-2.757 0-5-2.243-5-5v-14c0-2.757 2.243-5 5-5h10c2.757 0 5 2.243 5 5v4c0 .553-.448 1-1 1s-1-.447-1-1v-4c0-1.654-1.346-3-3-3h-10c-1.654 0-3 1.346-3 3v14c0 1.654 1.346 3 3 3 .552 0 1 .447 1 1z" />
+    </Svg>
+  );
+}
+
+function PlayCircleIconSvg({ size = 24, color = "#000" }) {
+  return (
+    <Svg viewBox="0 0 24 24" width={size} height={size} fill={color}>
+      <Path d="m16.395,10.122l-5.192-2.843c-.673-.379-1.473-.372-2.138.017-.667.39-1.064,1.083-1.064,1.855v5.699c0,.772.397,1.465,1.064,1.855.34.199.714.297,1.087.297.358,0,.716-.091,1.041-.274l5.212-2.854c.687-.386,1.096-1.086,1.096-1.873s-.409-1.487-1.105-1.878Zm-.961,2.003l-5.212,2.855c-.019.01-.077.042-.147-.001-.074-.043-.074-.107-.074-.128v-5.699c0-.021,0-.085.074-.128.027-.016.052-.021.074-.021.036,0,.065.016.083.026l5.192,2.844c.019.011.076.043.076.13s-.058.119-.066.125ZM12,0C5.383,0,0,5.383,0,12s5.383,12,12,12,12-5.383,12-12S18.617,0,12,0Zm0,22c-5.514,0-10-4.486-10-10S6.486,2,12,2s10,4.486,10,10-4.486,10-10,10Z" />
+    </Svg>
+  );
+}
+
+function UserIconSvg({ size = 24, color = "#000" }) {
+  return (
+    <Svg viewBox="0 0 24 24" width={size} height={size} fill={color}>
+      <G id="_01_align_center" data-name="01 align center">
+        <Path d="M21,24H19V18.957A2.96,2.96,0,0,0,16.043,16H7.957A2.96,2.96,0,0,0,5,18.957V24H3V18.957A4.963,4.963,0,0,1,7.957,14h8.086A4.963,4.963,0,0,1,21,18.957Z" />
+        <Path d="M12,12a6,6,0,1,1,6-6A6.006,6.006,0,0,1,12,12ZM12,2a4,4,0,1,0,4,4A4,4,0,0,0,12,2Z" />
+      </G>
+    </Svg>
+  );
+}
+
+function NightModeIcon({ size = 24, color = "#000" }) {
+  return (
+    <Svg viewBox="0 0 24 24" width={size} height={size} fill={color}>
+      <Path d="M12,24a1,1,0,0,1-1-1V18.921a6.829,6.829,0,0,1-1.623-.435L7.33,22.007A1,1,0,0,1,5.6,21l2.049-3.525a7.092,7.092,0,0,1-1.128-1.13L3.01,18.391A1,1,0,0,1,2,16.662l3.51-2.043A6.922,6.922,0,0,1,5.072,13H1a1,1,0,0,1,0-2H5.072a6.922,6.922,0,0,1,.445-1.626L2,7.326A1,1,0,0,1,3,5.6L6.528,7.649A7.137,7.137,0,0,1,7.671,6.507L5.627,2.992A1,1,0,1,1,7.355,1.986L9.4,5.5a6.9,6.9,0,0,1,1.609-.431L11,1a1,1,0,0,1,2,0V5.079A2,2,0,0,1,11.29,7.05,5.019,5.019,0,0,0,7,12c0,3.538,3.728,4.87,4.289,4.95A2,2,0,0,1,13,18.921V23A1,1,0,0,1,12,24Zm6-6c-7.929-.252-7.928-11.749,0-12C25.929,6.252,25.928,17.749,18,18ZM18,8c-5.275.138-5.274,7.863,0,8C23.275,15.862,23.274,8.137,18,8Z" />
+    </Svg>
+  );
+}
 
 const { width, height } = Dimensions.get("window");
-const scale = Math.max(0.65, Math.min(1.0, height / 844));
+const scale = Math.max(0.58, Math.min(1.0, Math.min(width / 390, height / 844)));
 
 export default function HomeScreen({ navigation }) {
   const { theme, toggleTheme, colors, typography } = useTheme();
   const rotateAnim = useRef(new Animated.Value(0)).current;
   const fadeIn = useRef(new Animated.Value(0)).current;
+  const characterPulseAnim = useRef(new Animated.Value(1)).current;
 
   const [stats, setStats] = useState(null);
   const [showNameModal, setShowNameModal] = useState(false);
@@ -44,6 +96,7 @@ export default function HomeScreen({ navigation }) {
   const [showDailyPopup, setShowDailyPopup] = useState(false);
   const [hasCheckedDailyReward, setHasCheckedDailyReward] = useState(false);
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const hasAutoNavigated = useRef(false);
 
   // Pulse animation for the Daily Reward chest
   useEffect(() => {
@@ -96,9 +149,32 @@ export default function HomeScreen({ navigation }) {
     if (!myUid) return;
 
     const unsub = onSnapshot(doc(db, "user_stats", myUid), (snap) => {
+      let isClaimable = false;
+      let points = 0;
+      let hasPlayerName = false;
+      let data = null;
+
       if (snap.exists()) {
-        const data = snap.data();
+        data = snap.data();
         setStats(data);
+        const lastClaimed = data.lastDailyRewardClaimed || 0;
+        isClaimable = Date.now() - lastClaimed >= 24 * 60 * 60 * 1000;
+        points = data.highScore || 0;
+        hasPlayerName = !!data.playerName;
+      } else {
+        isClaimable = true;
+        points = 0;
+      }
+
+      // Direct instant navigation if 0 points and daily reward is claimable
+      if (points === 0 && isClaimable && !hasAutoNavigated.current) {
+        hasAutoNavigated.current = true;
+        setHasCheckedDailyReward(true);
+        navigation.navigate("DailyReward");
+        return;
+      }
+
+      if (data) {
         if (!data.playerName) {
           setGamingName(auth.currentUser?.email ? auth.currentUser.email.split("@")[0] : "Player");
           setShowNameModal(true);
@@ -136,6 +212,23 @@ export default function HomeScreen({ navigation }) {
         easing: Easing.linear,
         useNativeDriver: true,
       })
+    ).start();
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(characterPulseAnim, {
+          toValue: 1.05,
+          duration: 2000,
+          easing: Easing.easeInOut,
+          useNativeDriver: true,
+        }),
+        Animated.timing(characterPulseAnim, {
+          toValue: 1.0,
+          duration: 2000,
+          easing: Easing.easeInOut,
+          useNativeDriver: true,
+        }),
+      ])
     ).start();
   }, []);
 
@@ -270,19 +363,19 @@ export default function HomeScreen({ navigation }) {
             <TouchableOpacity
               onPress={() => navigation.navigate("CoinHistory")}
               activeOpacity={0.8}
-              style={[styles.tokenPill, { backgroundColor: colors.isDark ? "#121212" : "#F8FAFC", borderColor: colors.border, marginRight: 4 }]}
+              style={[styles.tokenPill, { backgroundColor: colors.isDark ? "rgba(20,101,241,0.15)" : colors.primaryLight, borderColor: colors.isDark ? "rgba(20,101,241,0.6)" : "rgba(20,101,241,0.4)", marginRight: 4 }]}
             >
               <Ionicons name="trophy" size={13} color="#FBBF24" />
-              <Text style={[styles.tokenText, typography.body4, { color: colors.textPrimary, fontWeight: "bold" }]}>
+              <Text style={[styles.tokenText, { fontFamily: "", color: colors.primary, fontSize: 13 }]}>
                 {stats?.highScore ?? 0}
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => navigation.navigate("Profile")} style={[styles.themeBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} activeOpacity={0.8}>
-              <Feather name="user" size={14} color={colors.textSecondary} />
+            <TouchableOpacity onPress={toggleTheme} style={[styles.themeBtn, { backgroundColor: "transparent", borderColor: "transparent", borderWidth: 0 }]} activeOpacity={0.8}>
+              <NightModeIcon size={20} color={colors.textSecondary} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={toggleTheme} style={[styles.themeBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} activeOpacity={0.8}>
-              <Feather name={theme === "light" ? "moon" : "sun"} size={14} color={colors.textSecondary} />
+            <TouchableOpacity onPress={() => navigation.navigate("Profile")} style={[styles.themeBtn, { backgroundColor: "transparent", borderColor: "transparent", borderWidth: 0 }]} activeOpacity={0.8}>
+              <UserIconSvg size={20} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -295,9 +388,9 @@ export default function HomeScreen({ navigation }) {
               <View style={styles.titleBlock}>
                 <Text style={[styles.mainTitle, typography.h1, { color: colors.textPrimary, fontSize: Math.round(32 * scale) }]}>IMPOSTER</Text>
                 <View style={styles.tagRow}>
-                  <View style={[styles.tag, { borderColor: colors.border, backgroundColor: colors.isDark ? "rgba(20,101,241,0.15)" : colors.primaryLight }]}>
-                    <Ionicons name="school-outline" size={10} color={colors.primary} />
-                    <Text style={[styles.tagText, typography.sub2, { color: colors.primary }]}>ACCA • CMA REVISION</Text>
+                  <View style={[styles.tag, { borderColor: colors.isDark ? "rgba(0, 185, 111, 0.25)" : "rgba(0, 185, 111, 0.15)", backgroundColor: colors.isDark ? "rgba(0, 185, 111, 0.15)" : "rgba(0, 185, 111, 0.08)" }]}>
+                    <Ionicons name="school-outline" size={10} color={colors.success} />
+                    <Text style={[styles.tagText, { fontFamily: "Outfit-ExtraBold", color: colors.success, fontSize: 11 }]}>ACCA • CMA REVISION</Text>
                   </View>
                 </View>
               </View>
@@ -312,7 +405,7 @@ export default function HomeScreen({ navigation }) {
                 {renderOrbitalRing(132.5 * scale, middleItems, spinMiddle, spinMiddleInverse)}
                 {renderOrbitalRing(85 * scale, innerItems, spinInner, spinInnerInverse)}
 
-                <Image
+                <Animated.Image
                   source={require("../../assets/crazyboy.png")}
                   style={{
                     position: "absolute",
@@ -320,6 +413,7 @@ export default function HomeScreen({ navigation }) {
                     height: 420 * scale,
                     resizeMode: "contain",
                     marginTop: 5 * scale,
+                    transform: [{ scale: characterPulseAnim }],
                   }}
                 />
               </View>
@@ -329,23 +423,31 @@ export default function HomeScreen({ navigation }) {
               <View style={styles.cardsSection}>
                 <TouchableOpacity
                   onPress={() => navigation.navigate("GameMode")}
-                  activeOpacity={0.88}
-                  style={[styles.modeCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+                  activeOpacity={0.92}
+                  style={[styles.modeCard, { borderWidth: 1, borderColor: colors.playBtnBorder, overflow: "hidden" }]}
                 >
-                  <View style={styles.modeCardBody}>
-                    <View style={[styles.modeIconBox, { backgroundColor: colors.isDark ? "rgba(0, 3, 185, 0.15)" : "#fdfdfd", borderColor: colors.isDark ? "rgba(0,185,111,0.3)" : "rgba(16,185,129,0.15)" }]}>
-                      <PlayCircleIcon size={Math.round(34 * scale)} color={colors.primary} />
+                  <LinearGradient
+                    colors={colors.gradientPlayBtn}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={{ width: "100%" }}
+                  >
+                    <View style={[styles.modeCardBody, { justifyContent: "center", gap: 10 }]}>
+                      <PlayCircleIconSvg size={Math.round(22 * scale)} color={colors.playBtnText} />
+                      <Text style={[
+                        styles.modeTitle,
+                        typography.btnPlay,
+                        {
+                          color: colors.playBtnText,
+                          fontSize: Math.round(typography.btnPlay.fontSize * scale),
+                          textAlign: "center",
+                          marginBottom: 0
+                        }
+                      ]}>
+                        Start Game
+                      </Text>
                     </View>
-
-                    <View style={styles.modeTextWrap}>
-                      <Text style={[styles.modeTitle, typography.h5, { color: colors.textPrimary }]}>Start Game</Text>
-                      <Text style={[styles.modeSub, typography.body2, { color: colors.textSecondary }]}>Multiplayer • Pass & Play • Choose Mode</Text>
-                    </View>
-
-                    <View style={[styles.modeArrow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                      <Ionicons name="chevron-forward" size={18} color={colors.primary} />
-                    </View>
-                  </View>
+                  </LinearGradient>
                 </TouchableOpacity>
               </View>
 
@@ -374,11 +476,13 @@ export default function HomeScreen({ navigation }) {
                       activeOpacity={(isTopRank || isDailyReward || isGameRules) ? 0.8 : undefined}
                       style={[styles.statItem, { backgroundColor: colors.surface, borderColor: colors.border }]}
                     >
-                      <View style={[styles.statIcon, { borderColor: isDailyReward ? "#0959ee22" : (isGameRules ? "#0414fb22" : `${color}22`), backgroundColor: isDailyReward ? "#0959ee11" : (isGameRules ? "#0414fb11" : `${color}11`) }]}>
+                      <View style={styles.statIcon}>
                         {isDailyReward ? (
-                          <TreasureChestIcon size={Math.round(20 * scale)} color="#0959ee" weight="fill" />
+                          <MedalIcon size={Math.round(20 * scale)} color="#0959ee" />
                         ) : isGameRules ? (
-                          <SealQuestionIcon size={Math.round(20 * scale)} color="#0959ee" weight="duotone" />
+                          <GameRulesIcon size={Math.round(20 * scale)} color="#0959ee" />
+                        ) : isTopRank ? (
+                          <RankingStarIcon size={Math.round(20 * scale)} color={color} />
                         ) : (
                           <Ionicons name={icon} size={Math.round(20 * scale)} color={color} />
                         )}
@@ -528,13 +632,12 @@ export default function HomeScreen({ navigation }) {
                       colors={["#FCD34D", "#F59E0B"]}
                       style={styles.dailyInnerChestCircle}
                     >
-                      <TreasureChestIcon
+                      <MedalIcon
                         size={48}
                         color="#FFFFFF"
-                        weight="fill"
                       />
                     </LinearGradient>
-                    
+
                     {/* Glowing ring */}
                     <View style={styles.dailyGlowRing} />
                   </TouchableOpacity>
@@ -602,7 +705,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingVertical: 14,
+    paddingVertical: Math.max(10, Math.round(height * 0.016)),
     borderBottomWidth: 1,
     borderColor: "#E2E8F0",
     backgroundColor: "#FFFFFF",
@@ -638,8 +741,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingBottom: Math.round(20 * scale),
-    paddingTop: Math.round(10 * scale),
+    paddingBottom: Math.max(32, Math.round(height * 0.065)),
+    paddingTop: Math.max(10, Math.round(height * 0.015)),
   },
   topGroup: {
     width: "100%",
@@ -647,7 +750,7 @@ const styles = StyleSheet.create({
   },
   menuGroup: {
     width: "100%",
-    gap: Math.round(8 * scale),
+    gap: Math.max(8, Math.round(height * 0.012)),
   },
 
   /* Orbital Animation */
@@ -787,7 +890,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: Math.round(22 * scale),
+    borderRadius: Math.round(12 * scale),
     shadowColor: "#0F172A",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.04,
@@ -858,7 +961,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     borderWidth: 1,
     borderColor: "#E2E8F0",
-    borderRadius: Math.round(18 * scale),
+    borderRadius: Math.round(12 * scale),
     paddingVertical: Math.round(16 * scale),
     gap: Math.round(6 * scale),
     shadowColor: "#0F172A",
@@ -870,8 +973,6 @@ const styles = StyleSheet.create({
   statIcon: {
     width: Math.round(32 * scale),
     height: Math.round(32 * scale),
-    borderRadius: Math.round(8 * scale),
-    borderWidth: 1,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -889,6 +990,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: Math.round(8 * scale),
+    marginTop: Math.max(14, Math.round(height * 0.02)),
   },
   footerText: {
     fontSize: Math.round(11 * scale),
@@ -899,7 +1001,7 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    gap: 0,
   },
   themeBtn: {
     width: 38,

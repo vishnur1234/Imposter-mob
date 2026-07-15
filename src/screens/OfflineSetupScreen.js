@@ -130,11 +130,31 @@ export default function OfflineSetupScreen({ navigation }) {
               ))}
             </View>
 
-            <TouchableOpacity onPress={handleStartGame} disabled={loading} activeOpacity={0.85} style={styles.startBtnWrap}>
-              <LinearGradient colors={loading ? [colors.textDisabled, colors.textDisabled] : colors.gradientBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.startBtn}>
-                {loading
-                  ? <><ActivityIndicator size="small" color="rgba(255,255,255,0.6)" /><Text style={[typography.btn1, { color: "#FFF" }]}>GENERATING…</Text></>
-                  : <><Ionicons name="play-circle-outline" size={22} color="#FFF" /><Text style={[typography.btn1, { color: "#FFF" }]}>START GAME</Text></>}
+            <TouchableOpacity
+              onPress={handleStartGame}
+              disabled={loading}
+              activeOpacity={0.92}
+              style={[
+                styles.startBtnWrap,
+                {
+                  borderWidth: 1,
+                  borderColor: colors.playBtnBorder,
+                  borderRadius: 12,
+                  overflow: "hidden"
+                }
+              ]}
+            >
+              <LinearGradient
+                colors={loading ? [colors.textDisabled, colors.textDisabled] : colors.gradientPlayBtn}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.startBtn}
+              >
+                {loading ? (
+                  <><ActivityIndicator size="small" color="rgba(255,255,255,0.6)" /><Text style={[typography.btnPlay, { color: colors.playBtnText }]}>GENERATING…</Text></>
+                ) : (
+                  <><Ionicons name="play-circle-outline" size={22} color={colors.playBtnText} /><Text style={[typography.btnPlay, { color: colors.playBtnText }]}>START GAME</Text></>
+                )}
               </LinearGradient>
             </TouchableOpacity>
           </ScrollView>
@@ -207,8 +227,8 @@ const styles = StyleSheet.create({
   nameRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 10 },
   nameAvatar: { width: 34, height: 34, borderRadius: 17, justifyContent: "center", alignItems: "center" },
   nameInput: { flex: 1, borderWidth: 1, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10 },
-  startBtnWrap: { borderRadius: 18, overflow: "hidden", marginTop: 8 },
-  startBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 12, paddingVertical: 18 },
+  startBtnWrap: { borderRadius: 12, overflow: "hidden", marginTop: 8 },
+  startBtn: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 10, paddingVertical: 16 },
   modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "center", alignItems: "center", padding: 20 },
   modalCard: { width: "100%", maxHeight: "80%", borderRadius: 24, borderWidth: 1, padding: 20 },
   modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 },

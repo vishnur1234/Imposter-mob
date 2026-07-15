@@ -28,9 +28,9 @@ export default function OfflineRoleRevealScreen({ route, navigation }) {
   const flipAnim = useRef(new Animated.Value(0)).current;
 
   const frontRotate = flipAnim.interpolate({ inputRange: [0, 180], outputRange: ["0deg", "180deg"] });
-  const backRotate  = flipAnim.interpolate({ inputRange: [0, 180], outputRange: ["180deg", "360deg"] });
+  const backRotate = flipAnim.interpolate({ inputRange: [0, 180], outputRange: ["180deg", "360deg"] });
   const frontOpacity = flipAnim.interpolate({ inputRange: [89, 90], outputRange: [1, 0] });
-  const backOpacity  = flipAnim.interpolate({ inputRange: [89, 90], outputRange: [0, 1] });
+  const backOpacity = flipAnim.interpolate({ inputRange: [89, 90], outputRange: [0, 1] });
 
   const flipToBack = () => {
     Animated.spring(flipAnim, { toValue: 180, friction: 8, tension: 10, useNativeDriver: true }).start();
@@ -269,7 +269,7 @@ export default function OfflineRoleRevealScreen({ route, navigation }) {
             >
               <Ionicons name={isFlipped ? "eye" : "eye-outline"} size={20} color="#FFF" />
               <Text style={[typography.btn1, { color: "#FFF" }]}>
-                {isFlipped ? "Peeking — Release to hide" : "Hold to Flip & Reveal"}
+                {isFlipped ? "Peeking — Release to hide" : "Hold to Reveal"}
               </Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -287,9 +287,9 @@ export default function OfflineRoleRevealScreen({ route, navigation }) {
                   {loadingReady
                     ? <ActivityIndicator size="small" color={colors.primary} />
                     : <>
-                        <Ionicons name="checkmark-done" size={18} color={colors.primary} />
-                        <Text style={[typography.btn2, { color: colors.primary, flex: 1, textAlign: "center" }]}>I'm Ready</Text>
-                      </>
+                      <Ionicons name="checkmark-done" size={18} color={colors.primary} />
+                      <Text style={[typography.btn2, { color: colors.primary, flex: 1, textAlign: "center" }]}>I'm Ready</Text>
+                    </>
                   }
                 </View>
               </TouchableOpacity>

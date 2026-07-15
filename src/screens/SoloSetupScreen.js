@@ -170,12 +170,31 @@ export default function SoloSetupScreen({ navigation }) {
             </View>
 
             {/* Start Button */}
-            <TouchableOpacity onPress={handleStartGame} disabled={loading} activeOpacity={0.85} style={styles.startBtnWrap}>
-              <LinearGradient colors={loading ? [colors.textDisabled, colors.textDisabled] : colors.gradientBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.startBtn}>
-                {loading
-                  ? <><ActivityIndicator size="small" color="rgba(255,255,255,0.6)" /><Text style={[styles.startBtnText, typography.btn1]}>GENERATING…</Text></>
-                  : <><Ionicons name="play-circle-outline" size={22} color="#FFF" /><Text style={[styles.startBtnText, typography.btn1]}>START GAME</Text></>
+            <TouchableOpacity
+              onPress={handleStartGame}
+              disabled={loading}
+              activeOpacity={0.92}
+              style={[
+                styles.startBtnWrap,
+                {
+                  borderWidth: 1,
+                  borderColor: colors.playBtnBorder,
+                  borderRadius: 12,
+                  overflow: "hidden"
                 }
+              ]}
+            >
+              <LinearGradient
+                colors={loading ? [colors.textDisabled, colors.textDisabled] : colors.gradientPlayBtn}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.startBtn}
+              >
+                {loading ? (
+                  <><ActivityIndicator size="small" color="rgba(255,255,255,0.6)" /><Text style={[styles.startBtnText, typography.btnPlay, { color: colors.playBtnText }]}>GENERATING…</Text></>
+                ) : (
+                  <><Ionicons name="play-circle-outline" size={22} color={colors.playBtnText} /><Text style={[styles.startBtnText, typography.btnPlay, { color: colors.playBtnText }]}>START GAME</Text></>
+                )}
               </LinearGradient>
             </TouchableOpacity>
           </ScrollView>
@@ -357,10 +376,10 @@ const styles = StyleSheet.create({
     color: "#0F172A", fontSize: 14,
   },
 
-  startBtnWrap: { borderRadius: 18, overflow: "hidden", marginTop: 8 },
+  startBtnWrap: { borderRadius: 12, overflow: "hidden", marginTop: 8 },
   startBtn: {
     flexDirection: "row", alignItems: "center", justifyContent: "center",
-    gap: 12, paddingVertical: 18,
+    gap: 10, paddingVertical: 16,
   },
-  startBtnText: { color: "#FFF", fontSize: 15, fontWeight: "900", letterSpacing: 1.5 },
+  startBtnText: { textAlign: "center", marginBottom: 0 },
 });

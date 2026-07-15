@@ -244,7 +244,7 @@ export default function PnpRoleRevealScreen({ route, navigation }) {
             >
               <Ionicons name={isFlipped ? "eye" : "eye-outline"} size={20} color="#FFF" />
               <Text style={[typography.btn1, { color: "#FFF" }]}>
-                {isFlipped ? "Peeking — Release to hide" : "Hold to Flip & Reveal"}
+                {isFlipped ? "Release to hide" : "Hold to Reveal"}
               </Text>
             </LinearGradient>
           </TouchableOpacity>
@@ -276,8 +276,8 @@ export default function PnpRoleRevealScreen({ route, navigation }) {
                     backgroundColor: i < currentPlayerIdx
                       ? colors.success
                       : i === currentPlayerIdx
-                      ? colors.primary
-                      : colors.border,
+                        ? colors.primary
+                        : colors.border,
                     width: i === currentPlayerIdx ? 20 : 8,
                   },
                 ]}

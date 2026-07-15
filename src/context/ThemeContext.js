@@ -26,6 +26,9 @@ export const themeColors = {
     error: "#D32F2F",
     gradientBg: ["#FFFFFF", "#F7F9FC", "#E0E0E0"],
     gradientBtn: ["#1465F1", "#3E88FC"],
+    gradientPlayBtn: ["#1465F1", "#0F46A6"],
+    playBtnBorder: "#1D4ED8",
+    playBtnText: "#FFFFFF",
     gradientSuccess: ["#00B96F", "#10B981"],
     gradientDanger: ["#D32F2F", "#EF4444"],
   },
@@ -51,6 +54,9 @@ export const themeColors = {
     error: "#D32F2F",
     gradientBg: ["#051532", "#000000", "#000000"],
     gradientBtn: ["#1465F1", "#3E88FC"],
+    gradientPlayBtn: ["#1E3A8A", "#0F172A"],
+    playBtnBorder: "#3b82f6",
+    playBtnText: "#FFFFFF",
     gradientSuccess: ["#00B96F", "#10B981"],
     gradientDanger: ["#D32F2F", "#EF4444"],
   }
@@ -81,6 +87,7 @@ export const typography = {
   btn1: { fontFamily: "Outfit-ExtraBold", fontSize: 16, letterSpacing: 1, fontWeight: "normal" },
   btn2: { fontFamily: "Outfit-Bold", fontSize: 14, letterSpacing: 1, fontWeight: "normal" },
   btn3: { fontFamily: "Outfit-Regular", fontSize: 12, fontWeight: "normal" },
+  btnPlay: { fontFamily: "Outfit-Bold", fontSize: 22, fontWeight: "900", letterSpacing: 0.5 },
   score: { fontFamily: "Outfit-Black", fontSize: 64, fontWeight: "normal" },
 };
 
